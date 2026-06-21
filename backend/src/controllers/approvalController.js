@@ -3,8 +3,8 @@ const BoqItem = require('../models/BoqItem');
 const BoqVersion = require('../models/BoqVersion');
 const Notification = require('../models/Notification');
 
-// ── Client: get approvals for a version ────────────────────────────────────────
-exports.getApprovals = async (req, res) => {
+// ── Client: get approvals for a version ──────────────────────────────────────────────
+const getApprovals = async (req, res) => {
   const filter = {};
   if (req.query.projectId) filter.projectId = req.query.projectId;
   if (req.query.boqVersionId) filter.boqVersionId = req.query.boqVersionId;
@@ -20,8 +20,8 @@ exports.getApprovals = async (req, res) => {
   res.json({ approvals });
 };
 
-// ── Client: submit item decision ────────────────────────────────────────────────
-exports.submitItemDecision = async (req, res) => {
+// Client: submit item decision
+const submitItemDecision = async (req, res) => {
   const { projectId, boqVersionId, boqItemId, status, selectedTier, note } = req.body;
 
   if (!['approved', 'rejected'].includes(status)) {
@@ -56,8 +56,8 @@ exports.submitItemDecision = async (req, res) => {
   res.json({ approval });
 };
 
-// ── Client: approve/reject entire BOQ version ──────────────────────────────────
-exports.submitVersionDecision = async (req, res) => {
+// Client: approve/reject entire BOQ version
+const submitVersionDecision = async (req, res) => {
   const { boqVersionId } = req.params;
   const { projectId, status, note } = req.body;
 
@@ -99,8 +99,8 @@ exports.submitVersionDecision = async (req, res) => {
   res.json({ approval });
 };
 
-// ── Admin/QS: get pending approvals across all versions ────────────────────────
-exports.getPendingApprovals = async (req, res) => {
+// Admin/QS: get pending approvals across all versions
+const getPendingApprovals = async (req, res) => {
   const approvals = await Approval.find({ status: 'pending' })
     .populate('boqVersionId', 'name')
     .populate('boqItemId', 'item')
@@ -110,3 +110,8 @@ exports.getPendingApprovals = async (req, res) => {
 
   res.json({ approvals });
 };
+
+exports.getApprovals = getApprovals;
+exports.submitItemDecision = submitItemDecision;
+exports.submitVersionDecision = submitVersionDecision;
+exports.getPendingApprovals = getPendingApprovals;

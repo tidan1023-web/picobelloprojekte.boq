@@ -3,7 +3,7 @@ const ChangeOrder = require('../models/ChangeOrder');
 const BoqVersion = require('../models/BoqVersion');
 const Project = require('../models/Project');
 
-// ── Progress Updates ──────────────────────────────────────────────────────────
+// ── Progress Updates ─────────────────────────────────────────────────────────────
 
 exports.getUpdates = async (req, res) => {
   const filter = { companyId: req.user.companyId };
@@ -56,7 +56,7 @@ exports.deleteUpdate = async (req, res) => {
   res.json({ message: 'Deleted' });
 };
 
-// ── Budget Alert ──────────────────────────────────────────────────────────────
+// ── Budget Alert ──────────────────────────────────────────────────────────────────
 
 exports.getBudgetAlerts = async (req, res) => {
   const cId = req.user.companyId;

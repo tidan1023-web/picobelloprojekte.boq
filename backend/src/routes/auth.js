@@ -1,1 +1,52 @@
-Y29uc3QgZXhwcmVzcyAgICA9IHJlcXVpcmUoJ2V4cHJlc3MnKTsKY29uc3Qgcm91dGVyICAgICA9IGV4cHJlc3MuUm91dGVyKCk7CmNvbnN0IHsKICByZWdpc3RlciwgbG9naW4sIGdldE1lLCBnb29nbGVBdXRoLAogIGZvcmdvdFBhc3N3b3JkLCByZXNldFBhc3N3b3JkLCBkZWxldGVBY2NvdW50LAogIGxpc3RUZWFtLCBpbnZpdGVNZW1iZXIsIHVwZGF0ZU1lbWJlclJvbGUsIHJlbW92ZU1lbWJlciwKfSA9IHJlcXVpcmUoJy4uL2NvbnRyb2xsZXJzL2F1dGhDb250cm9sbGVyJyk7CmNvbnN0IHsgYXV0aGVudGljYXRlIH0gICAgICAgICAgPSByZXF1aXJlKCcuLi9taWRkbGV3YXJlL2F1dGgnKTsKY29uc3QgeyBhdXRoTGltaXRlciB9ICAgICAgICAgICA9IHJlcXVpcmUoJy4uL21pZGRsZXdhcmUvcmF0ZUxpbWl0ZXInKTsKY29uc3QgeyB6b2RWYWxpZGF0ZSwgc2NoZW1hcyB9ICA9IHJlcXVpcmUoJy4uL21pZGRsZXdhcmUvem9kVmFsaWRhdGUnKTsKCi8vIFN0cmljdCByYXRlIGxpbWl0IG9uIGFsbCBhdXRoIG11dGF0aW9uIGVuZHBvaW50cyB0byBwcmV2ZW50IGJydXRlLWZvcmNlCnJvdXRlci5wb3N0KCcvcmVnaXN0ZXInLAogIGF1dGhMaW1pdGVyLAogIHpvZFZhbGlkYXRlKHNjaGVtYXMucmVnaXN0ZXIpLAogIHJlZ2lzdGVyLAopOwoKcm91dGVyLnBvc3QoJy9sb2dpbicsCiAgYXV0aExpbWl0ZXIsCiAgem9kVmFsaWRhdGUoc2NoZW1hcy5sb2dpbiksCiAgbG9naW4sCik7CgovLyBHb29nbGUgT0F1dGgg4oCUIHJhdGUtbGltaXRlZCBidXQgbm8gWm9kIHNjaGVtYSAodG9rZW4gY29tZXMgZnJvbSBHb29nbGUpCnJvdXRlci5wb3N0KCcvZ29vZ2xlJywgYXV0aExpbWl0ZXIsIGdvb2dsZUF1dGgpOwoKcm91dGVyLnBvc3QoJy9mb3Jnb3QtcGFzc3dvcmQnLAogIGF1dGhMaW1pdGVyLAogIHpvZFZhbGlkYXRlKHNjaGVtYXMuZm9yZ290UGFzc3dvcmQpLAogIGZvcmdvdFBhc3N3b3JkLAopOwoKcm91dGVyLnBvc3QoJy9yZXNldC1wYXNzd29yZC86dG9rZW4nLAogIGF1dGhMaW1pdGVyLAogIHpvZFZhbGlkYXRlKHNjaGVtYXMucmVzZXRQYXNzd29yZCksCiAgcmVzZXRQYXNzd29yZCwKKTsKCi8vIEF1dGhlbnRpY2F0ZWQgcm91dGVzIOKAlCBubyB0aWdodCByYXRlIGxpbWl0IG5lZWRlZCAoSldUIGFscmVhZHkgZ2F0ZXMgdGhlbSkKcm91dGVyLmdldCgnL21lJywgYXV0aGVudGljYXRlLCBnZXRNZSk7CgovLyBUZWFtIG1hbmFnZW1lbnQgKGFkbWluIG9ubHkpCnJvdXRlci5nZXQoJy90ZWFtJywgICAgICAgICAgICBhdXRoZW50aWNhdGUsIGxpc3RUZWFtKTsKcm91dGVyLnBvc3QoJy9pbnZpdGUnLCAgICAgICAgIGF1dGhlbnRpY2F0ZSwgaW52aXRlTWVtYmVyKTsKcm91dGVyLnBhdGNoKCcvdGVhbS86aWQvcm9sZScsIGF1dGhlbnRpY2F0ZSwgdXBkYXRlTWVtYmVyUm9sZSk7CnJvdXRlci5kZWxldGUoJy90ZWFtLzppZCcsICAgICBhdXRoZW50aWNhdGUsIHJlbW92ZU1lbWJlcik7CgovLyBBcHAgU3RvcmUgLyBHRFBSIGNvbXBsaWFuY2Ug4oCUIHBlcm1hbmVudGx5IGRlbGV0ZSB0aGUgY2FsbGVyJ3MgYWNjb3VudCArIGFsbCBkYXRhCnJvdXRlci5kZWxldGUoJy9tZScsIGF1dGhlbnRpY2F0ZSwgZGVsZXRlQWNjb3VudCk7Cgptb2R1bGUuZXhwb3J0cyA9IHJvdXRlcjsK
+const express    = require('express');
+const router     = express.Router();
+const {
+  register, login, getMe, googleAuth,
+  forgotPassword, resetPassword, deleteAccount,
+  listTeam, inviteMember, updateMemberRole, removeMember,
+} = require('../controllers/authController');
+const { authenticate }          = require('../middleware/auth');
+const { authLimiter }           = require('../middleware/rateLimiter');
+const { zodValidate, schemas }  = require('../middleware/zodValidate');
+
+// Strict rate limit on all auth mutation endpoints to prevent brute-force
+router.post('/register',
+  authLimiter,
+  zodValidate(schemas.register),
+  register,
+);
+
+router.post('/login',
+  authLimiter,
+  zodValidate(schemas.login),
+  login,
+);
+
+// Google OAuth — rate-limited but no Zod schema (token comes from Google)
+router.post('/google', authLimiter, googleAuth);
+
+router.post('/forgot-password',
+  authLimiter,
+  zodValidate(schemas.forgotPassword),
+  forgotPassword,
+);
+
+router.post('/reset-password/:token',
+  authLimiter,
+  zodValidate(schemas.resetPassword),
+  resetPassword,
+);
+
+// Authenticated routes — no tight rate limit needed (JWT already gates them)
+router.get('/me', authenticate, getMe);
+
+// Team management (admin only)
+router.get('/team',            authenticate, listTeam);
+router.post('/invite',         authenticate, inviteMember);
+router.patch('/team/:id/role', authenticate, updateMemberRole);
+router.delete('/team/:id',     authenticate, removeMember);
+
+// App Store / GDPR compliance — permanently delete the caller's account + all data
+router.delete('/me', authenticate, deleteAccount);
+
+module.exports = router;

@@ -1,1 +1,16 @@
-Y29uc3Qgcm91dGVyID0gcmVxdWlyZSgnZXhwcmVzcycpLlJvdXRlcigpOwpjb25zdCB7IGF1dGhlbnRpY2F0ZSB9ID0gcmVxdWlyZSgnLi4vbWlkZGxld2FyZS9hdXRoJyk7CmNvbnN0IHsgYXV0aG9yaXplIH0gPSByZXF1aXJlKCcuLi9taWRkbGV3YXJlL3JiYWMnKTsKY29uc3QgbXVsdGVyID0gcmVxdWlyZSgnbXVsdGVyJyk7CmNvbnN0IHsgbGlzdCwgY3JlYXRlLCB1cGRhdGUsIHJlbW92ZSB9ID0gcmVxdWlyZSgnLi4vY29udHJvbGxlcnMvZXhwZW5zZUNvbnRyb2xsZXInKTsKCmNvbnN0IHVwbG9hZCA9IG11bHRlcih7IHN0b3JhZ2U6IG11bHRlci5tZW1vcnlTdG9yYWdlKCksIGxpbWl0czogeyBmaWxlU2l6ZTogMTAgKiAxMDI0ICogMTAyNCB9IH0pOwoKcm91dGVyLnVzZShhdXRoZW50aWNhdGUpOwoKcm91dGVyLmdldCgnLycsIGxpc3QpOwpyb3V0ZXIucG9zdCgnLycsIGF1dGhvcml6ZSgnYWRtaW4nLCAncXMnLCAncHJvamVjdF9tYW5hZ2VyJyksIHVwbG9hZC5hcnJheSgncmVjZWlwdHMnLCAxMCksIGNyZWF0ZSk7CnJvdXRlci5wdXQoJy86aWQnLCBhdXRob3JpemUoJ2FkbWluJywgJ3FzJywgJ3Byb2plY3RfbWFuYWdlcicpLCB1cGxvYWQuYXJyYXkoJ3JlY2VpcHRzJywgMTApLCB1cGRhdGUpOwpyb3V0ZXIuZGVsZXRlKCcvOmlkJywgYXV0aG9yaXplKCdhZG1pbicsICdxcycsICdwcm9qZWN0X21hbmFnZXInKSwgcmVtb3ZlKTsKCm1vZHVsZS5leHBvcnRzID0gcm91dGVyOwo=
+const router = require('express').Router();
+const { authenticate } = require('../middleware/auth');
+const { authorize } = require('../middleware/rbac');
+const multer = require('multer');
+const { list, create, update, remove } = require('../controllers/expenseController');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+router.use(authenticate);
+
+router.get('/', list);
+router.post('/', authorize('admin', 'qs', 'project_manager'), upload.array('receipts', 10), create);
+router.put('/:id', authorize('admin', 'qs', 'project_manager'), upload.array('receipts', 10), update);
+router.delete('/:id', authorize('admin', 'qs', 'project_manager'), remove);
+
+module.exports = router;

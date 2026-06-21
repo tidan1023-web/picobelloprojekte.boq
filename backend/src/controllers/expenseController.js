@@ -1,1 +1,58 @@
-Y29uc3QgRXhwZW5zZSA9IHJlcXVpcmUoJy4uL21vZGVscy9FeHBlbnNlJyk7CmNvbnN0IGNsb3VkaW5hcnkgPSByZXF1aXJlKCcuLi9jb25maWcvY2xvdWRpbmFyeScpOwoKZXhwb3J0cy5saXN0ID0gYXN5bmMgKHJlcSwgcmVzLCBuZXh0KSA9PiB7CiAgdHJ5IHsKICAgIGNvbnN0IGZpbHRlciA9IHsgY29tcGFueUlkOiByZXEudXNlci5jb21wYW55SWQgfTsKICAgIGlmIChyZXEucXVlcnkucHJvamVjdElkKSBmaWx0ZXIucHJvamVjdElkID0gcmVxLnF1ZXJ5LnByb2plY3RJZDsKICAgIGlmIChyZXEucXVlcnkuY2F0ZWdvcnkpIGZpbHRlci5jYXRlZ29yeSA9IHJlcS5xdWVyeS5jYXRlZ29yeTsKICAgIGNvbnN0IGV4cGVuc2VzID0gYXdhaXQgRXhwZW5zZS5maW5kKGZpbHRlcikKICAgICAgLnNvcnQoeyBkYXRlOiAtMSB9KQogICAgICAucG9wdWxhdGUoJ3Byb2plY3RJZCcsICduYW1lJykKICAgICAgLnBvcHVsYXRlKCdjcmVhdGVkQnknLCAnbmFtZScpCiAgICAgIC5sZWFuKCk7CiAgICByZXMuanNvbih7IGV4cGVuc2VzIH0pOwogIH0gY2F0Y2ggKGVycikgeyBuZXh0KGVycik7IH0KfTsKCmV4cG9ydHMuY3JlYXRlID0gYXN5bmMgKHJlcSwgcmVzLCBuZXh0KSA9PiB7CiAgdHJ5IHsKICAgIGNvbnN0IHJlY2VpcHRzID0gW107CiAgICBpZiAocmVxLmZpbGVzPy5sZW5ndGgpIHsKICAgICAgZm9yIChjb25zdCBmaWxlIG9mIHJlcS5maWxlcykgewogICAgICAgIGlmIChjbG91ZGluYXJ5KSB7CiAgICAgICAgICBjb25zdCBiNjQgPSBmaWxlLmJ1ZmZlci50b1N0cmluZygnYmFzZTY0Jyk7CiAgICAgICAgICBjb25zdCBkYXRhVXJpID0gYGRhdGE6JHtmaWxlLm1pbWV0eXBlfTtiYXNlNjQsJHtiNjR9YDsKICAgICAgICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IGNsb3VkaW5hcnkudXBsb2FkZXIudXBsb2FkKGRhdGFVcmksIHsgZm9sZGVyOiAnZXhwZW5zZXMnIH0pOwogICAgICAgICAgcmVjZWlwdHMucHVzaChyZXN1bHQuc2VjdXJlX3VybCk7CiAgICAgICAgfQogICAgICB9CiAgICB9CiAgICBjb25zdCBleHBlbnNlID0gYXdhaXQgRXhwZW5zZS5jcmVhdGUoewogICAgICAuLi5yZXEuYm9keSwKICAgICAgY29tcGFueUlkOiByZXEudXNlci5jb21wYW55SWQsCiAgICAgIGNyZWF0ZWRCeTogcmVxLnVzZXIuX2lkLAogICAgICByZWNlaXB0cywKICAgIH0pOwogICAgcmVzLnN0YXR1cygyMDEpLmpzb24oeyBleHBlbnNlIH0pOwogIH0gY2F0Y2ggKGVycikgeyBuZXh0KGVycik7IH0KfTsKCmV4cG9ydHMudXBkYXRlID0gYXN5bmMgKHJlcSwgcmVzLCBuZXh0KSA9PiB7CiAgdHJ5IHsKICAgIGNvbnN0IGV4cGVuc2UgPSBhd2FpdCBFeHBlbnNlLmZpbmRPbmVBbmRVcGRhdGUoCiAgICAgIHsgX2lkOiByZXEucGFyYW1zLmlkLCBjb21wYW55SWQ6IHJlcS51c2VyLmNvbXBhbnlJZCB9LAogICAgICByZXEuYm9keSwKICAgICAgeyBuZXc6IHRydWUgfQogICAgKTsKICAgIGlmICghZXhwZW5zZSkgcmV0dXJuIHJlcy5zdGF0dXMoNDA0KS5qc29uKHsgbWVzc2FnZTogJ05vdCBmb3VuZCcgfSk7CiAgICByZXMuanNvbih7IGV4cGVuc2UgfSk7CiAgfSBjYXRjaCAoZXJyKSB7IG5leHQoZXJyKTsgfQp9OwoKZXhwb3J0cy5yZW1vdmUgPSBhc3luYyAocmVxLCByZXMsIG5leHQpID0+IHsKICB0cnkgewogICAgYXdhaXQgRXhwZW5zZS5maW5kT25lQW5kRGVsZXRlKHsgX2lkOiByZXEucGFyYW1zLmlkLCBjb21wYW55SWQ6IHJlcS51c2VyLmNvbXBhbnlJZCB9KTsKICAgIHJlcy5qc29uKHsgbWVzc2FnZTogJ0RlbGV0ZWQnIH0pOwogIH0gY2F0Y2ggKGVycikgeyBuZXh0KGVycik7IH0KfTsK
+const Expense = require('../models/Expense');
+const cloudinary = require('../config/cloudinary');
+
+exports.list = async (req, res, next) => {
+  try {
+    const filter = { companyId: req.user.companyId };
+    if (req.query.projectId) filter.projectId = req.query.projectId;
+    if (req.query.category) filter.category = req.query.category;
+    const expenses = await Expense.find(filter)
+      .sort({ date: -1 })
+      .populate('projectId', 'name')
+      .populate('createdBy', 'name')
+      .lean();
+    res.json({ expenses });
+  } catch (err) { next(err); }
+};
+
+exports.create = async (req, res, next) => {
+  try {
+    const receipts = [];
+    if (req.files?.length) {
+      for (const file of req.files) {
+        if (cloudinary) {
+          const b64 = file.buffer.toString('base64');
+          const dataUri = `data:${file.mimetype};base64,${b64}`;
+          const result = await cloudinary.uploader.upload(dataUri, { folder: 'expenses' });
+          receipts.push(result.secure_url);
+        }
+      }
+    }
+    const expense = await Expense.create({
+      ...req.body,
+      companyId: req.user.companyId,
+      createdBy: req.user._id,
+      receipts,
+    });
+    res.status(201).json({ expense });
+  } catch (err) { next(err); }
+};
+
+exports.update = async (req, res, next) => {
+  try {
+    const expense = await Expense.findOneAndUpdate(
+      { _id: req.params.id, companyId: req.user.companyId },
+      req.body,
+      { new: true }
+    );
+    if (!expense) return res.status(404).json({ message: 'Not found' });
+    res.json({ expense });
+  } catch (err) { next(err); }
+};
+
+exports.remove = async (req, res, next) => {
+  try {
+    await Expense.findOneAndDelete({ _id: req.params.id, companyId: req.user.companyId });
+    res.json({ message: 'Deleted' });
+  } catch (err) { next(err); }
+};
