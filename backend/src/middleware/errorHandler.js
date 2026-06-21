@@ -1,63 +1,60 @@
 'use strict';
-const Sentry = require('@sentry/node');
 const logger = require('../utils/logger');
 
-function createError(message, statusCode) {
-  const err = new Error(message);
-  err.statusCode = statusCode;
-  err.isOperational = true;
-  return err;
-}
+// Safe messages to expose in production for common error types
+const SAFE_MESSAGES = {
+  CastError:       'Invalid resource identifier',
+  ValidationError: 'Validation failed',
+  JsonWebTokenError:    'Invalid token',
+  TokenExpiredError:    'Token has expired',
+  SyntaxError:     'Malformed request body',
+};
 
 function errorHandler(err, req, res, _next) {
-  // Invalid MongoDB ObjectId — clean 400 instead of leaking schema info
-  if (err.name === 'CastError') {
-    res.status(400).json({ error: 'Invalid ID format' });
-    return;
-  }
-
-  // Malformed or expired JWT handled here as a fallback (normally caught in authenticate)
-  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-    res.status(401).json({ error: 'Invalid or expired token' });
-    return;
-  }
-
-  // Mongoose model-level validation errors
-  if (err.name === 'ValidationError') {
-    res.status(400).json({ error: 'Validation failed', details: err.message });
-    return;
-  }
-
-  // MongoDB duplicate-key — err.code is the number 11000, not a string
-  if (err.code === 11000) {
-    res.status(409).json({ error: 'A record with that value already exists' });
-    return;
-  }
-
-  const statusCode = err.statusCode || 500;
+  const statusCode   = err.statusCode || err.status || 500;
   const isProduction = process.env.NODE_ENV === 'production';
 
-  logger.error('Request error', {
-    requestId: req.id,
-    message: err.message,
-    statusCode,
-    method: req.method,
-    path: req.path,
+  // Always log the real error server-side (never suppress)
+  logger.error(`[${req.method}] ${req.path} → ${statusCode}`, {
+    error: err.message,
     ...(isProduction ? {} : { stack: err.stack }),
   });
 
-  if (!err.isOperational && isProduction) {
-    Sentry.captureException(err);
+  // Mongoose CastError (bad ObjectId)
+  if (err.name === 'CastError') {
+    return res.status(400).json({ message: SAFE_MESSAGES.CastError });
   }
 
-  res.status(statusCode).json({
-    error: isProduction && statusCode === 500 ? 'Internal server error' : err.message,
-    ...(isProduction ? {} : err.stack ? { stack: err.stack } : {}),
-  });
+  // Mongoose ValidationError — extract field messages cleanly
+  if (err.name === 'ValidationError') {
+    const errors = Object.values(err.errors).map((e) => ({
+      field: e.path,
+      message: e.message,
+    }));
+    return res.status(400).json({ message: SAFE_MESSAGES.ValidationError, errors });
+  }
+
+  // MongoDB duplicate-key error
+  if (err.code === 11000) {
+    return res.status(409).json({ message: 'A record with that value already exists' });
+  }
+
+  // JWT errors
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+    return res.status(401).json({ message: SAFE_MESSAGES[err.name] });
+  }
+
+  // Body parse error (malformed JSON)
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: SAFE_MESSAGES.SyntaxError });
+  }
+
+  // In production: never leak internal error messages for 5xx responses
+  const message = isProduction && statusCode >= 500
+    ? 'An unexpected error occurred. Please try again later.'
+    : err.message || 'Internal server error';
+
+  res.status(statusCode).json({ message });
 }
 
-function notFound(req, res) {
-  res.status(404).json({ error: `Route ${req.method} ${req.path} not found` });
-}
-
-module.exports = { createError, errorHandler, notFound };
+module.exports = errorHandler;

@@ -1,172 +1,119 @@
-'use strict';
-require('dotenv/config');
-const express = require('express');
-const { Router } = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const morgan = require('morgan');
-const Sentry = require('@sentry/node');
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
-const { connectDatabase } = require('./config/database');
+require('dotenv').config();
+require('express-async-errors');
+
+const express        = require('express');
+const cors           = require('cors');
+const helmet         = require('helmet');
+const mongoSanitize  = require('express-mongo-sanitize');
+const hpp            = require('hpp');
+const connectDB      = require('./config/database');
+const errorHandler   = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
-const { mongoSanitize } = require('./middleware/sanitize');
-const { errorHandler, notFound } = require('./middleware/errorHandler');
-const { User } = require('./models/User');
-// Register eBay models so Mongoose knows about them before any query runs
-require('./models/EbayToken');
-require('./models/EbayListing');
-const { startEbaySyncJob } = require('./jobs/ebaySync');
-const logger = require('./utils/logger');
 
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const defectRoutes = require('./routes/defects');
-const auditRoutes = require('./routes/audit');
-const dashboardRoutes = require('./routes/dashboard');
-const ebayRoutes = require('./routes/ebay');
+// ── Core routes (previously mounted) ─────────────────────────────────────────
+const authRoutes               = require('./routes/auth');
+const companyRoutes            = require('./routes/company');
+const siteReportRoutes         = require('./routes/siteReports');
+const historicalProjectRoutes  = require('./routes/historicalProjects');
+const estimateRoutes           = require('./routes/estimates');
+const invoiceRoutes            = require('./routes/invoices');
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
-    tracesSampleRate: 0.2,
-  });
-}
+// ── Feature routes (previously built but not mounted) ─────────────────────────
+const projectRoutes       = require('./routes/projects');
+const contactRoutes       = require('./routes/contacts');
+const qsPriceRoutes       = require('./routes/qsPrices');
+const artisanPriceRoutes  = require('./routes/artisanPrices');
+const materialPriceRoutes = require('./routes/materialPrices');
+const boqRoutes           = require('./routes/boq');
+const changeOrderRoutes   = require('./routes/changeOrders');
+const progressRoutes      = require('./routes/progress');
+const analyticsRoutes     = require('./routes/analytics');
+const approvalRoutes      = require('./routes/approvals');
+const pricingRoutes       = require('./routes/pricing');
+const dashboardRoutes     = require('./routes/dashboard');
+const commentRoutes       = require('./routes/comments');
+const notificationRoutes  = require('./routes/notifications');
 
 const app = express();
+connectDB();
 
-app.set('trust proxy', 1);
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
 
-// Attach a unique request ID to every request for log correlation
-app.use((req, res, next) => {
-  req.id = req.headers['x-request-id'] || uuidv4();
-  res.setHeader('X-Request-ID', req.id);
-  next();
-});
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.some((o) => origin.startsWith(o))) return cb(null, true);
+    if (origin.endsWith('.onrender.com')) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:', '*.amazonaws.com'],
-        connectSrc: ["'self'"],
-      },
-    },
-    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-  })
-);
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet());
 
-// Only allow localhost origins in non-production environments
-const allowedOrigins =
-  process.env.NODE_ENV === 'production'
-    ? [process.env.FRONTEND_URL].filter(Boolean)
-    : [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://localhost:3001'];
+// ── Body parsing with size limit ──────────────────────────────────────────────
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error('CORS: origin not allowed'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-  })
-);
+// ── NoSQL injection + HTTP parameter pollution prevention ─────────────────────
+app.use(mongoSanitize());
+app.use(hpp());
 
-app.use(
-  morgan('combined', {
-    stream: { write: (msg) => logger.info(msg.trim()) },
-    skip: (_req, res) => res.statusCode < 400 && process.env.NODE_ENV === 'production',
-  })
-);
-
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-// Strip MongoDB operator keys ($gt, $where, etc.) from all user-supplied input
-app.use(mongoSanitize);
-
-// Rate limit all API traffic
+// ── Global rate limiting ──────────────────────────────────────────────────────
 app.use('/api/', apiLimiter);
 
-// Root redirect to the frontend app
-app.get('/', (_req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  res.redirect(301, frontendUrl);
+// ── Health / root ─────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => res.json({ status: 'ok', service: 'Pico Bello Estimator API', version: '2.0.0' }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// ── Routes — available at /api/v1/* and /api/* (backward-compatible) ──────────
+['/api/v1', '/api'].forEach((prefix) => {
+  // Auth & company
+  app.use(`${prefix}/auth`,                authRoutes);
+  app.use(`${prefix}/company`,             companyRoutes);
+
+  // Core features
+  app.use(`${prefix}/estimates`,           estimateRoutes);
+  app.use(`${prefix}/invoices`,            invoiceRoutes);
+  app.use(`${prefix}/site-reports`,        siteReportRoutes);
+  app.use(`${prefix}/historical-projects`, historicalProjectRoutes);
+
+  // Projects & contacts
+  app.use(`${prefix}/projects`,            projectRoutes);
+  app.use(`${prefix}/contacts`,            contactRoutes);
+
+  // Pricing libraries
+  app.use(`${prefix}/qs-prices`,           qsPriceRoutes);
+  app.use(`${prefix}/artisan-prices`,      artisanPriceRoutes);
+  app.use(`${prefix}/material-prices`,     materialPriceRoutes);
+  app.use(`${prefix}/pricing`,             pricingRoutes);
+
+  // BOQ & execution
+  app.use(`${prefix}/boq`,                 boqRoutes);
+  app.use(`${prefix}/change-orders`,       changeOrderRoutes);
+  app.use(`${prefix}/progress`,            progressRoutes);
+
+  // Analytics & approvals
+  app.use(`${prefix}/analytics`,           analyticsRoutes);
+  app.use(`${prefix}/approvals`,           approvalRoutes);
+
+  // Dashboard summary
+  app.use(`${prefix}/dashboard`,           dashboardRoutes);
+
+  // Collaboration
+  app.use(`${prefix}/comments`,            commentRoutes);
+  app.use(`${prefix}/notifications`,       notificationRoutes);
 });
 
-// Health check — accessible without auth for Render/uptime monitors
-app.get('/api/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'warehouse-inventory-hq-api',
-    version: 'v1',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// v1 API router — all product routes live under /api/v1
-const v1 = Router();
-v1.use('/auth', authRoutes);
-v1.use('/products', productRoutes);
-v1.use('/defects', defectRoutes);
-v1.use('/audit', auditRoutes);
-v1.use('/dashboard', dashboardRoutes);
-v1.use('/ebay', ebayRoutes);
-
-app.use('/api/v1', v1);
-// Backward-compatibility alias so any existing integrations keep working
-app.use('/api', v1);
-
-app.use(notFound);
+// ── 404 + error handler ───────────────────────────────────────────────────────
+app.use((_req, res) => res.status(404).json({ message: 'Not found' }));
 app.use(errorHandler);
 
-async function bootstrap() {
-  await connectDatabase();
-  await seedAdminIfNeeded();
-
-  // Start background eBay status sync (runs 2 min after startup, then every 30 min)
-  startEbaySyncJob();
-
-  const PORT = parseInt(process.env.PORT || '5000', 10);
-  app.listen(PORT, '0.0.0.0', () => {
-    logger.info(`Warehouse Inventory HQ API running on port ${PORT}`, {
-      env: process.env.NODE_ENV,
-      port: PORT,
-      apiVersion: 'v1',
-    });
-  });
-}
-
-async function seedAdminIfNeeded() {
-  if (mongoose.connection.readyState !== 1) return;
-
-  const adminEmail = process.env.BOOTSTRAP_ADMIN_EMAIL;
-  const adminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD;
-  const adminEmpId = process.env.BOOTSTRAP_ADMIN_EMPLOYEE_ID;
-
-  if (!adminEmail || !adminPassword || !adminEmpId) return;
-
-  const existing = await User.findOne({ email: adminEmail.toLowerCase() });
-  if (existing) return;
-
-  await User.create({
-    employeeId: adminEmpId,
-    name: 'System Admin',
-    email: adminEmail,
-    password: adminPassword,
-    role: 'admin',
-  });
-
-  logger.info('Bootstrap admin account created', { email: adminEmail });
-}
-
-bootstrap().catch((err) => {
-  logger.error('Failed to start server', { error: err.message });
-  process.exit(1);
-});
-
-module.exports = app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Pico Bello Estimator API running on port ${PORT}`));

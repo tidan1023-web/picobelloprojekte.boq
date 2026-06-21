@@ -1,103 +1,42 @@
-'use strict';
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const { Schema } = mongoose;
-
-const userSchema = new Schema(
-  {
-    employeeId: {
-      type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
-      trim: true,
-      match: /^[A-Z0-9-]{3,20}$/,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 100,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-      select: false,
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'staff'],
-      default: 'staff',
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    lastLogin: {
-      type: Date,
-    },
-    department: {
-      type: String,
-      trim: true,
-      maxlength: 100,
-    },
-    about: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-    },
-    profilePicture: {
-      s3Key: String,
-      s3Url: String,
-    },
-    performanceRating: {
-      type: Number,
-      min: 0,
-      max: 5,
-      default: 0,
-    },
-    loginCount: {
-      type: Number,
-      default: 0,
-    },
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
   },
-  {
-    timestamps: true,
-    toJSON: {
-      transform: (_doc, ret) => {
-        delete ret.password;
-        return ret;
-      },
-    },
-  }
-);
-
-userSchema.index({ email: 1 });
-userSchema.index({ employeeId: 1 });
-userSchema.index({ role: 1, isActive: 1 });
+  password: { type: String, required: true, minlength: 6 },
+  role: {
+    type: String,
+    enum: ['admin', 'qs', 'project_manager', 'client'],
+    default: 'admin',
+  },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
+  isActive: { type: Boolean, default: true },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+  createdAt: { type: Date, default: Date.now },
+});
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-userSchema.methods.comparePassword = async function (candidate) {
-  return bcrypt.compare(candidate, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
-module.exports = { User };
+module.exports = mongoose.model('User', userSchema);

@@ -1,481 +1,180 @@
-'use strict';
-const jwt = require('jsonwebtoken');
-const { User } = require('../models/User');
-const { EmployeeComment } = require('../models/EmployeeComment');
-const { AuditLog } = require('../models/AuditLog');
-const { generateTokens } = require('../middleware/auth');
-const { createAuditLog } = require('../utils/auditLogger');
-const { createError } = require('../middleware/errorHandler');
+const crypto = require('crypto');
+const jwt    = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const User     = require('../models/User');
+const Company  = require('../models/Company');
+const Estimate = require('../models/Estimate');
+const Invoice  = require('../models/Invoice');
+const SiteReport = require('../models/SiteReport');
+const HistoricalProject = require('../models/HistoricalProject');
+const { sendWelcome, sendPasswordReset } = require('../utils/email');
 const logger = require('../utils/logger');
 
-async function login(req, res, next) {
-  try {
-    const { email, password } = req.body;
-    const normalizedEmail = email.toLowerCase().trim();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-    const user = await User.findOne({ email: normalizedEmail }).select('+password');
-
-    if (!user || !user.isActive) {
-      logger.warn('Failed login attempt', {
-        email: normalizedEmail,
-        ip: req.ip,
-        reason: !user ? 'user_not_found' : 'account_inactive',
-      });
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
-    }
-
-    const isValid = await user.comparePassword(password);
-    if (!isValid) {
-      logger.warn('Failed login attempt', {
-        email: normalizedEmail,
-        ip: req.ip,
-        reason: 'wrong_password',
-        employeeId: user.employeeId,
-      });
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
-    }
-
-    const { accessToken, refreshToken } = generateTokens(user);
-    user.lastLogin = new Date();
-    user.loginCount = (user.loginCount || 0) + 1;
-    await user.save();
-
-    await createAuditLog({
-      action: 'USER_LOGIN',
-      entityType: 'user',
-      entityId: user._id,
-      user,
-      details: { email: user.email },
-      req,
-    });
-
-    res.json({
-      accessToken,
-      refreshToken,
-      user: {
-        id: user._id,
-        employeeId: user.employeeId,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        department: user.department,
-        about: user.about,
-        profilePicture: user.profilePicture,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function refreshToken(req, res, next) {
-  try {
-    const { refreshToken: token } = req.body;
-    if (!token) throw createError('Refresh token required', 400);
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    } catch {
-      throw createError('Invalid or expired refresh token', 401);
-    }
-
-    const user = await User.findById(decoded.id);
-    if (!user || !user.isActive) throw createError('User not found or deactivated', 401);
-
-    const tokens = generateTokens(user);
-    res.json(tokens);
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getMe(req, res) {
-  const u = req.user;
-  res.json({
-    id: u._id,
-    employeeId: u.employeeId,
-    name: u.name,
-    email: u.email,
-    role: u.role,
-    lastLogin: u.lastLogin,
-    department: u.department,
-    about: u.about,
-    profilePicture: u.profilePicture,
-    performanceRating: u.performanceRating,
-    loginCount: u.loginCount,
+const generateToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getIp(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 }
 
-async function updateProfile(req, res, next) {
-  try {
-    const { name, department, about } = req.body;
-    const update = {};
-    if (name) update.name = name.trim();
-    if (department !== undefined) update.department = department.trim();
-    if (about !== undefined) update.about = about.trim();
+// ── register ──────────────────────────────────────────────────────────────────
+const register = async (req, res) => {
+  // req.body already validated + sanitised by Zod middleware
+  const { name, email, password } = req.body;
 
-    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
-
-    await createAuditLog({
-      action: 'USER_PROFILE_UPDATED',
-      entityType: 'user',
-      entityId: req.user._id,
-      user: req.user,
-      details: { updatedFields: Object.keys(update) },
-      req,
-    });
-
-    res.json({
-      id: user._id,
-      employeeId: user.employeeId,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
-      about: user.about,
-      profilePicture: user.profilePicture,
-    });
-  } catch (err) {
-    next(err);
+  const existing = await User.findOne({ email });
+  if (existing) {
+    logger.warn('Registration attempt for already-registered email', { email, ip: getIp(req) });
+    return res.status(409).json({ message: 'Email already registered' });
   }
-}
 
-async function changePassword(req, res, next) {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user._id).select('+password');
-    const valid = await user.comparePassword(currentPassword);
-    if (!valid) throw createError('Current password is incorrect', 400);
-    user.password = newPassword;
-    await user.save();
+  const company = await Company.create({ companyName: req.body.companyName || 'My Company' });
+  const user    = await User.create({ name, email, password, role: 'admin', companyId: company._id });
+  company.createdBy = user._id;
+  await company.save();
 
-    await createAuditLog({
-      action: 'USER_PASSWORD_CHANGED',
-      entityType: 'user',
-      entityId: req.user._id,
-      user: req.user,
-      details: {},
-      req,
-    });
+  logger.info('New user registered', { userId: user._id, email, ip: getIp(req) });
 
-    res.json({ message: 'Password updated' });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function createUser(req, res, next) {
-  try {
-    const { employeeId, name, email, password, role } = req.body;
-    const user = await User.create({ employeeId, name, email, password, role });
-
-    await createAuditLog({
-      action: 'USER_CREATED',
-      entityType: 'user',
-      entityId: user._id,
-      user: req.user,
-      details: { createdEmployeeId: employeeId, createdEmail: email, role },
-      req,
-    });
-
-    res.status(201).json({ message: 'User created', user });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function listUsers(req, res, next) {
-  try {
-    const users = await User.find({}).sort({ createdAt: -1 }).lean();
-    res.json({ users });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getUserById(req, res, next) {
-  try {
-    const user = await User.findById(req.params.id).lean();
-    if (!user) throw createError('User not found', 404);
-    res.json({ user });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getUserStats(req, res, next) {
-  try {
-    const { id } = req.params;
-    if (req.user.role !== 'admin' && req.user._id.toString() !== id) {
-      throw createError('Forbidden', 403);
-    }
-
-    const [dispatches, verifications, defects, images, products, logins, recentActivity] =
-      await Promise.all([
-        AuditLog.countDocuments({ userId: id, action: 'PRODUCT_DISPATCHED' }),
-        AuditLog.countDocuments({ userId: id, action: 'PRODUCT_VERIFIED' }),
-        AuditLog.countDocuments({ userId: id, action: 'DEFECT_LOGGED' }),
-        AuditLog.countDocuments({ userId: id, action: 'IMAGE_UPLOADED' }),
-        AuditLog.countDocuments({ userId: id, action: 'PRODUCT_CREATED' }),
-        AuditLog.countDocuments({ userId: id, action: 'USER_LOGIN' }),
-        AuditLog.find({ userId: id }).sort({ timestamp: -1 }).limit(10).lean(),
-      ]);
-
-    const user = await User.findById(id).lean();
-
-    res.json({
-      stats: { dispatches, verifications, defects, images, products, logins },
-      recentActivity,
-      performanceRating: user?.performanceRating || 0,
-      loginCount: user?.loginCount || 0,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function updatePerformanceRating(req, res, next) {
-  try {
-    const { rating } = req.body;
-    if (typeof rating !== 'number' || rating < 0 || rating > 5) {
-      throw createError('Rating must be 0–5', 400);
-    }
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { performanceRating: rating },
-      { new: true }
-    );
-    if (!user) throw createError('User not found', 404);
-
-    await createAuditLog({
-      action: 'USER_RATING_UPDATED',
-      entityType: 'user',
-      entityId: req.params.id,
-      user: req.user,
-      details: { rating },
-      req,
-    });
-
-    res.json({ performanceRating: user.performanceRating });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function addComment(req, res, next) {
-  try {
-    const { comment, mentionedEmployeeIds } = req.body;
-    if (!comment?.trim()) throw createError('Comment is required', 400);
-    const target = await User.findById(req.params.id);
-    if (!target) throw createError('User not found', 404);
-
-    const doc = await EmployeeComment.create({
-      targetUserId: req.params.id,
-      authorId: req.user._id,
-      authorName: req.user.name,
-      authorEmployeeId: req.user.employeeId,
-      comment: comment.trim(),
-      mentionedEmployeeIds: mentionedEmployeeIds || [],
-    });
-    res.status(201).json({ comment: doc });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getComments(req, res, next) {
-  try {
-    const comments = await EmployeeComment.find({ targetUserId: req.params.id })
-      .sort({ createdAt: -1 })
-      .lean();
-    res.json({ comments });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function deactivateUser(req, res, next) {
-  try {
-    const { id } = req.params;
-    const target = await User.findByIdAndUpdate(id, { isActive: false }, { new: true });
-    if (!target) throw createError('User not found', 404);
-
-    await createAuditLog({
-      action: 'USER_DEACTIVATED',
-      entityType: 'user',
-      entityId: target._id,
-      user: req.user,
-      details: { deactivatedEmail: target.email },
-      req,
-    });
-
-    res.json({ message: 'User deactivated', user: target });
-  } catch (err) {
-    next(err);
-  }
-}
-
-// GDPR / App Store: download a copy of everything stored about the authenticated user
-async function exportMyData(req, res, next) {
-  try {
-    const userId = req.user._id;
-
-    const [user, activityLogs, managerComments] = await Promise.all([
-      User.findById(userId).lean(),
-      AuditLog.find({ userId }).sort({ timestamp: -1 }).lean(),
-      EmployeeComment.find({ targetUserId: userId }).lean(),
-    ]);
-
-    res.json({
-      exportedAt: new Date().toISOString(),
-      profile: {
-        employeeId: user.employeeId,
-        name: user.name,
-        email: user.email,
-        department: user.department,
-        about: user.about,
-        role: user.role,
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin,
-        loginCount: user.loginCount,
-      },
-      activityLog: activityLogs.map((l) => ({
-        action: l.action,
-        entityType: l.entityType,
-        timestamp: l.timestamp,
-        ipAddress: l.ipAddress,
-        details: l.details,
-      })),
-      managerComments: managerComments.map((c) => ({
-        comment: c.comment,
-        authorName: c.authorName,
-        createdAt: c.createdAt,
-      })),
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-// GDPR / App Store: permanently erase own account and associated PII
-async function deleteAccount(req, res, next) {
-  try {
-    const { password, confirmPhrase } = req.body;
-
-    if (confirmPhrase !== 'DELETE MY ACCOUNT') {
-      throw createError('Confirmation phrase does not match', 400);
-    }
-
-    const user = await User.findById(req.user._id).select('+password');
-    if (!user) throw createError('User not found', 404);
-
-    const valid = await user.comparePassword(password);
-    if (!valid) throw createError('Incorrect password', 400);
-
-    const userId = user._id;
-
-    // Log the deletion event before the user record disappears
-    await createAuditLog({
-      action: 'USER_ACCOUNT_DELETED',
-      entityType: 'user',
-      entityId: userId,
-      user,
-      details: { selfDeleted: true, email: user.email },
-      req,
-    });
-
-    logger.info('Account self-deletion completed', {
-      employeeId: user.employeeId,
-      ip: req.ip,
-    });
-
-    // Anonymize PII fields in historical audit entries.
-    // Uses the MongoDB driver directly to bypass the Mongoose immutability hooks,
-    // which are designed to prevent accidental mutations — not legitimate erasure.
-    await AuditLog.collection.updateMany(
-      { userId },
-      { $set: { userEmail: '[deleted]', userName: '[Deleted User]', employeeId: '[deleted]' } }
-    );
-
-    // Remove manager notes referencing or written by this user
-    await EmployeeComment.deleteMany({
-      $or: [{ targetUserId: userId }, { authorId: userId }],
-    });
-
-    await User.findByIdAndDelete(userId);
-
-    res.json({ message: 'Account deleted. All personal data has been removed.' });
-  } catch (err) {
-    next(err);
-  }
-}
-
-// Admin: permanently erase any user's account
-async function deleteUser(req, res, next) {
-  try {
-    const { id } = req.params;
-
-    if (req.user._id.toString() === id) {
-      throw createError('Use DELETE /api/v1/auth/account to delete your own account', 400);
-    }
-
-    const target = await User.findById(id);
-    if (!target) throw createError('User not found', 404);
-
-    await createAuditLog({
-      action: 'USER_ACCOUNT_DELETED',
-      entityType: 'user',
-      entityId: target._id,
-      user: req.user,
-      details: {
-        adminDeleted: true,
-        deletedEmail: target.email,
-        deletedEmployeeId: target.employeeId,
-      },
-      req,
-    });
-
-    logger.info('Admin-initiated account deletion', {
-      adminEmployeeId: req.user.employeeId,
-      targetEmployeeId: target.employeeId,
-      ip: req.ip,
-    });
-
-    await AuditLog.collection.updateMany(
-      { userId: target._id },
-      { $set: { userEmail: '[deleted]', userName: '[Deleted User]', employeeId: '[deleted]' } }
-    );
-
-    await EmployeeComment.deleteMany({
-      $or: [{ targetUserId: id }, { authorId: id }],
-    });
-
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: 'User deleted and personal data removed' });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = {
-  login,
-  refreshToken,
-  getMe,
-  updateProfile,
-  changePassword,
-  createUser,
-  listUsers,
-  getUserById,
-  getUserStats,
-  updatePerformanceRating,
-  addComment,
-  getComments,
-  deactivateUser,
-  exportMyData,
-  deleteAccount,
-  deleteUser,
+  const token = generateToken(user._id);
+  sendWelcome(user).catch((e) => logger.warn('Welcome email failed', { error: e.message }));
+  res.status(201).json({ message: 'Registration successful', token, user });
 };
+
+// ── login ─────────────────────────────────────────────────────────────────────
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  const ip = getIp(req);
+
+  const user = await User.findOne({ email });
+
+  // Use same response whether email or password is wrong (prevents user enumeration)
+  if (!user || !(await user.comparePassword(password))) {
+    logger.warn('Failed login attempt', { email, ip });
+    return res.status(401).json({ message: 'Invalid email or password' });
+  }
+
+  if (!user.isActive) {
+    logger.warn('Login attempt on deactivated account', { userId: user._id, ip });
+    return res.status(403).json({ message: 'Account has been deactivated' });
+  }
+
+  logger.info('Successful login', { userId: user._id, email, ip });
+
+  const token = generateToken(user._id);
+  res.json({ message: 'Login successful', token, user });
+};
+
+// ── getMe ─────────────────────────────────────────────────────────────────────
+const getMe = async (req, res) => {
+  res.json({ user: req.user });
+};
+
+// ── googleAuth ────────────────────────────────────────────────────────────────
+const googleAuth = async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ message: 'Google credential required' });
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const { name, email, picture } = ticket.getPayload();
+  const ip = getIp(req);
+
+  let user = await User.findOne({ email });
+  if (!user) {
+    const company  = await Company.create({ companyName: 'My Company' });
+    const randomPw = crypto.randomBytes(24).toString('hex'); // never used — Google auth only
+    user = await User.create({ name, email, password: randomPw, role: 'admin', companyId: company._id, avatar: picture });
+    company.createdBy = user._id;
+    await company.save();
+    logger.info('New user via Google OAuth', { userId: user._id, email, ip });
+  }
+
+  if (!user.isActive) {
+    logger.warn('Google login on deactivated account', { userId: user._id, ip });
+    return res.status(403).json({ message: 'Account deactivated' });
+  }
+
+  logger.info('Google login successful', { userId: user._id, email, ip });
+
+  const token = generateToken(user._id);
+  res.json({ message: 'Google login successful', token, user });
+};
+
+// ── forgotPassword ────────────────────────────────────────────────────────────
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  // Always respond the same way — don't reveal whether the email is registered
+  if (!user) return res.json({ message: 'If that email is registered, a reset link has been sent.' });
+
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetPasswordToken   = token;
+  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  await user.save();
+
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/reset-password/${token}`;
+  await sendPasswordReset(user, resetUrl);
+
+  logger.info('Password reset requested', { userId: user._id, ip: getIp(req) });
+  res.json({ message: 'If that email is registered, a reset link has been sent.' });
+};
+
+// ── resetPassword ─────────────────────────────────────────────────────────────
+const resetPassword = async (req, res) => {
+  const { token }    = req.params;
+  const { password } = req.body; // Zod already validated length/complexity
+
+  const user = await User.findOne({
+    resetPasswordToken:   token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return res.status(400).json({ message: 'Reset link is invalid or has expired.' });
+
+  user.password             = password;
+  user.resetPasswordToken   = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  logger.info('Password reset successful', { userId: user._id, ip: getIp(req) });
+  res.json({ message: 'Password reset successful. You can now log in.' });
+};
+
+// ── deleteAccount ─────────────────────────────────────────────────────────────
+// App Store / GDPR: permanently erases the user and ALL their company's data.
+// Called by authenticated user — they can only delete their own account.
+const deleteAccount = async (req, res) => {
+  const { _id: userId, companyId } = req.user;
+  const ip = getIp(req);
+
+  logger.warn('Account deletion initiated', { userId, companyId, ip });
+
+  // Delete all data scoped to the company
+  await Promise.all([
+    Estimate.deleteMany({ companyId }),
+    Invoice.deleteMany({ companyId }),
+    SiteReport.deleteMany({ companyId }),
+    HistoricalProject.deleteMany({ companyId }),
+    // Delete all other users in the company first
+    User.deleteMany({ companyId, _id: { $ne: userId } }),
+  ]);
+
+  // Delete the company itself, then the user
+  await Company.findByIdAndDelete(companyId);
+  await User.findByIdAndDelete(userId);
+
+  logger.warn('Account and all company data deleted', { userId, companyId, ip });
+  res.json({ message: 'Account and all associated data have been permanently deleted.' });
+};
+
+module.exports = { register, login, getMe, googleAuth, forgotPassword, resetPassword, deleteAccount };

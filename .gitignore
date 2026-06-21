@@ -39,6 +39,6 @@ Thumbs.db
 # Testing
 coverage/
 
-# Uploads (should go to S3, never local)
+# Uploads (use Cloudinary, never store locally)
 uploads/
 tmp/

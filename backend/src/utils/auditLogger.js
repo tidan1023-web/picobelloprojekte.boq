@@ -1,27 +1,39 @@
 'use strict';
-const { AuditLog } = require('../models/AuditLog');
+const AuditLog = require('../models/AuditLog');
 const logger = require('./logger');
 
-async function createAuditLog(params) {
+function getIp(req) {
+  return req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || req?.ip;
+}
+
+async function log(action, { userId, companyId, resource, resourceId, details, req, level = 'info' } = {}) {
   try {
     await AuditLog.create({
-      action: params.action,
-      entityType: params.entityType,
-      entityId: params.entityId,
-      userId: params.user._id,
-      employeeId: params.user.employeeId,
-      userEmail: params.user.email,
-      userName: params.user.name,
-      details: params.details || {},
-      ipAddress: params.req
-        ? params.req.headers['x-forwarded-for'] || params.req.ip
-        : undefined,
-      userAgent: params.req && params.req.headers['user-agent'],
+      userId, companyId, action, resource, resourceId, details, level,
+      ip: getIp(req),
+      userAgent: req?.headers?.['user-agent'],
     });
   } catch (err) {
-    // Audit log failure must never crash the main request
-    logger.error('Failed to create audit log', { error: err.message, params });
+    // Never crash the main request on audit failure
+    logger.error('Audit log write failed', { error: err.message, action });
   }
 }
 
-module.exports = { createAuditLog };
+// Convenience wrappers so call-sites stay concise
+const auditLogger = {
+  info:  (action, opts) => log(action, { ...opts, level: 'info' }),
+  warn:  (action, opts) => log(action, { ...opts, level: 'warn' }),
+  error: (action, opts) => log(action, { ...opts, level: 'error' }),
+  // Legacy name used in old controllers
+  createAuditLog: ({ action, user, entityType, entityId, details, req }) =>
+    log(action, {
+      userId: user?._id,
+      companyId: user?.companyId,
+      resource: entityType,
+      resourceId: entityId,
+      details,
+      req,
+    }),
+};
+
+module.exports = auditLogger;

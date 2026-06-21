@@ -1,58 +1,40 @@
-'use strict';
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/User');
+const User = require('../models/User');
+const Company = require('../models/Company');
 
-async function authenticate(req, res, next) {
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const token = authHeader.split(' ')[1];
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Authorization token required' });
-      return;
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch {
-      res.status(401).json({ error: 'Invalid or expired token' });
-      return;
-    }
-
-    // password is select:false — not loaded here intentionally
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     if (!user || !user.isActive) {
-      res.status(401).json({ error: 'Account not found or deactivated' });
-      return;
+      return res.status(401).json({ message: 'User not found or inactive' });
+    }
+
+    // Auto-create a company for legacy users who don't have one yet
+    if (!user.companyId) {
+      const company = await Company.create({ companyName: 'My Company', createdBy: user._id });
+      user.companyId = company._id;
+      await user.save();
     }
 
     req.user = user;
     next();
-  } catch (err) {
-    next(err);
+  } catch {
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
-}
+};
 
-function generateTokens(user) {
-  const payload = {
-    id: user._id.toString(),
-    role: user.role,
-    employeeId: user.employeeId,
-  };
+const authorize = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user?.role)) {
+    return res.status(403).json({ message: 'Insufficient permissions' });
+  }
+  next();
+};
 
-  // Default: 15 minutes for access tokens (short-lived for security)
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-  });
-
-  const refreshToken = jwt.sign(
-    { id: user._id.toString() },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
-  );
-
-  return { accessToken, refreshToken };
-}
-
-module.exports = { authenticate, generateTokens };
+module.exports = { authenticate, authorize };

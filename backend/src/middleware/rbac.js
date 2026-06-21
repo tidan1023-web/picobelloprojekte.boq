@@ -1,21 +1,6 @@
 'use strict';
-
-function requireRole(...roles) {
-  return (req, res, next) => {
-    if (!req.user) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
-    }
-    if (!roles.includes(req.user.role)) {
-      // Don't expose which roles are required or what role the caller has
-      res.status(403).json({ error: 'Insufficient permissions' });
-      return;
-    }
-    next();
-  };
-}
-
-const requireAdmin = requireRole('admin');
-const requireStaff = requireRole('admin', 'staff');
-
-module.exports = { requireRole, requireAdmin, requireStaff };
+// authorize is now the canonical version in middleware/auth.js.
+// This file re-exports it for backward compatibility so any controllers
+// that still import from rbac.js continue to work without changes.
+const { authorize } = require('./auth');
+module.exports = { authorize };

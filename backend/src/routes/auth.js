@@ -1,180 +1,45 @@
-'use strict';
-const { Router } = require('express');
-const { body, param } = require('express-validator');
-const { validate } = require('../middleware/validate');
-const { authenticate } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
-const { authLimiter, deletionLimiter } = require('../middleware/rateLimiter');
+const express    = require('express');
+const router     = express.Router();
 const {
-  login,
-  refreshToken,
-  getMe,
-  updateProfile,
-  changePassword,
-  createUser,
-  listUsers,
-  getUserById,
-  getUserStats,
-  updatePerformanceRating,
-  addComment,
-  getComments,
-  deactivateUser,
-  exportMyData,
-  deleteAccount,
-  deleteUser,
+  register, login, getMe, googleAuth,
+  forgotPassword, resetPassword, deleteAccount,
 } = require('../controllers/authController');
+const { authenticate }          = require('../middleware/auth');
+const { authLimiter }           = require('../middleware/rateLimiter');
+const { zodValidate, schemas }  = require('../middleware/zodValidate');
 
-const router = Router();
-
-// ---- Public ----
-
-router.post(
-  '/login',
+// Strict rate limit on all auth mutation endpoints to prevent brute-force
+router.post('/register',
   authLimiter,
-  validate([
-    body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
-    body('password').notEmpty().withMessage('Password required'),
-  ]),
-  login
+  zodValidate(schemas.register),
+  register,
 );
 
-router.post(
-  '/refresh',
-  validate([body('refreshToken').notEmpty().withMessage('Refresh token required')]),
-  refreshToken
+router.post('/login',
+  authLimiter,
+  zodValidate(schemas.login),
+  login,
 );
 
-// ---- Authenticated ----
+// Google OAuth — rate-limited but no Zod schema (token comes from Google)
+router.post('/google', authLimiter, googleAuth);
 
+router.post('/forgot-password',
+  authLimiter,
+  zodValidate(schemas.forgotPassword),
+  forgotPassword,
+);
+
+router.post('/reset-password/:token',
+  authLimiter,
+  zodValidate(schemas.resetPassword),
+  resetPassword,
+);
+
+// Authenticated routes — no tight rate limit needed (JWT already gates them)
 router.get('/me', authenticate, getMe);
 
-// GDPR: download everything stored about yourself
-router.get('/me/export', authenticate, exportMyData);
-
-router.patch(
-  '/profile',
-  authenticate,
-  validate([
-    body('name').optional().trim().isLength({ min: 2, max: 100 }),
-    body('department').optional().trim().isLength({ max: 100 }),
-    body('about').optional().trim().isLength({ max: 500 }),
-  ]),
-  updateProfile
-);
-
-router.patch(
-  '/profile/password',
-  authenticate,
-  validate([
-    body('currentPassword').notEmpty().withMessage('Current password required'),
-    body('newPassword')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters')
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain uppercase, lowercase, and a number'),
-  ]),
-  changePassword
-);
-
-// App Store / GDPR: delete own account (requires password + confirmation phrase)
-router.delete(
-  '/account',
-  authenticate,
-  deletionLimiter,
-  validate([
-    body('password').notEmpty().withMessage('Password required'),
-    body('confirmPhrase')
-      .equals('DELETE MY ACCOUNT')
-      .withMessage('Confirmation phrase must be "DELETE MY ACCOUNT"'),
-  ]),
-  deleteAccount
-);
-
-// ---- Admin only ----
-
-router.post(
-  '/users',
-  authenticate,
-  requireAdmin,
-  validate([
-    body('employeeId')
-      .matches(/^[A-Z0-9-]{3,20}$/i)
-      .withMessage('Employee ID must be 3-20 alphanumeric characters'),
-    body('name').trim().isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
-    body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
-    body('password')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters')
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain uppercase, lowercase, and a number'),
-    body('role').isIn(['admin', 'staff']).withMessage('Role must be admin or staff'),
-  ]),
-  createUser
-);
-
-router.get('/users', authenticate, requireAdmin, listUsers);
-
-router.get(
-  '/users/:id',
-  authenticate,
-  requireAdmin,
-  validate([param('id').isMongoId().withMessage('Invalid user ID')]),
-  getUserById
-);
-
-router.patch(
-  '/users/:id/deactivate',
-  authenticate,
-  requireAdmin,
-  validate([param('id').isMongoId().withMessage('Invalid user ID')]),
-  deactivateUser
-);
-
-// Admin deletes a user's account entirely (irreversible)
-router.delete(
-  '/users/:id',
-  authenticate,
-  requireAdmin,
-  deletionLimiter,
-  validate([param('id').isMongoId().withMessage('Invalid user ID')]),
-  deleteUser
-);
-
-router.get(
-  '/users/:id/stats',
-  authenticate,
-  validate([param('id').isMongoId().withMessage('Invalid user ID')]),
-  getUserStats
-);
-
-router.patch(
-  '/users/:id/rating',
-  authenticate,
-  requireAdmin,
-  validate([
-    param('id').isMongoId().withMessage('Invalid user ID'),
-    body('rating').isFloat({ min: 0, max: 5 }).withMessage('Rating must be 0–5'),
-  ]),
-  updatePerformanceRating
-);
-
-router.post(
-  '/users/:id/comments',
-  authenticate,
-  requireAdmin,
-  validate([
-    param('id').isMongoId().withMessage('Invalid user ID'),
-    body('comment').trim().notEmpty().isLength({ max: 1000 }).withMessage('Comment required, max 1000 chars'),
-  ]),
-  addComment
-);
-
-router.get(
-  '/users/:id/comments',
-  authenticate,
-  requireAdmin,
-  validate([param('id').isMongoId().withMessage('Invalid user ID')]),
-  getComments
-);
+// App Store / GDPR compliance — permanently delete the caller's account + all data
+router.delete('/me', authenticate, deleteAccount);
 
 module.exports = router;

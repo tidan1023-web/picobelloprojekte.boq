@@ -1,16 +1,21 @@
 {
-  "name": "Warehouse Inventory HQ",
-  "short_name": "WarehouseHQ",
-  "description": "Medical hardware inventory management and delivery accountability",
-  "start_url": "/",
+  "name": "Pico Bello Projekte BOQ System",
+  "short_name": "PicoBOQ",
+  "description": "Construction BOQ management — pricing libraries, invoices, and project tracking.",
+  "start_url": "/app/dashboard",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#1e40af",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/x-icon"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
