@@ -1,1 +1,103 @@
-cmVxdWlyZSgnZG90ZW52JykuY29uZmlnKCk7CnJlcXVpcmUoJ2V4cHJlc3MtYXN5bmMtZXJyb3JzJyk7Cgpjb25zdCBleHByZXNzICAgICAgICA9IHJlcXVpcmUoJ2V4cHJlc3MnKTsKY29uc3QgY29ycyAgICAgICAgICAgPSByZXF1aXJlKCdjb3JzJyk7CmNvbnN0IGhlbG1ldCAgICAgICAgID0gcmVxdWlyZSgnaGVsbWV0Jyk7CmNvbnN0IG1vbmdvU2FuaXRpemUgID0gcmVxdWlyZSgnZXhwcmVzcy1tb25nby1zYW5pdGl6ZScpOwpjb25zdCBocHAgICAgICAgICAgICA9IHJlcXVpcmUoJ2hwcCcpOwpjb25zdCBjb25uZWN0REIgICAgICA9IHJlcXVpcmUoJy4vY29uZmlnL2RhdGFiYXNlJyk7CmNvbnN0IGVycm9ySGFuZGxlciAgID0gcmVxdWlyZSgnLi9taWRkbGV3YXJlL2Vycm9ySGFuZGxlcicpOwpjb25zdCB7IGFwaUxpbWl0ZXIgfSA9IHJlcXVpcmUoJy4vbWlkZGxld2FyZS9yYXRlTGltaXRlcicpOwoKLy8g4pSA4pSAIENvcmUgcm91dGVzIChwcmV2aW91c2x5IG1vdW50ZWQpIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApjb25zdCBhdXRoUm91dGVzICAgICAgICAgICAgICAgPSByZXF1aXJlKCcuL3JvdXRlcy9hdXRoJyk7CmNvbnN0IGNvbXBhbnlSb3V0ZXMgICAgICAgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL2NvbXBhbnknKTsKY29uc3Qgc2l0ZVJlcG9ydFJvdXRlcyAgICAgICAgID0gcmVxdWlyZSgnLi9yb3V0ZXMvc2l0ZVJlcG9ydHMnKTsKY29uc3QgaGlzdG9yaWNhbFByb2plY3RSb3V0ZXMgID0gcmVxdWlyZSgnLi9yb3V0ZXMvaGlzdG9yaWNhbFByb2plY3RzJyk7CmNvbnN0IGVzdGltYXRlUm91dGVzICAgICAgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL2VzdGltYXRlcycpOwpjb25zdCBpbnZvaWNlUm91dGVzICAgICAgICAgICAgPSByZXF1aXJlKCcuL3JvdXRlcy9pbnZvaWNlcycpOwoKLy8g4pSA4pSAIEZlYXR1cmUgcm91dGVzIChwcmV2aW91c2x5IGJ1aWx0IGJ1dCBub3QgbW91bnRlZCkg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmNvbnN0IHByb2plY3RSb3V0ZXMgICAgICAgPSByZXF1aXJlKCcuL3JvdXRlcy9wcm9qZWN0cycpOwpjb25zdCBjb250YWN0Um91dGVzICAgICAgID0gcmVxdWlyZSgnLi9yb3V0ZXMvY29udGFjdHMnKTsKY29uc3QgcXNQcmljZVJvdXRlcyAgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL3FzUHJpY2VzJyk7CmNvbnN0IGFydGlzYW5QcmljZVJvdXRlcyAgPSByZXF1aXJlKCcuL3JvdXRlcy9hcnRpc2FuUHJpY2VzJyk7CmNvbnN0IG1hdGVyaWFsUHJpY2VSb3V0ZXMgPSByZXF1aXJlKCcuL3JvdXRlcy9tYXRlcmlhbFByaWNlcycpOwpjb25zdCBib3FSb3V0ZXMgICAgICAgICAgID0gcmVxdWlyZSgnLi9yb3V0ZXMvYm9xJyk7CmNvbnN0IGNoYW5nZU9yZGVyUm91dGVzICAgPSByZXF1aXJlKCcuL3JvdXRlcy9jaGFuZ2VPcmRlcnMnKTsKY29uc3QgcHJvZ3Jlc3NSb3V0ZXMgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL3Byb2dyZXNzJyk7CmNvbnN0IGFuYWx5dGljc1JvdXRlcyAgICAgPSByZXF1aXJlKCcuL3JvdXRlcy9hbmFseXRpY3MnKTsKY29uc3QgYXBwcm92YWxSb3V0ZXMgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL2FwcHJvdmFscycpOwpjb25zdCBwcmljaW5nUm91dGVzICAgICAgID0gcmVxdWlyZSgnLi9yb3V0ZXMvcHJpY2luZycpOwpjb25zdCBkYXNoYm9hcmRSb3V0ZXMgICAgID0gcmVxdWlyZSgnLi9yb3V0ZXMvZGFzaGJvYXJkJyk7CmNvbnN0IGNvbW1lbnRSb3V0ZXMgICAgICAgPSByZXF1aXJlKCcuL3JvdXRlcy9jb21tZW50cycpOwpjb25zdCBub3RpZmljYXRpb25Sb3V0ZXMgID0gcmVxdWlyZSgnLi9yb3V0ZXMvbm90aWZpY2F0aW9ucycpOwpjb25zdCBleHBlbnNlUm91dGVzICAgICAgICA9IHJlcXVpcmUoJy4vcm91dGVzL2V4cGVuc2VzJyk7Cgpjb25zdCBhcHAgPSBleHByZXNzKCk7CmNvbm5lY3REQigpOwoKLy8g4pSA4pSAIENPUlMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmNvbnN0IGFsbG93ZWRPcmlnaW5zID0gWwogIHByb2Nlc3MuZW52LkNMSUVOVF9VUkwsCiAgJ2h0dHA6Ly9sb2NhbGhvc3Q6NTE3MycsCiAgJ2h0dHA6Ly9sb2NhbGhvc3Q6MzAwMCcsCl0uZmlsdGVyKEJvb2xlYW4pOwoKYXBwLnVzZShjb3JzKHsKICBvcmlnaW46IChvcmlnaW4sIGNiKSA9PiB7CiAgICBpZiAoIW9yaWdpbikgcmV0dXJuIGNiKG51bGwsIHRydWUpOwogICAgaWYgKGFsbG93ZWRPcmlnaW5zLnNvbWUoKG8pID0+IG9yaWdpbi5zdGFydHNXaXRoKG8pKSkgcmV0dXJuIGNiKG51bGwsIHRydWUpOwogICAgaWYgKG9yaWdpbi5lbmRzV2l0aCgnLm9ucmVuZGVyLmNvbScpKSByZXR1cm4gY2IobnVsbCwgdHJ1ZSk7CiAgICBjYihuZXcgRXJyb3IoYENPUlM6IG9yaWdpbiAke29yaWdpbn0gbm90IGFsbG93ZWRgKSk7CiAgfSwKICBjcmVkZW50aWFsczogdHJ1ZSwKfSkpOwoKLy8g4pSA4pSAIFNlY3VyaXR5IGhlYWRlcnMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmFwcC51c2UoaGVsbWV0KCkpOwoKLy8g4pSA4pSAIEJvZHkgcGFyc2luZyB3aXRoIHNpemUgbGltaXQg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmFwcC51c2UoZXhwcmVzcy5qc29uKHsgbGltaXQ6ICcxMGtiJyB9KSk7CmFwcC51c2UoZXhwcmVzcy51cmxlbmNvZGVkKHsgZXh0ZW5kZWQ6IHRydWUsIGxpbWl0OiAnMTBrYicgfSkpOwoKLy8g4pSA4pSAIE5vU1FMIGluamVjdGlvbiArIEhUVFAgcGFyYW1ldGVyIHBvbGx1dGlvbiBwcmV2ZW50aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAphcHAudXNlKG1vbmdvU2FuaXRpemUoKSk7CmFwcC51c2UoaHBwKCkpOwoKLy8g4pSA4pSAIEdsb2JhbCByYXRlIGxpbWl0aW5nIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAphcHAudXNlKCcvYXBpLycsIGFwaUxpbWl0ZXIpOwoKLy8g4pSA4pSAIEhlYWx0aCAvIHJvb3Qg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmFwcC5nZXQoJy8nLCAoX3JlcSwgcmVzKSA9PiByZXMuanNvbih7IHN0YXR1czogJ29rJywgc2VydmljZTogJ1BpY28gQmVsbG8gRXN0aW1hdG9yIEFQSScsIHZlcnNpb246ICcyLjAuMCcgfSkpOwphcHAuZ2V0KCcvYXBpL2hlYWx0aCcsIChfcmVxLCByZXMpID0+IHJlcy5qc29uKHsgc3RhdHVzOiAnb2snLCB0aW1lc3RhbXA6IG5ldyBEYXRlKCkudG9JU09TdHJpbmcoKSB9KSk7CgovLyDilIDilIAgUm91dGVzIOKAlCBhdmFpbGFibGUgYXQgL2FwaS92MS8qIGFuZCAvYXBpLyogKGJhY2t3YXJkLWNvbXBhdGlibGUpIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApbJy9hcGkvdjEnLCAnL2FwaSddLmZvckVhY2goKHByZWZpeCkgPT4gewogIC8vIEF1dGggJiBjb21wYW55CiAgYXBwLnVzZShgJHtwcmVmaXh9L2F1dGhgLCAgICAgICAgICAgICAgICBhdXRoUm91dGVzKTsKICBhcHAudXNlKGAke3ByZWZpeH0vY29tcGFueWAsICAgICAgICAgICAgIGNvbXBhbnlSb3V0ZXMpOwoKICAvLyBDb3JlIGZlYXR1cmVzCiAgYXBwLnVzZShgJHtwcmVmaXh9L2VzdGltYXRlc2AsICAgICAgICAgICBlc3RpbWF0ZVJvdXRlcyk7CiAgYXBwLnVzZShgJHtwcmVmaXh9L2ludm9pY2VzYCwgICAgICAgICAgICBpbnZvaWNlUm91dGVzKTsKICBhcHAudXNlKGAke3ByZWZpeH0vc2l0ZS1yZXBvcnRzYCwgICAgICAgIHNpdGVSZXBvcnRSb3V0ZXMpOwogIGFwcC51c2UoYCR7cHJlZml4fS9oaXN0b3JpY2FsLXByb2plY3RzYCwgaGlzdG9yaWNhbFByb2plY3RSb3V0ZXMpOwoKICAvLyBQcm9qZWN0cyAmIGNvbnRhY3RzCiAgYXBwLnVzZShgJHtwcmVmaXh9L3Byb2plY3RzYCwgICAgICAgICAgICBwcm9qZWN0Um91dGVzKTsKICBhcHAudXNlKGAke3ByZWZpeH0vY29udGFjdHNgLCAgICAgICAgICAgIGNvbnRhY3RSb3V0ZXMpOwoKICAvLyBQcmljaW5nIGxpYnJhcmllcwogIGFwcC51c2UoYCR7cHJlZml4fS9xcy1wcmljZXNgLCAgICAgICAgICAgcXNQcmljZVJvdXRlcyk7CiAgYXBwLnVzZShgJHtwcmVmaXh9L2FydGlzYW4tcHJpY2VzYCwgICAgICBhcnRpc2FuUHJpY2VSb3V0ZXMpOwogIGFwcC51c2UoYCR7cHJlZml4fS9tYXRlcmlhbC1wcmljZXNgLCAgICAgbWF0ZXJpYWxQcmljZVJvdXRlcyk7CiAgYXBwLnVzZShgJHtwcmVmaXh9L3ByaWNpbmdgLCAgICAgICAgICAgICBwcmljaW5nUm91dGVzKTsKCiAgLy8gQk9RICYgZXhlY3V0aW9uCiAgYXBwLnVzZShgJHtwcmVmaXh9L2JvcWAsICAgICAgICAgICAgICAgICBib3FSb3V0ZXMpOwogIGFwcC51c2UoYCR7cHJlZml4fS9jaGFuZ2Utb3JkZXJzYCwgICAgICAgY2hhbmdlT3JkZXJSb3V0ZXMpOwogIGFwcC51c2UoYCR7cHJlZml4fS9wcm9ncmVzc2AsICAgICAgICAgICAgcHJvZ3Jlc3NSb3V0ZXMpOwoKICAvLyBBbmFseXRpY3MgJiBhcHByb3ZhbHMKICBhcHAudXNlKGAke3ByZWZpeH0vYW5hbHl0aWNzYCwgICAgICAgICAgIGFuYWx5dGljc1JvdXRlcyk7CiAgYXBwLnVzZShgJHtwcmVmaXh9L2FwcHJvdmFsc2AsICAgICAgICAgICBhcHByb3ZhbFJvdXRlcyk7CgogIC8vIERhc2hib2FyZCBzdW1tYXJ5CiAgYXBwLnVzZShgJHtwcmVmaXh9L2Rhc2hib2FyZGAsICAgICAgICAgICBkYXNoYm9hcmRSb3V0ZXMpOwoKICAvLyBDb2xsYWJvcmF0aW9uCiAgYXBwLnVzZShgJHtwcmVmaXh9L2NvbW1lbnRzYCwgICAgICAgICAgICBjb21tZW50Um91dGVzKTsKICBhcHAudXNlKGAke3ByZWZpeH0vbm90aWZpY2F0aW9uc2AsICAgICAgIG5vdGlmaWNhdGlvblJvdXRlcyk7CiAgYXBwLnVzZShgJHtwcmVmaXh9L2V4cGVuc2VzYCwgICAgICAgICAgICBleHBlbnNlUm91dGVzKTsKfSk7CgovLyDilIDilIAgNDA0ICsgZXJyb3IgaGFuZGxlciDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKYXBwLnVzZSgoX3JlcSwgcmVzKSA9PiByZXMuc3RhdHVzKDQwNCkuanNvbih7IG1lc3NhZ2U6ICdOb3QgZm91bmQnIH0pKTsKYXBwLnVzZShlcnJvckhhbmRsZXIpOwoKY29uc3QgUE9SVCA9IHByb2Nlc3MuZW52LlBPUlQgfHwgNTAwMDsKYXBwLmxpc3RlbihQT1JULCAoKSA9PiBjb25zb2xlLmxvZyhgUGljbyBCZWxsbyBFc3RpbWF0b3IgQVBJIHJ1bm5pbmcgb24gcG9ydCAke1BPUlR9YCkpOwo=
+require('dotenv').config();
+require('express-async-errors');
+
+const express        = require('express');
+const cors           = require('cors');
+const helmet         = require('helmet');
+const mongoSanitize  = require('express-mongo-sanitize');
+const hpp            = require('hpp');
+const connectDB      = require('./config/database');
+const errorHandler   = require('./middleware/errorHandler');
+const { apiLimiter } = require('./middleware/rateLimiter');
+
+const authRoutes               = require('./routes/auth');
+const companyRoutes            = require('./routes/company');
+const siteReportRoutes         = require('./routes/siteReports');
+const historicalProjectRoutes  = require('./routes/historicalProjects');
+const estimateRoutes           = require('./routes/estimates');
+const invoiceRoutes            = require('./routes/invoices');
+
+const projectRoutes       = require('./routes/projects');
+const contactRoutes       = require('./routes/contacts');
+const qsPriceRoutes       = require('./routes/qsPrices');
+const artisanPriceRoutes  = require('./routes/artisanPrices');
+const materialPriceRoutes = require('./routes/materialPrices');
+const boqRoutes           = require('./routes/boq');
+const changeOrderRoutes   = require('./routes/changeOrders');
+const progressRoutes      = require('./routes/progress');
+const analyticsRoutes     = require('./routes/analytics');
+const approvalRoutes      = require('./routes/approvals');
+const pricingRoutes       = require('./routes/pricing');
+const dashboardRoutes     = require('./routes/dashboard');
+const commentRoutes       = require('./routes/comments');
+const notificationRoutes  = require('./routes/notifications');
+const expenseRoutes       = require('./routes/expenses');
+
+const app = express();
+connectDB();
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.some((o) => origin.startsWith(o))) return cb(null, true);
+    if (origin.endsWith('.onrender.com')) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
+
+app.use(helmet());
+
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+app.use(mongoSanitize());
+app.use(hpp());
+
+app.use('/api/', apiLimiter);
+
+app.get('/', (_req, res) => res.json({ status: 'ok', service: 'Pico Bello Estimator API', version: '2.0.0' }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+['/api/v1', '/api'].forEach((prefix) => {
+  app.use(`${prefix}/auth`,                authRoutes);
+  app.use(`${prefix}/company`,             companyRoutes);
+
+  app.use(`${prefix}/estimates`,           estimateRoutes);
+  app.use(`${prefix}/invoices`,            invoiceRoutes);
+  app.use(`${prefix}/site-reports`,        siteReportRoutes);
+  app.use(`${prefix}/historical-projects`, historicalProjectRoutes);
+
+  app.use(`${prefix}/projects`,            projectRoutes);
+  app.use(`${prefix}/contacts`,            contactRoutes);
+
+  app.use(`${prefix}/qs-prices`,           qsPriceRoutes);
+  app.use(`${prefix}/artisan-prices`,      artisanPriceRoutes);
+  app.use(`${prefix}/material-prices`,     materialPriceRoutes);
+  app.use(`${prefix}/pricing`,             pricingRoutes);
+
+  app.use(`${prefix}/boq`,                 boqRoutes);
+  app.use(`${prefix}/change-orders`,       changeOrderRoutes);
+  app.use(`${prefix}/progress`,            progressRoutes);
+
+  app.use(`${prefix}/analytics`,           analyticsRoutes);
+  app.use(`${prefix}/approvals`,           approvalRoutes);
+
+  app.use(`${prefix}/dashboard`,           dashboardRoutes);
+
+  app.use(`${prefix}/comments`,            commentRoutes);
+  app.use(`${prefix}/notifications`,       notificationRoutes);
+  app.use(`${prefix}/expenses`,            expenseRoutes);
+});
+
+app.use((_req, res) => res.status(404).json({ message: 'Not found' }));
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Pico Bello Estimator API running on port ${PORT}`));
