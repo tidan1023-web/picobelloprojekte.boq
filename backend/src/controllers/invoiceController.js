@@ -27,7 +27,7 @@ function recalcTotals(invoice) {
   }
 }
 
-// ── List ──────────────────────────────────────────────────────────────────────
+// ── List ──────────────────────────────────────────────────────────────────────────────
 exports.getInvoices = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status) filter.status = req.query.status;
@@ -41,7 +41,7 @@ exports.getInvoices = async (req, res) => {
   res.json({ invoices });
 };
 
-// ── Single ────────────────────────────────────────────────────────────────────
+// ── Single ───────────────────────────────────────────────────────────────────────────────
 exports.getInvoice = async (req, res) => {
   const invoice = await Invoice
     .findOne({ _id: req.params.id, companyId: req.user.companyId })
@@ -52,7 +52,7 @@ exports.getInvoice = async (req, res) => {
   res.json({ invoice });
 };
 
-// ── Create ────────────────────────────────────────────────────────────────────
+// ── Create ──────────────────────────────────────────────────────────────────────────────
 exports.createInvoice = async (req, res) => {
   const {
     estimateId, projectName, clientName, clientEmail, clientPhone,
@@ -111,7 +111,7 @@ exports.createInvoice = async (req, res) => {
   res.status(201).json({ invoice });
 };
 
-// ── Update ────────────────────────────────────────────────────────────────────
+// ── Update ──────────────────────────────────────────────────────────────────────────────
 exports.updateInvoice = async (req, res) => {
   const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
   if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
@@ -127,13 +127,13 @@ exports.updateInvoice = async (req, res) => {
   res.json({ invoice });
 };
 
-// ── Delete ────────────────────────────────────────────────────────────────────
+// ── Delete ──────────────────────────────────────────────────────────────────────────────
 exports.deleteInvoice = async (req, res) => {
   await Invoice.findOneAndDelete({ _id: req.params.id, companyId: req.user.companyId });
   res.json({ message: 'Deleted' });
 };
 
-// ── Payments ──────────────────────────────────────────────────────────────────
+// ── Payments ───────────────────────────────────────────────────────────────────────────
 exports.addPayment = async (req, res) => {
   const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
   if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
@@ -157,7 +157,7 @@ exports.deletePayment = async (req, res) => {
   res.json({ invoice });
 };
 
-// ── PDF ───────────────────────────────────────────────────────────────────────
+// ── PDF ─────────────────────────────────────────────────────────────────────────────────
 exports.generatePDF = async (req, res) => {
   const invoice = await Invoice
     .findOne({ _id: req.params.id, companyId: req.user.companyId })

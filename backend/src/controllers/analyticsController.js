@@ -7,7 +7,7 @@ const MaterialPrice = require('../models/MaterialPrice');
 
 function fmt2(n) { return parseFloat(Number(n || 0).toFixed(2)); }
 
-// ── 1. Profit Report ──────────────────────────────────────────────────────────
+// ── 1. Profit Report ──────────────────────────────────────────────────────────────────────
 exports.getProfitReport = async (req, res) => {
   const cId = req.user.companyId;
   const projects = await Project.find({ companyId: cId }).sort({ createdAt: -1 });
@@ -66,8 +66,8 @@ exports.getProfitReport = async (req, res) => {
   res.json({ rows, totals });
 };
 
-// ── 2. Cost Variance ──────────────────────────────────────────────────────────
-exports.getCostVariance = async (req, res) => {
+// ── 2. Cost Variance ───────────────────────────────────────────────────────────────────
+const getCostVariance = async (req, res) => {
   const cId = req.user.companyId;
   const projects = await Project.find({ companyId: cId, status: { $in: ['active', 'on_hold', 'completed'] } });
 
@@ -108,9 +108,10 @@ exports.getCostVariance = async (req, res) => {
 
   res.json({ rows });
 };
+exports.getCostVariance = getCostVariance;
 
-// ── 3. Outstanding Invoices ────────────────────────────────────────────────────
-exports.getOutstandingInvoices = async (req, res) => {
+// ── 3. Outstanding Invoices ───────────────────────────────────────────────────────────────────
+const getOutstandingInvoices = async (req, res) => {
   const invoices = await Invoice.find({ companyId: req.user.companyId, balance: { $gt: 0 }, status: { $nin: ['cancelled', 'paid'] } })
     .populate('projectId', 'name client')
     .sort({ dueDate: 1 });
@@ -146,9 +147,10 @@ exports.getOutstandingInvoices = async (req, res) => {
   const grandTotal = fmt2(invoices.reduce((s, i) => s + i.balance, 0));
   res.json({ summary, grandTotal, count: invoices.length });
 };
+exports.getOutstandingInvoices = getOutstandingInvoices;
 
-// ── 4. Supplier Price History ─────────────────────────────────────────────────
-exports.getSupplierPriceHistory = async (req, res) => {
+// ── 4. Supplier Price History ─────────────────────────────────────────────────────────────────
+const getSupplierPriceHistory = async (req, res) => {
   const material = req.query.material || '';
 
   const match = { companyId: req.user.companyId };
@@ -186,9 +188,10 @@ exports.getSupplierPriceHistory = async (req, res) => {
 
   res.json({ materials: result });
 };
+exports.getSupplierPriceHistory = getSupplierPriceHistory;
 
-// ── 5. Payment Reminders (overdue check + create notifications) ───────────────
-exports.sendPaymentReminders = async (req, res) => {
+// ── 5. Payment Reminders (overdue check + create notifications) ─────────────────────────────
+const sendPaymentReminders = async (req, res) => {
   const Notification = require('../models/Notification');
   const now = new Date();
 
@@ -221,3 +224,4 @@ exports.sendPaymentReminders = async (req, res) => {
 
   res.json({ sent: created, overdue: overdueInvoices.length });
 };
+exports.sendPaymentReminders = sendPaymentReminders;
