@@ -5,6 +5,19 @@ import {
   CheckCircle, Clock, AlertCircle, XCircle, DollarSign,
 } from 'lucide-react';
 import api from '../services/api';
+import ExcelImport from '../components/ExcelImport';
+
+const INV_IMPORT_COLUMNS = [
+  { key: 'invoiceNumber', label: 'Invoice #',    type: 'string' },
+  { key: 'projectName',   label: 'Project Name', type: 'string' },
+  { key: 'clientName',    label: 'Client Name',  type: 'string' },
+  { key: 'issueDate',     label: 'Issue Date',   type: 'date'   },
+  { key: 'dueDate',       label: 'Due Date',     type: 'date'   },
+  { key: 'amount',        label: 'Amount',       type: 'number' },
+  { key: 'currency',      label: 'Currency',     type: 'string' },
+  { key: 'status',        label: 'Status',       type: 'string' },
+  { key: 'notes',         label: 'Notes',        type: 'string' },
+];
 
 const STATUS_STYLES = {
   draft:         'bg-gray-100 text-gray-600',
@@ -121,11 +134,12 @@ function CreateModal({ onClose, onSaved }) {
 
 export default function Invoices() {
   const navigate = useNavigate();
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices]   = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
-  const [showCreate, setShowCreate] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [pdfId, setPdfId] = useState(null);
+  const [showCreate, setShowCreate]     = useState(false);
+  const [loading, setLoading]           = useState(true);
+  const [pdfId, setPdfId]               = useState(null);
+  const [importMsg, setImportMsg]       = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -162,6 +176,20 @@ export default function Invoices() {
     } finally { setPdfId(null); }
   };
 
+  const handleImport = async (rows) => {
+    let imported = 0;
+    let skipped  = 0;
+    for (const row of rows) {
+      try {
+        await api.post('/invoices', row);
+        imported++;
+      } catch { skipped++; }
+    }
+    setImportMsg(`Imported ${imported} invoice${imported !== 1 ? 's' : ''}${skipped ? ` · Skipped ${skipped}` : ''}`);
+    load();
+    setTimeout(() => setImportMsg(''), 5000);
+  };
+
   const TABS = ['', 'draft', 'sent', 'paid', 'partially_paid', 'overdue'];
 
   return (
@@ -176,10 +204,20 @@ export default function Invoices() {
             </button>
           ))}
         </div>
-        <button onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-800 shrink-0">
-          <Plus size={15} /> New Invoice
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {importMsg && (
+            <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">{importMsg}</span>
+          )}
+          <ExcelImport
+            onImport={handleImport}
+            columns={INV_IMPORT_COLUMNS}
+            templateName="invoices-template"
+          />
+          <button onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-800 shrink-0">
+            <Plus size={15} /> New Invoice
+          </button>
+        </div>
       </div>
 
       {loading ? (

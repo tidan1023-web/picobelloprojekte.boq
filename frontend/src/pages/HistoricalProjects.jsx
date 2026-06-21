@@ -1,6 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Pencil, Trash2, Database, Paperclip, ExternalLink, Loader2 } from 'lucide-react';
 import api from '../services/api';
+import ExcelImport from '../components/ExcelImport';
+
+const HP_IMPORT_COLUMNS = [
+  { key: 'name',          label: 'Project Name',   type: 'string' },
+  { key: 'projectType',   label: 'Type',            type: 'string' },
+  { key: 'location',      label: 'Location',        type: 'string' },
+  { key: 'client',        label: 'Client',          type: 'string' },
+  { key: 'contractValue', label: 'Contract Value',  type: 'number' },
+  { key: 'startDate',     label: 'Start Date',      type: 'date'   },
+  { key: 'endDate',       label: 'End Date',        type: 'date'   },
+  { key: 'sizeM2',        label: 'Size (m²)',  type: 'number' },
+  { key: 'condition',     label: 'Condition',       type: 'string' },
+  { key: 'tier',          label: 'Tier',            type: 'string' },
+  { key: 'totalCost',     label: 'Total Cost',      type: 'number' },
+  { key: 'completedYear', label: 'Year Completed',  type: 'number' },
+  { key: 'notes',         label: 'Notes',           type: 'string' },
+];
 
 const CONDITIONS = [
   { id: 'carcass',          label: 'Carcass' },
@@ -204,10 +221,11 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
 }
 
 export default function HistoricalProjects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [modal, setModal]       = useState(false);
-  const [editing, setEditing]   = useState(null);
+  const [projects, setProjects]     = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [modal, setModal]           = useState(false);
+  const [editing, setEditing]       = useState(null);
+  const [importMsg, setImportMsg]   = useState('');
 
   const load = () => {
     setLoading(true);
@@ -226,6 +244,20 @@ export default function HistoricalProjects() {
 
   const openAdd  = ()  => { setEditing(null); setModal(true); };
   const openEdit = (p) => { setEditing(p);    setModal(true); };
+
+  const handleImport = async (rows) => {
+    let imported = 0;
+    let skipped  = 0;
+    for (const row of rows) {
+      try {
+        await api.post('/historical-projects', row);
+        imported++;
+      } catch { skipped++; }
+    }
+    setImportMsg(`Imported ${imported} project${imported !== 1 ? 's' : ''}${skipped ? ` · Skipped ${skipped}` : ''}`);
+    load();
+    setTimeout(() => setImportMsg(''), 5000);
+  };
 
   const avgRate = projects.length
     ? projects.reduce((s, p) => s + (p.totalCost / p.sizeM2), 0) / projects.length
@@ -264,10 +296,20 @@ export default function HistoricalProjects() {
           <h2 className="font-semibold text-gray-800">Historical Projects</h2>
           <p className="text-xs text-gray-400 mt-0.5">Your completed project database — the engine's training data.</p>
         </div>
-        <button onClick={openAdd}
-          className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-800 shrink-0">
-          <Plus size={15} /> Add Project
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {importMsg && (
+            <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">{importMsg}</span>
+          )}
+          <ExcelImport
+            onImport={handleImport}
+            columns={HP_IMPORT_COLUMNS}
+            templateName="historical-projects-template"
+          />
+          <button onClick={openAdd}
+            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-800 shrink-0">
+            <Plus size={15} /> Add Project
+          </button>
+        </div>
       </div>
 
       {loading ? (
