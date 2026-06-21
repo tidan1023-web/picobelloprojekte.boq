@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: warehouse-inventory-hq-frontend
+    env: node
+    region: oregon
+    plan: starter
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
