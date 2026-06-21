@@ -1,1 +1,22 @@
-Y29uc3QgbW9uZ29vc2UgPSByZXF1aXJlKCdtb25nb29zZScpOwoKY29uc3QgZXhwZW5zZVNjaGVtYSA9IG5ldyBtb25nb29zZS5TY2hlbWEoewogIGNvbXBhbnlJZDogeyB0eXBlOiBtb25nb29zZS5TY2hlbWEuVHlwZXMuT2JqZWN0SWQsIHJlZjogJ0NvbXBhbnknLCByZXF1aXJlZDogdHJ1ZSwgaW5kZXg6IHRydWUgfSwKICBwcm9qZWN0SWQ6IHsgdHlwZTogbW9uZ29vc2UuU2NoZW1hLlR5cGVzLk9iamVjdElkLCByZWY6ICdQcm9qZWN0JyB9LAogIGNhdGVnb3J5OiB7CiAgICB0eXBlOiBTdHJpbmcsCiAgICBlbnVtOiBbJ0xhYm91cicsICdNYXRlcmlhbHMnLCAnRXF1aXBtZW50JywgJ1RyYW5zcG9ydCcsICdQcm9mZXNzaW9uYWwgRmVlcycsCiAgICAgICAgICAgJ1Blcm1pdHMgJiBMaWNlbnNlcycsICdVdGlsaXRpZXMnLCAnT2ZmaWNlICYgQWRtaW4nLCAnU2FmZXR5ICYgUFBFJywgJ090aGVyJ10sCiAgICBkZWZhdWx0OiAnT3RoZXInLAogIH0sCiAgZGVzY3JpcHRpb246IHsgdHlwZTogU3RyaW5nLCByZXF1aXJlZDogdHJ1ZSwgdHJpbTogdHJ1ZSB9LAogIGFtb3VudDogeyB0eXBlOiBOdW1iZXIsIHJlcXVpcmVkOiB0cnVlLCBtaW46IDAgfSwKICBjdXJyZW5jeTogeyB0eXBlOiBTdHJpbmcsIGRlZmF1bHQ6ICdOR04nIH0sCiAgZGF0ZTogeyB0eXBlOiBEYXRlLCBkZWZhdWx0OiBEYXRlLm5vdyB9LAogIHZlbmRvcjogeyB0eXBlOiBTdHJpbmcsIHRyaW06IHRydWUgfSwKICBub3RlczogeyB0eXBlOiBTdHJpbmcsIHRyaW06IHRydWUgfSwKICByZWNlaXB0czogW3sgdHlwZTogU3RyaW5nIH1dLAogIGNyZWF0ZWRCeTogeyB0eXBlOiBtb25nb29zZS5TY2hlbWEuVHlwZXMuT2JqZWN0SWQsIHJlZjogJ1VzZXInIH0sCn0sIHsgdGltZXN0YW1wczogdHJ1ZSB9KTsKCm1vZHVsZS5leHBvcnRzID0gbW9uZ29vc2UubW9kZWwoJ0V4cGVuc2UnLCBleHBlbnNlU2NoZW1hKTsK
+const mongoose = require('mongoose');
+
+const expenseSchema = new mongoose.Schema({
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  category: {
+    type: String,
+    enum: ['Labour', 'Materials', 'Equipment', 'Transport', 'Professional Fees',
+           'Permits & Licenses', 'Utilities', 'Office & Admin', 'Safety & PPE', 'Other'],
+    default: 'Other',
+  },
+  description: { type: String, required: true, trim: true },
+  amount: { type: Number, required: true, min: 0 },
+  currency: { type: String, default: 'NGN' },
+  date: { type: Date, default: Date.now },
+  vendor: { type: String, trim: true },
+  notes: { type: String, trim: true },
+  receipts: [{ type: String }],
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Expense', expenseSchema);

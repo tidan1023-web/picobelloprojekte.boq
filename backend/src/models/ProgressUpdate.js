@@ -1,1 +1,25 @@
-Y29uc3QgbW9uZ29vc2UgPSByZXF1aXJlKCdtb25nb29zZScpOwoKY29uc3QgcHJvZ3Jlc3NVcGRhdGVTY2hlbWEgPSBuZXcgbW9uZ29vc2UuU2NoZW1hKHsKICBwcm9qZWN0SWQ6IHsgdHlwZTogbW9uZ29vc2UuU2NoZW1hLlR5cGVzLk9iamVjdElkLCByZWY6ICdQcm9qZWN0JywgcmVxdWlyZWQ6IHRydWUgfSwKICBwaGFzZTogewogICAgdHlwZTogU3RyaW5nLAogICAgZW51bTogWydmb3VuZGF0aW9uJywgJ3N0cnVjdHVyZScsICdtZXAnLCAnZmluaXNoaW5nJywgJ2V4dGVybmFsJywgJ290aGVyJ10sCiAgICByZXF1aXJlZDogdHJ1ZSwKICB9LAogIHRpdGxlOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUsIHRyaW06IHRydWUgfSwKICBub3RlczogeyB0eXBlOiBTdHJpbmcgfSwKICBpbWFnZXM6IFt7IHR5cGU6IFN0cmluZyB9XSwKICBkYXRlOiB7IHR5cGU6IERhdGUsIGRlZmF1bHQ6IERhdGUubm93IH0sCiAgY29tcGxldGlvblBlcmNlbnQ6IHsgdHlwZTogTnVtYmVyLCBtaW46IDAsIG1heDogMTAwLCBkZWZhdWx0OiAwIH0sCiAgYWN0dWFsQ29zdDogeyB0eXBlOiBOdW1iZXIsIGRlZmF1bHQ6IDAsIG1pbjogMCB9LAogIGludm9pY2VBbW91bnQ6IHsgdHlwZTogTnVtYmVyLCBkZWZhdWx0OiAwLCBtaW46IDAgfSwKICB3b3JrU3RhcnREYXRlOiB7IHR5cGU6IERhdGUgfSwKICB3b3JrRW5kRGF0ZTogeyB0eXBlOiBEYXRlIH0sCiAgaXNQYXVzZWQ6IHsgdHlwZTogQm9vbGVhbiwgZGVmYXVsdDogZmFsc2UgfSwKICBwYXVzZVJlYXNvbjogeyB0eXBlOiBTdHJpbmcsIHRyaW06IHRydWUgfSwKICBjb21wYW55SWQ6IHsgdHlwZTogbW9uZ29vc2UuU2NoZW1hLlR5cGVzLk9iamVjdElkLCByZWY6ICdDb21wYW55JywgaW5kZXg6IHRydWUgfSwKICBjcmVhdGVkQnk6IHsgdHlwZTogbW9uZ29vc2UuU2NoZW1hLlR5cGVzLk9iamVjdElkLCByZWY6ICdVc2VyJyB9LAp9LCB7IHRpbWVzdGFtcHM6IHRydWUgfSk7Cgptb2R1bGUuZXhwb3J0cyA9IG1vbmdvb3NlLm1vZGVsKCdQcm9ncmVzc1VwZGF0ZScsIHByb2dyZXNzVXBkYXRlU2NoZW1hKTsK
+const mongoose = require('mongoose');
+
+const progressUpdateSchema = new mongoose.Schema({
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true },
+  phase: {
+    type: String,
+    enum: ['foundation', 'structure', 'mep', 'finishing', 'external', 'other'],
+    required: true,
+  },
+  title: { type: String, required: true, trim: true },
+  notes: { type: String },
+  images: [{ type: String }],
+  date: { type: Date, default: Date.now },
+  completionPercent: { type: Number, min: 0, max: 100, default: 0 },
+  actualCost: { type: Number, default: 0, min: 0 },
+  invoiceAmount: { type: Number, default: 0, min: 0 },
+  workStartDate: { type: Date },
+  workEndDate: { type: Date },
+  isPaused: { type: Boolean, default: false },
+  pauseReason: { type: String, trim: true },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
+
+module.exports = mongoose.model('ProgressUpdate', progressUpdateSchema);

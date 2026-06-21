@@ -10,7 +10,7 @@ async function recalculateVersionTotal(versionId) {
   });
 }
 
-// ── Versions ────────────────────────────────────────────────────────────────
+// ── Versions ───────────────────────────────────────────────────────────────────────
 
 const getVersions = async (req, res) => {
   const filter = { companyId: req.user.companyId };
@@ -55,7 +55,7 @@ const deleteVersion = async (req, res) => {
   res.json({ message: 'BOQ version and all items deleted' });
 };
 
-// ── Items ────────────────────────────────────────────────────────────────────
+// ── Items ────────────────────────────────────────────────────────────────────────────
 
 const addItem = async (req, res) => {
   const version = await BoqVersion.findOne({ _id: req.params.id, companyId: req.user.companyId });

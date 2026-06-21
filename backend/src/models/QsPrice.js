@@ -1,1 +1,18 @@
-Y29uc3QgbW9uZ29vc2UgPSByZXF1aXJlKCdtb25nb29zZScpOwoKY29uc3QgcXNQcmljZVNjaGVtYSA9IG5ldyBtb25nb29zZS5TY2hlbWEoewogIGNhdGVnb3J5OiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUsIHRyaW06IHRydWUgfSwKICBzdWJDYXRlZ29yeTogeyB0eXBlOiBTdHJpbmcsIHRyaW06IHRydWUgfSwKICBpdGVtOiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUsIHRyaW06IHRydWUgfSwKICB1bml0OiB7IHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUsIHRyaW06IHRydWUgfSwKICBzb3VyY2U6IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgcHJpY2U6IHsgdHlwZTogTnVtYmVyLCByZXF1aXJlZDogdHJ1ZSwgbWluOiAwIH0sCiAgdXNlckF2ZXJhZ2U6IHsgdHlwZTogTnVtYmVyLCBtaW46IDAgfSwKICBjdXJyZW5jeTogeyB0eXBlOiBTdHJpbmcsIGRlZmF1bHQ6ICdOR04nIH0sCiAgY29tcGFueUlkOiB7IHR5cGU6IG1vbmdvb3NlLlNjaGVtYS5UeXBlcy5PYmplY3RJZCwgcmVmOiAnQ29tcGFueScsIGluZGV4OiB0cnVlIH0sCiAgY3JlYXRlZEJ5OiB7IHR5cGU6IG1vbmdvb3NlLlNjaGVtYS5UeXBlcy5PYmplY3RJZCwgcmVmOiAnVXNlcicgfSwKICBjcmVhdGVkQXQ6IHsgdHlwZTogRGF0ZSwgZGVmYXVsdDogRGF0ZS5ub3cgfSwKICB1cGRhdGVkQXQ6IHsgdHlwZTogRGF0ZSwgZGVmYXVsdDogRGF0ZS5ub3cgfSwKfSk7Cgptb2R1bGUuZXhwb3J0cyA9IG1vbmdvb3NlLm1vZGVsKCdRc1ByaWNlJywgcXNQcmljZVNjaGVtYSk7Cg==
+const mongoose = require('mongoose');
+
+const qsPriceSchema = new mongoose.Schema({
+  category: { type: String, required: true, trim: true },
+  subCategory: { type: String, trim: true },
+  item: { type: String, required: true, trim: true },
+  unit: { type: String, required: true, trim: true },
+  source: { type: String, trim: true },
+  price: { type: Number, required: true, min: 0 },
+  userAverage: { type: Number, min: 0 },
+  currency: { type: String, default: 'NGN' },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('QsPrice', qsPriceSchema);

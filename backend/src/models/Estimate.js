@@ -1,1 +1,64 @@
-Y29uc3QgbW9uZ29vc2UgPSByZXF1aXJlKCdtb25nb29zZScpOwoKY29uc3QgdGllckVzdGltYXRlU2NoZW1hID0gbmV3IG1vbmdvb3NlLlNjaGVtYSh7CiAgcmF0ZTogTnVtYmVyLAogIHRvdGFsOiBOdW1iZXIsCn0sIHsgX2lkOiBmYWxzZSB9KTsKCmNvbnN0IGVuZ2luZVJlc3VsdFNjaGVtYSA9IG5ldyBtb25nb29zZS5TY2hlbWEoewogIHByb2plY3RzVG90YWw6IE51bWJlciwKICBwcm9qZWN0c1VzZWQ6IE51bWJlciwKICBvdXRsaWVyc1JlbW92ZWQ6IE51bWJlciwKICBiYXNlUmF0ZTogTnVtYmVyLAogIGNvbmRpdGlvbk11bHRpcGxpZXI6IE51bWJlciwKICB0aWVyTXVsdGlwbGllcjogTnVtYmVyLAogIHNpemVNdWx0aXBsaWVyOiBOdW1iZXIsCiAgZmluYWxSYXRlOiBOdW1iZXIsCiAgdG90YWxDb3N0OiBOdW1iZXIsCiAgYmFzaWNFc3RpbWF0ZTogdGllckVzdGltYXRlU2NoZW1hLAogIG1pZFJhbmdlRXN0aW1hdGU6IHRpZXJFc3RpbWF0ZVNjaGVtYSwKICBwcmVtaXVtRXN0aW1hdGU6IHRpZXJFc3RpbWF0ZVNjaGVtYSwKICBkYXRhU291cmNlOiB7IHR5cGU6IFN0cmluZywgZW51bTogWydoaXN0b3JpY2FsJywgJ2ZhbGxiYWNrJ10sIGRlZmF1bHQ6ICdoaXN0b3JpY2FsJyB9LAp9LCB7IF9pZDogZmFsc2UgfSk7Cgpjb25zdCBzY2hlbWEgPSBuZXcgbW9uZ29vc2UuU2NoZW1hKHsKICBjb21wYW55SWQ6IHsgdHlwZTogbW9uZ29vc2UuU2NoZW1hLlR5cGVzLk9iamVjdElkLCByZWY6ICdDb21wYW55JywgcmVxdWlyZWQ6IHRydWUgfSwKICBlc3RpbWF0ZU51bWJlcjogeyB0eXBlOiBTdHJpbmcsIHJlcXVpcmVkOiB0cnVlIH0sCiAgcHJvamVjdE5hbWU6IHsgdHlwZTogU3RyaW5nLCByZXF1aXJlZDogdHJ1ZSwgdHJpbTogdHJ1ZSB9LAogIGNsaWVudE5hbWU6IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgY2xpZW50RW1haWw6IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgY2xpZW50UGhvbmU6IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgbG9jYXRpb246IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgc2l6ZU0yOiB7IHR5cGU6IE51bWJlciwgcmVxdWlyZWQ6IHRydWUgfSwKICBjb25kaXRpb246IHsKICAgIHR5cGU6IFN0cmluZywgcmVxdWlyZWQ6IHRydWUsCiAgICBlbnVtOiBbJ2NhcmNhc3MnLCAnYWR2YW5jZWRfY2FyY2FzcycsICdzZW1pX2ZpbmlzaGVkJywgJ2ZpbmlzaGVkJ10sCiAgfSwKICB0aWVyOiB7CiAgICB0eXBlOiBTdHJpbmcsIHJlcXVpcmVkOiB0cnVlLAogICAgZW51bTogWydiYXNpYycsICdtaWRfcmFuZ2UnLCAncHJlbWl1bSddLAogIH0sCiAgaW5jbHVkZXNGdXJuaXR1cmU6IHsgdHlwZTogQm9vbGVhbiwgZGVmYXVsdDogZmFsc2UgfSwKICBpbmNsdWRlc0tpdGNoZW46IHsgdHlwZTogQm9vbGVhbiwgZGVmYXVsdDogZmFsc2UgfSwKICBpbmNsdWRlc1dhcmRyb2JlczogeyB0eXBlOiBCb29sZWFuLCBkZWZhdWx0OiBmYWxzZSB9LAogIHNjb3BlQXNzdW1wdGlvbnM6IHsgdHlwZTogU3RyaW5nLCB0cmltOiB0cnVlIH0sCiAgZXhjbHVzaW9uczogeyB0eXBlOiBTdHJpbmcsIHRyaW06IHRydWUgfSwKICB2YWxpZGl0eURheXM6IHsgdHlwZTogTnVtYmVyLCBkZWZhdWx0OiAzMCB9LAogIGN1cnJlbmN5OiB7IHR5cGU6IFN0cmluZywgZGVmYXVsdDogJ05HTicgfSwKICBlbmdpbmVSZXN1bHQ6IGVuZ2luZVJlc3VsdFNjaGVtYSwKICBzZWxlY3RlZFRpZXI6IHsgdHlwZTogU3RyaW5nLCBlbnVtOiBbJ2Jhc2ljJywgJ21pZF9yYW5nZScsICdwcmVtaXVtJ10gfSwKICBzZWxlY3RlZFJhdGU6IE51bWJlciwKICBzZWxlY3RlZFRvdGFsOiBOdW1iZXIsCiAgLy8gUHJpY2luZyBhZGp1c3RtZW50cwogIHRheFBlcmNlbnQ6ICAgICAgeyB0eXBlOiBOdW1iZXIsIGRlZmF1bHQ6IDcuNSwgbWluOiAwLCBtYXg6IDEwMCB9LAogIG92ZXJoZWFkUGVyY2VudDogeyB0eXBlOiBOdW1iZXIsIGRlZmF1bHQ6IDAsICAgbWluOiAwLCBtYXg6IDEwMCB9LAogIHByb2ZpdFBlcmNlbnQ6ICAgeyB0eXBlOiBOdW1iZXIsIGRlZmF1bHQ6IDAsICAgbWluOiAwLCBtYXg6IDEwMCB9LAogIHN0YXR1czogewogICAgdHlwZTogU3RyaW5nLAogICAgZW51bTogWydkcmFmdCcsICdzZW50JywgJ2FjY2VwdGVkJywgJ2RlY2xpbmVkJ10sCiAgICBkZWZhdWx0OiAnZHJhZnQnLAogIH0sCiAgY3JlYXRlZEJ5OiB7IHR5cGU6IG1vbmdvb3NlLlNjaGVtYS5UeXBlcy5PYmplY3RJZCwgcmVmOiAnVXNlcicgfSwKfSwgeyB0aW1lc3RhbXBzOiB0cnVlIH0pOwoKbW9kdWxlLmV4cG9ydHMgPSBtb25nb29zZS5tb2RlbCgnRXN0aW1hdGUnLCBzY2hlbWEpOwo=
+const mongoose = require('mongoose');
+
+const tierEstimateSchema = new mongoose.Schema({
+  rate: Number,
+  total: Number,
+}, { _id: false });
+
+const engineResultSchema = new mongoose.Schema({
+  projectsTotal: Number,
+  projectsUsed: Number,
+  outliersRemoved: Number,
+  baseRate: Number,
+  conditionMultiplier: Number,
+  tierMultiplier: Number,
+  sizeMultiplier: Number,
+  finalRate: Number,
+  totalCost: Number,
+  basicEstimate: tierEstimateSchema,
+  midRangeEstimate: tierEstimateSchema,
+  premiumEstimate: tierEstimateSchema,
+  dataSource: { type: String, enum: ['historical', 'fallback'], default: 'historical' },
+}, { _id: false });
+
+const schema = new mongoose.Schema({
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+  estimateNumber: { type: String, required: true },
+  projectName: { type: String, required: true, trim: true },
+  clientName: { type: String, trim: true },
+  clientEmail: { type: String, trim: true },
+  clientPhone: { type: String, trim: true },
+  location: { type: String, trim: true },
+  sizeM2: { type: Number, required: true },
+  condition: {
+    type: String, required: true,
+    enum: ['carcass', 'advanced_carcass', 'semi_finished', 'finished'],
+  },
+  tier: {
+    type: String, required: true,
+    enum: ['basic', 'mid_range', 'premium'],
+  },
+  includesFurniture: { type: Boolean, default: false },
+  includesKitchen: { type: Boolean, default: false },
+  includesWardrobes: { type: Boolean, default: false },
+  scopeAssumptions: { type: String, trim: true },
+  exclusions: { type: String, trim: true },
+  validityDays: { type: Number, default: 30 },
+  currency: { type: String, default: 'NGN' },
+  engineResult: engineResultSchema,
+  selectedTier: { type: String, enum: ['basic', 'mid_range', 'premium'] },
+  selectedRate: Number,
+  selectedTotal: Number,
+  // Pricing adjustments
+  taxPercent:      { type: Number, default: 7.5, min: 0, max: 100 },
+  overheadPercent: { type: Number, default: 0,   min: 0, max: 100 },
+  profitPercent:   { type: Number, default: 0,   min: 0, max: 100 },
+  status: {
+    type: String,
+    enum: ['draft', 'sent', 'accepted', 'declined'],
+    default: 'draft',
+  },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Estimate', schema);
