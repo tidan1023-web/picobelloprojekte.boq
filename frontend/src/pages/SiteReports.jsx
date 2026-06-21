@@ -2,9 +2,11 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Plus, X, Pencil, Trash2, Search, FileText, Printer, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle, Clock, Camera, MapPin, Users, CloudSun, Tag, UserCheck,
+  Package, ClipboardList, Zap,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import MentionTextarea from '../components/MentionTextarea';
 
 const TEMPLATES = {
   daily:      { label: 'Daily Site Report',       color: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -23,7 +25,12 @@ const STATUS_STYLES = {
 };
 
 const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 bg-white';
-const textareaCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 resize-none';
+const textareaCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 resize-none bg-white';
+const selectCls = inputCls;
+
+const EMPTY_SNAG_ITEM = { description: '', location: '', responsibleTrade: '', priority: 'medium', status: 'open', targetDate: '' };
+const EMPTY_DELIVERY_ITEM = { item: '', quantity: '', unit: '', condition: 'good', notes: '' };
+const EMPTY_CHECKLIST_ITEM = { areaElement: '', status: 'pass', remarks: '' };
 
 const EMPTY_REPORT = {
   template: 'daily', title: '', reportDate: new Date().toISOString().slice(0, 10),
@@ -32,6 +39,17 @@ const EMPTY_REPORT = {
   siteLocation: '', zone: '', level: '', room: '',
   description: '', workCarriedOut: '', materialsUsed: '',
   workersOnSite: '', visitorsOnSite: '',
+  // weekly
+  weeklyWorkPlanned: '', weeklyWorkActual: '', weeklyPercentComplete: '', weeklyMilestones: '', weeklyIssuesSummary: '',
+  // incident
+  incidentDateTime: '', incidentLocation: '', incidentType: 'near-miss', incidentDescription: '', incidentPersonsInvolved: '', incidentImmediateActions: '',
+  rootCauseAnalysis: '', correctiveActions: '',
+  // snag
+  snagItems: [],
+  // delivery
+  supplierName: '', deliveryNoteNumber: '', deliveryItems: [],
+  // inspection
+  inspectionChecklist: [],
   problems: [], actionsRequired: [], images: [], status: 'draft', projectId: '',
 };
 
@@ -51,6 +69,484 @@ function Section({ title, icon: Icon, children, defaultOpen = true }) {
   );
 }
 
+/* ── Shared sub-sections used by multiple templates ── */
+
+function SiteLocationSection({ form, set }) {
+  return (
+    <Section title="Site Location" icon={MapPin} defaultOpen={true}>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Site / Building</label>
+          <input value={form.siteLocation} onChange={set('siteLocation')} className={inputCls} placeholder="e.g. Block A, Main Building" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Zone / Wing</label>
+          <input value={form.zone} onChange={set('zone')} className={inputCls} placeholder="e.g. North Wing" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Level / Floor</label>
+          <input value={form.level} onChange={set('level')} className={inputCls} placeholder="e.g. Ground Floor, Level 2" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Room / Area</label>
+          <input value={form.room} onChange={set('room')} className={inputCls} placeholder="e.g. Kitchen, Master Bedroom, Lobby" />
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function SiteConditionsSection({ form, set }) {
+  return (
+    <Section title="Site Conditions" icon={CloudSun} defaultOpen={false}>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Weather</label>
+          <input value={form.weatherCondition} onChange={set('weatherCondition')} className={inputCls} placeholder="e.g. Sunny, Rainy" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Temperature</label>
+          <input value={form.temperature} onChange={set('temperature')} className={inputCls} placeholder="e.g. 28°C" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Workers on Site</label>
+          <input type="number" min="0" value={form.workersOnSite} onChange={set('workersOnSite')} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Visitors</label>
+          <input type="number" min="0" value={form.visitorsOnSite} onChange={set('visitorsOnSite')} className={inputCls} />
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function ProblemLogSection({ form, setForm }) {
+  const addProblem = () => setForm((f) => ({ ...f, problems: [...f.problems, { description: '', severity: 'medium', status: 'open', resolution: '' }] }));
+  const updateProblem = (i, k, v) => setForm((f) => ({ ...f, problems: f.problems.map((p, idx) => idx === i ? { ...p, [k]: v } : p) }));
+  const removeProblem = (i) => setForm((f) => ({ ...f, problems: f.problems.filter((_, idx) => idx !== i) }));
+  return (
+    <Section title="Problem Log" icon={AlertTriangle} defaultOpen={false}>
+      <div className="space-y-3">
+        {form.problems.map((p, i) => (
+          <div key={i} className="border border-gray-100 rounded-xl p-3 space-y-2 bg-gray-50">
+            <div className="flex items-start gap-2">
+              <textarea value={p.description} onChange={(e) => updateProblem(i, 'description', e.target.value)}
+                rows={2} className={textareaCls + ' flex-1'} placeholder="Describe the problem…" />
+              <button type="button" onClick={() => removeProblem(i)} className="text-gray-400 hover:text-red-500 mt-1"><X size={14} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Severity</label>
+                <select value={p.severity} onChange={(e) => updateProblem(i, 'severity', e.target.value)} className={selectCls}>
+                  {['low', 'medium', 'high', 'critical'].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                <select value={p.status} onChange={(e) => updateProblem(i, 'status', e.target.value)} className={selectCls}>
+                  <option value="open">Open</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+              </div>
+            </div>
+            {p.status === 'resolved' && (
+              <input value={p.resolution} onChange={(e) => updateProblem(i, 'resolution', e.target.value)}
+                className={inputCls} placeholder="Resolution details…" />
+            )}
+          </div>
+        ))}
+        <button type="button" onClick={addProblem}
+          className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
+          <Plus size={14} /> Add Problem
+        </button>
+      </div>
+    </Section>
+  );
+}
+
+function ActionsRequiredSection({ form, setForm, teamMembers }) {
+  const addAction = () => setForm((f) => ({ ...f, actionsRequired: [...f.actionsRequired, { description: '', assignedTo: '', dueDate: '', status: 'open' }] }));
+  const updateAction = (i, k, v) => setForm((f) => ({ ...f, actionsRequired: f.actionsRequired.map((a, idx) => idx === i ? { ...a, [k]: v } : a) }));
+  const removeAction = (i) => setForm((f) => ({ ...f, actionsRequired: f.actionsRequired.filter((_, idx) => idx !== i) }));
+  return (
+    <Section title="Actions Required" icon={CheckCircle} defaultOpen={false}>
+      <div className="space-y-3">
+        {form.actionsRequired.map((a, i) => (
+          <div key={i} className="border border-gray-100 rounded-xl p-3 space-y-2 bg-gray-50">
+            <div className="flex items-start gap-2">
+              <MentionTextarea
+                value={a.description}
+                onChange={(e) => updateAction(i, 'description', e.target.value)}
+                teamMembers={teamMembers}
+                className={textareaCls + ' flex-1'}
+                placeholder="Action description…"
+                rows={2}
+              />
+              <button type="button" onClick={() => removeAction(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Assigned To</label>
+                <input value={a.assignedTo} onChange={(e) => updateAction(i, 'assignedTo', e.target.value)} className={inputCls} placeholder="Name" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Due Date</label>
+                <input type="date" value={a.dueDate ? a.dueDate.slice(0, 10) : ''} onChange={(e) => updateAction(i, 'dueDate', e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                <select value={a.status} onChange={(e) => updateAction(i, 'status', e.target.value)} className={selectCls}>
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+        <button type="button" onClick={addAction}
+          className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
+          <Plus size={14} /> Add Action
+        </button>
+      </div>
+    </Section>
+  );
+}
+
+function PhotosSection({ form, setForm }) {
+  const handleImageAdd = () => {
+    const url = prompt('Enter image URL:');
+    if (url) setForm((f) => ({ ...f, images: [...f.images, { url, caption: '' }] }));
+  };
+  const updateCaption = (i, v) => setForm((f) => ({ ...f, images: f.images.map((img, idx) => idx === i ? { ...img, caption: v } : img) }));
+  const removeImage = (i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
+  return (
+    <Section title="Photos" icon={Camera} defaultOpen={false}>
+      <div className="space-y-3">
+        {form.images.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {form.images.map((img, i) => (
+              <div key={i} className="relative group">
+                <img src={img.url} alt={img.caption || 'site photo'} className="w-full h-28 object-cover rounded-lg border border-gray-100"
+                  onError={(e) => { e.target.src = ''; e.target.alt = 'Image not found'; }} />
+                <button type="button" onClick={() => removeImage(i)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X size={10} />
+                </button>
+                <input value={img.caption} onChange={(e) => updateCaption(i, e.target.value)}
+                  className="w-full mt-1 px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none" placeholder="Caption…" />
+              </div>
+            ))}
+          </div>
+        )}
+        <button type="button" onClick={handleImageAdd}
+          className="flex items-center gap-2 border border-dashed border-gray-300 text-gray-500 px-4 py-3 rounded-xl hover:border-primary-900 hover:text-primary-900 text-sm w-full justify-center transition-colors">
+          <Camera size={16} /> Add Photo URL
+        </button>
+      </div>
+    </Section>
+  );
+}
+
+/* ── Template-specific sections ── */
+
+function DailySections({ form, setForm, set, teamMembers }) {
+  return (
+    <>
+      <SiteLocationSection form={form} set={set} />
+      <SiteConditionsSection form={form} set={set} />
+      <Section title="Work Description" icon={FileText}>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Overview / Description</label>
+            <MentionTextarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              teamMembers={teamMembers} className={textareaCls} placeholder="Overall description of today's activities…" rows={3} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Work Carried Out</label>
+            <MentionTextarea value={form.workCarriedOut} onChange={(e) => setForm((f) => ({ ...f, workCarriedOut: e.target.value }))}
+              teamMembers={teamMembers} className={textareaCls} placeholder="Detailed work completed…" rows={3} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Materials Used</label>
+            <textarea value={form.materialsUsed} onChange={set('materialsUsed')} rows={2} className={textareaCls} placeholder="Materials consumed today…" />
+          </div>
+        </div>
+      </Section>
+      <ProblemLogSection form={form} setForm={setForm} />
+      <ActionsRequiredSection form={form} setForm={setForm} teamMembers={teamMembers} />
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+function WeeklySections({ form, setForm, set, teamMembers }) {
+  return (
+    <>
+      <SiteLocationSection form={form} set={set} />
+      <Section title="Weekly Summary" icon={ClipboardList}>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Work Planned This Week</label>
+            <textarea value={form.weeklyWorkPlanned} onChange={set('weeklyWorkPlanned')} rows={3} className={textareaCls} placeholder="Work that was planned for this week…" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Work Actually Completed</label>
+            <MentionTextarea value={form.weeklyWorkActual} onChange={(e) => setForm((f) => ({ ...f, weeklyWorkActual: e.target.value }))}
+              teamMembers={teamMembers} className={textareaCls} placeholder="Work that was actually done…" rows={3} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">% Complete (overall)</label>
+            <input type="number" min="0" max="100" value={form.weeklyPercentComplete} onChange={set('weeklyPercentComplete')} className={inputCls} placeholder="e.g. 45" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Key Milestones Achieved</label>
+            <textarea value={form.weeklyMilestones} onChange={set('weeklyMilestones')} rows={2} className={textareaCls} placeholder="List milestones reached this week…" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Issues Summary</label>
+            <textarea value={form.weeklyIssuesSummary} onChange={set('weeklyIssuesSummary')} rows={2} className={textareaCls} placeholder="Brief summary of issues encountered…" />
+          </div>
+        </div>
+      </Section>
+      <ProblemLogSection form={form} setForm={setForm} />
+      <ActionsRequiredSection form={form} setForm={setForm} teamMembers={teamMembers} />
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+function IncidentSections({ form, setForm, set, teamMembers }) {
+  return (
+    <>
+      <Section title="Incident Details" icon={AlertTriangle} defaultOpen={true}>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Date & Time of Incident</label>
+            <input type="datetime-local" value={form.incidentDateTime} onChange={set('incidentDateTime')} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
+            <input value={form.incidentLocation} onChange={set('incidentLocation')} className={inputCls} placeholder="e.g. Level 2, East Wing" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Incident Type</label>
+            <select value={form.incidentType} onChange={set('incidentType')} className={selectCls}>
+              <option value="near-miss">Near-Miss</option>
+              <option value="injury">Injury</option>
+              <option value="property-damage">Property Damage</option>
+              <option value="environmental">Environmental</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+            <MentionTextarea value={form.incidentDescription} onChange={(e) => setForm((f) => ({ ...f, incidentDescription: e.target.value }))}
+              teamMembers={teamMembers} className={textareaCls} placeholder="Describe what happened in detail…" rows={4} />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Persons Involved</label>
+            <textarea value={form.incidentPersonsInvolved} onChange={set('incidentPersonsInvolved')} rows={2} className={textareaCls} placeholder="Names and roles of persons involved…" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Immediate Actions Taken</label>
+            <textarea value={form.incidentImmediateActions} onChange={set('incidentImmediateActions')} rows={2} className={textareaCls} placeholder="Actions taken immediately after the incident…" />
+          </div>
+        </div>
+      </Section>
+      <Section title="Root Cause Analysis" icon={Zap} defaultOpen={false}>
+        <textarea value={form.rootCauseAnalysis} onChange={set('rootCauseAnalysis')} rows={4} className={textareaCls} placeholder="Identify the underlying root cause(s)…" />
+      </Section>
+      <Section title="Corrective Actions" icon={CheckCircle} defaultOpen={false}>
+        <textarea value={form.correctiveActions} onChange={set('correctiveActions')} rows={4} className={textareaCls} placeholder="Actions to prevent recurrence…" />
+      </Section>
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+function SnagSections({ form, setForm, set }) {
+  const addItem = () => setForm((f) => ({ ...f, snagItems: [...f.snagItems, { ...EMPTY_SNAG_ITEM }] }));
+  const updateItem = (i, k, v) => setForm((f) => ({ ...f, snagItems: f.snagItems.map((s, idx) => idx === i ? { ...s, [k]: v } : s) }));
+  const removeItem = (i) => setForm((f) => ({ ...f, snagItems: f.snagItems.filter((_, idx) => idx !== i) }));
+  return (
+    <>
+      <SiteLocationSection form={form} set={set} />
+      <Section title="Snag Items" icon={ClipboardList} defaultOpen={true}>
+        <div className="space-y-3">
+          {form.snagItems.map((item, i) => (
+            <div key={i} className="border border-orange-100 rounded-xl p-3 space-y-2 bg-orange-50/30">
+              <div className="flex items-start gap-2">
+                <span className="text-xs font-bold text-orange-600 mt-2.5 w-6 shrink-0">#{i + 1}</span>
+                <div className="flex-1 space-y-2">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Item Description</label>
+                    <textarea value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)}
+                      rows={2} className={textareaCls} placeholder="Describe the snag / defect…" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Location</label>
+                      <input value={item.location} onChange={(e) => updateItem(i, 'location', e.target.value)} className={inputCls} placeholder="e.g. Kitchen wall" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Responsible Trade</label>
+                      <input value={item.responsibleTrade} onChange={(e) => updateItem(i, 'responsibleTrade', e.target.value)} className={inputCls} placeholder="e.g. Plastering" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Priority</label>
+                      <select value={item.priority} onChange={(e) => updateItem(i, 'priority', e.target.value)} className={selectCls}>
+                        {['low', 'medium', 'high', 'critical'].map((p) => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                      <select value={item.status} onChange={(e) => updateItem(i, 'status', e.target.value)} className={selectCls}>
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs text-gray-500 mb-1 block">Target Completion Date</label>
+                      <input type="date" value={item.targetDate} onChange={(e) => updateItem(i, 'targetDate', e.target.value)} className={inputCls} />
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onClick={() => removeItem(i)} className="text-gray-400 hover:text-red-500 mt-1 shrink-0"><X size={14} /></button>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={addItem}
+            className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
+            <Plus size={14} /> Add Snag Item
+          </button>
+        </div>
+      </Section>
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+function DeliverySections({ form, setForm, set }) {
+  const addItem = () => setForm((f) => ({ ...f, deliveryItems: [...f.deliveryItems, { ...EMPTY_DELIVERY_ITEM }] }));
+  const updateItem = (i, k, v) => setForm((f) => ({ ...f, deliveryItems: f.deliveryItems.map((d, idx) => idx === i ? { ...d, [k]: v } : d) }));
+  const removeItem = (i) => setForm((f) => ({ ...f, deliveryItems: f.deliveryItems.filter((_, idx) => idx !== i) }));
+  return (
+    <>
+      <Section title="Delivery Details" icon={Package} defaultOpen={true}>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Supplier Name</label>
+              <input value={form.supplierName} onChange={set('supplierName')} className={inputCls} placeholder="e.g. Dangote Cement Ltd" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Delivery Note Number</label>
+              <input value={form.deliveryNoteNumber} onChange={set('deliveryNoteNumber')} className={inputCls} placeholder="e.g. DN-2024-001" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">Materials Delivered</label>
+            <div className="space-y-2">
+              {form.deliveryItems.map((item, i) => (
+                <div key={i} className="border border-green-100 rounded-xl p-3 space-y-2 bg-green-50/30">
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs font-bold text-green-600 mt-2 w-6 shrink-0">#{i + 1}</span>
+                    <div className="flex-1 grid grid-cols-2 gap-2">
+                      <div className="col-span-2">
+                        <label className="text-xs text-gray-500 mb-1 block">Item</label>
+                        <input value={item.item} onChange={(e) => updateItem(i, 'item', e.target.value)} className={inputCls} placeholder="e.g. Portland Cement 50kg bags" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Quantity</label>
+                        <input type="number" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', e.target.value)} className={inputCls} placeholder="0" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Unit</label>
+                        <input value={item.unit} onChange={(e) => updateItem(i, 'unit', e.target.value)} className={inputCls} placeholder="e.g. bags, m³, sheets" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Condition</label>
+                        <select value={item.condition} onChange={(e) => updateItem(i, 'condition', e.target.value)} className={selectCls}>
+                          <option value="good">Good</option>
+                          <option value="damaged">Damaged</option>
+                          <option value="rejected">Rejected</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Notes</label>
+                        <input value={item.notes} onChange={(e) => updateItem(i, 'notes', e.target.value)} className={inputCls} placeholder="Any remarks…" />
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => removeItem(i)} className="text-gray-400 hover:text-red-500 mt-1 shrink-0"><X size={14} /></button>
+                  </div>
+                </div>
+              ))}
+              <button type="button" onClick={addItem}
+                className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
+                <Plus size={14} /> Add Material Item
+              </button>
+            </div>
+          </div>
+        </div>
+      </Section>
+      <SiteLocationSection form={form} set={set} />
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+function InspectionSections({ form, setForm, set, teamMembers }) {
+  const addItem = () => setForm((f) => ({ ...f, inspectionChecklist: [...f.inspectionChecklist, { ...EMPTY_CHECKLIST_ITEM }] }));
+  const updateItem = (i, k, v) => setForm((f) => ({ ...f, inspectionChecklist: f.inspectionChecklist.map((c, idx) => idx === i ? { ...c, [k]: v } : c) }));
+  const removeItem = (i) => setForm((f) => ({ ...f, inspectionChecklist: f.inspectionChecklist.filter((_, idx) => idx !== i) }));
+  return (
+    <>
+      <SiteLocationSection form={form} set={set} />
+      <Section title="Inspection Checklist" icon={ClipboardList} defaultOpen={true}>
+        <div className="space-y-2">
+          {form.inspectionChecklist.map((item, i) => (
+            <div key={i} className="border border-gray-100 rounded-xl p-3 bg-gray-50 flex items-start gap-2">
+              <span className="text-xs font-bold text-gray-400 mt-2 w-6 shrink-0">#{i + 1}</span>
+              <div className="flex-1 grid grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500 mb-1 block">Area / Element</label>
+                  <input value={item.areaElement} onChange={(e) => updateItem(i, 'areaElement', e.target.value)} className={inputCls} placeholder="e.g. Foundation, Roofing" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                  <select value={item.status} onChange={(e) => updateItem(i, 'status', e.target.value)} className={selectCls}>
+                    <option value="pass">Pass</option>
+                    <option value="fail">Fail</option>
+                    <option value="na">N/A</option>
+                  </select>
+                </div>
+                <div className="col-span-3">
+                  <label className="text-xs text-gray-500 mb-1 block">Remarks</label>
+                  <input value={item.remarks} onChange={(e) => updateItem(i, 'remarks', e.target.value)} className={inputCls} placeholder="Optional remarks…" />
+                </div>
+              </div>
+              <button type="button" onClick={() => removeItem(i)} className="text-gray-400 hover:text-red-500 mt-1 shrink-0"><X size={14} /></button>
+            </div>
+          ))}
+          <button type="button" onClick={addItem}
+            className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
+            <Plus size={14} /> Add Checklist Item
+          </button>
+        </div>
+      </Section>
+      <SiteConditionsSection form={form} set={set} />
+      <ProblemLogSection form={form} setForm={setForm} />
+      <ActionsRequiredSection form={form} setForm={setForm} teamMembers={teamMembers} />
+      <PhotosSection form={form} setForm={setForm} />
+    </>
+  );
+}
+
+/* ── Main modal ── */
+
 function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers }) {
   const [form, setForm] = useState(EMPTY_REPORT);
   const [saving, setSaving] = useState(false);
@@ -66,26 +562,14 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
       problems: editing.problems || [],
       actionsRequired: editing.actionsRequired || [],
       images: editing.images || [],
+      snagItems: editing.snagItems || [],
+      deliveryItems: editing.deliveryItems || [],
+      inspectionChecklist: editing.inspectionChecklist || [],
     } : { ...EMPTY_REPORT, reportDate: new Date().toISOString().slice(0, 10) });
     setError('');
   }, [open, editing]);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-
-  const addProblem = () => setForm((f) => ({ ...f, problems: [...f.problems, { description: '', severity: 'medium', status: 'open', resolution: '' }] }));
-  const updateProblem = (i, k, v) => setForm((f) => ({ ...f, problems: f.problems.map((p, idx) => idx === i ? { ...p, [k]: v } : p) }));
-  const removeProblem = (i) => setForm((f) => ({ ...f, problems: f.problems.filter((_, idx) => idx !== i) }));
-
-  const addAction = () => setForm((f) => ({ ...f, actionsRequired: [...f.actionsRequired, { description: '', assignedTo: '', dueDate: '', status: 'open' }] }));
-  const updateAction = (i, k, v) => setForm((f) => ({ ...f, actionsRequired: f.actionsRequired.map((a, idx) => idx === i ? { ...a, [k]: v } : a) }));
-  const removeAction = (i) => setForm((f) => ({ ...f, actionsRequired: f.actionsRequired.filter((_, idx) => idx !== i) }));
-
-  const handleImageAdd = () => {
-    const url = prompt('Enter image URL:');
-    if (url) setForm((f) => ({ ...f, images: [...f.images, { url, caption: '' }] }));
-  };
-  const updateCaption = (i, v) => setForm((f) => ({ ...f, images: f.images.map((img, idx) => idx === i ? { ...img, caption: v } : img) }));
-  const removeImage = (i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setSaving(true); setError('');
@@ -100,6 +584,16 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
   if (!open) return null;
 
   const tpl = TEMPLATES[form.template];
+  const sharedProps = { form, setForm, set, teamMembers };
+
+  const templateSections = {
+    daily:      <DailySections      {...sharedProps} />,
+    weekly:     <WeeklySections     {...sharedProps} />,
+    incident:   <IncidentSections   {...sharedProps} />,
+    snag:       <SnagSections       {...sharedProps} />,
+    delivery:   <DeliverySections   {...sharedProps} />,
+    inspection: <InspectionSections {...sharedProps} />,
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
@@ -112,7 +606,7 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
-          {/* Core fields */}
+          {/* 1. Report Details — always visible */}
           <Section title="Report Details" icon={FileText}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
@@ -160,7 +654,7 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
             </div>
           </Section>
 
-          {/* Template picker */}
+          {/* 2. Template picker — always visible */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-2">Template *</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -174,167 +668,8 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
             </div>
           </div>
 
-          {/* Location within site */}
-          <Section title="Site Location" icon={MapPin} defaultOpen={true}>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Site / Building</label>
-                <input value={form.siteLocation} onChange={set('siteLocation')} className={inputCls} placeholder="e.g. Block A, Main Building" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Zone / Wing</label>
-                <input value={form.zone} onChange={set('zone')} className={inputCls} placeholder="e.g. North Wing" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Level / Floor</label>
-                <input value={form.level} onChange={set('level')} className={inputCls} placeholder="e.g. Ground Floor, Level 2" />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Room / Area</label>
-                <input value={form.room} onChange={set('room')} className={inputCls} placeholder="e.g. Kitchen, Master Bedroom, Lobby" />
-              </div>
-            </div>
-          </Section>
-
-          {/* Weather & Workers */}
-          <Section title="Site Conditions" icon={CloudSun} defaultOpen={false}>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Weather</label>
-                <input value={form.weatherCondition} onChange={set('weatherCondition')} className={inputCls} placeholder="e.g. Sunny, Rainy" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Temperature</label>
-                <input value={form.temperature} onChange={set('temperature')} className={inputCls} placeholder="e.g. 28°C" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Workers on Site</label>
-                <input type="number" min="0" value={form.workersOnSite} onChange={set('workersOnSite')} className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Visitors</label>
-                <input type="number" min="0" value={form.visitorsOnSite} onChange={set('visitorsOnSite')} className={inputCls} />
-              </div>
-            </div>
-          </Section>
-
-          {/* Work description */}
-          <Section title="Description" icon={FileText}>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Overview / Description</label>
-                <textarea value={form.description} onChange={set('description')} rows={3} className={textareaCls} placeholder="Overall description of today's activities…" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Work Carried Out</label>
-                <textarea value={form.workCarriedOut} onChange={set('workCarriedOut')} rows={3} className={textareaCls} placeholder="Detailed work completed…" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Materials Used / Delivered</label>
-                <textarea value={form.materialsUsed} onChange={set('materialsUsed')} rows={2} className={textareaCls} placeholder="Materials consumed or delivered today…" />
-              </div>
-            </div>
-          </Section>
-
-          {/* Problem Log */}
-          <Section title="Problem Log" icon={AlertTriangle} defaultOpen={false}>
-            <div className="space-y-3">
-              {form.problems.map((p, i) => (
-                <div key={i} className="border border-gray-100 rounded-xl p-3 space-y-2 bg-gray-50">
-                  <div className="flex items-start gap-2">
-                    <textarea value={p.description} onChange={(e) => updateProblem(i, 'description', e.target.value)}
-                      rows={2} className={textareaCls + ' flex-1'} placeholder="Describe the problem…" />
-                    <button type="button" onClick={() => removeProblem(i)} className="text-gray-400 hover:text-red-500 mt-1"><X size={14} /></button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Severity</label>
-                      <select value={p.severity} onChange={(e) => updateProblem(i, 'severity', e.target.value)} className={inputCls}>
-                        {['low', 'medium', 'high', 'critical'].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Status</label>
-                      <select value={p.status} onChange={(e) => updateProblem(i, 'status', e.target.value)} className={inputCls}>
-                        <option value="open">Open</option>
-                        <option value="resolved">Resolved</option>
-                      </select>
-                    </div>
-                  </div>
-                  {p.status === 'resolved' && (
-                    <input value={p.resolution} onChange={(e) => updateProblem(i, 'resolution', e.target.value)}
-                      className={inputCls} placeholder="Resolution details…" />
-                  )}
-                </div>
-              ))}
-              <button type="button" onClick={addProblem}
-                className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
-                <Plus size={14} /> Add Problem
-              </button>
-            </div>
-          </Section>
-
-          {/* Actions Required */}
-          <Section title="Actions Required" icon={CheckCircle} defaultOpen={false}>
-            <div className="space-y-3">
-              {form.actionsRequired.map((a, i) => (
-                <div key={i} className="border border-gray-100 rounded-xl p-3 space-y-2 bg-gray-50">
-                  <div className="flex items-start gap-2">
-                    <input value={a.description} onChange={(e) => updateAction(i, 'description', e.target.value)}
-                      className={inputCls + ' flex-1'} placeholder="Action description…" />
-                    <button type="button" onClick={() => removeAction(i)} className="text-gray-400 hover:text-red-500"><X size={14} /></button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Assigned To</label>
-                      <input value={a.assignedTo} onChange={(e) => updateAction(i, 'assignedTo', e.target.value)} className={inputCls} placeholder="Name" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Due Date</label>
-                      <input type="date" value={a.dueDate ? a.dueDate.slice(0, 10) : ''} onChange={(e) => updateAction(i, 'dueDate', e.target.value)} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Status</label>
-                      <select value={a.status} onChange={(e) => updateAction(i, 'status', e.target.value)} className={inputCls}>
-                        <option value="open">Open</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button type="button" onClick={addAction}
-                className="flex items-center gap-1.5 text-sm text-primary-900 hover:underline">
-                <Plus size={14} /> Add Action
-              </button>
-            </div>
-          </Section>
-
-          {/* Images */}
-          <Section title="Photos" icon={Camera} defaultOpen={false}>
-            <div className="space-y-3">
-              {form.images.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {form.images.map((img, i) => (
-                    <div key={i} className="relative group">
-                      <img src={img.url} alt={img.caption || 'site photo'} className="w-full h-28 object-cover rounded-lg border border-gray-100" onError={(e) => { e.target.src = ''; e.target.alt = 'Image not found'; }} />
-                      <button type="button" onClick={() => removeImage(i)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <X size={10} />
-                      </button>
-                      <input value={img.caption} onChange={(e) => updateCaption(i, e.target.value)}
-                        className="w-full mt-1 px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none" placeholder="Caption…" />
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button type="button" onClick={handleImageAdd}
-                className="flex items-center gap-2 border border-dashed border-gray-300 text-gray-500 px-4 py-3 rounded-xl hover:border-primary-900 hover:text-primary-900 text-sm w-full justify-center transition-colors">
-                <Camera size={16} /> Add Photo URL
-              </button>
-            </div>
-          </Section>
+          {/* 3. Template-specific sections */}
+          {templateSections[form.template]}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -367,7 +702,7 @@ function PrintableReport({ report }) {
       <div className="grid grid-cols-2 gap-6 mb-6">
         <div><strong>Project:</strong> {report.projectId?.name}</div>
         <div><strong>Prepared by:</strong> {report.preparedBy?.name}</div>
-        <div><strong>Site Manager:</strong> {report.siteManagerName || '—'}</div>
+        <div><strong>Site Manager:</strong> <span className="font-semibold">{report.siteManagerName || '—'}</span></div>
         <div><strong>Assigned To:</strong> {report.assignedTo?.name || report.assignedTo || '—'}</div>
         <div><strong>Location:</strong> {[report.siteLocation, report.zone, report.level, report.room].filter(Boolean).join(' › ')}</div>
         <div><strong>Weather:</strong> {report.weatherCondition} {report.temperature}</div>
@@ -377,6 +712,35 @@ function PrintableReport({ report }) {
       {report.description && <div className="mb-4"><strong>Description:</strong><p className="mt-1 text-gray-700">{report.description}</p></div>}
       {report.workCarriedOut && <div className="mb-4"><strong>Work Carried Out:</strong><p className="mt-1 text-gray-700">{report.workCarriedOut}</p></div>}
       {report.materialsUsed && <div className="mb-4"><strong>Materials Used/Delivered:</strong><p className="mt-1 text-gray-700">{report.materialsUsed}</p></div>}
+      {report.snagItems?.length > 0 && (
+        <div className="mb-4">
+          <strong>Snag Items:</strong>
+          <table className="w-full mt-2 text-xs border border-gray-200">
+            <thead className="bg-gray-50"><tr><th className="p-2 text-left border-b">#</th><th className="p-2 text-left border-b">Description</th><th className="p-2 border-b">Location</th><th className="p-2 border-b">Trade</th><th className="p-2 border-b">Priority</th><th className="p-2 border-b">Status</th></tr></thead>
+            <tbody>{report.snagItems.map((s, i) => <tr key={i} className="border-b"><td className="p-2">{i + 1}</td><td className="p-2">{s.description}</td><td className="p-2">{s.location}</td><td className="p-2">{s.responsibleTrade}</td><td className="p-2">{s.priority}</td><td className="p-2">{s.status}</td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
+      {(report.supplierName || report.deliveryItems?.length > 0) && (
+        <div className="mb-4">
+          <strong>Delivery — Supplier:</strong> {report.supplierName} &nbsp; <strong>DN#:</strong> {report.deliveryNoteNumber}
+          {report.deliveryItems?.length > 0 && (
+            <table className="w-full mt-2 text-xs border border-gray-200">
+              <thead className="bg-gray-50"><tr><th className="p-2 text-left border-b">Item</th><th className="p-2 border-b">Qty</th><th className="p-2 border-b">Unit</th><th className="p-2 border-b">Condition</th><th className="p-2 border-b">Notes</th></tr></thead>
+              <tbody>{report.deliveryItems.map((d, i) => <tr key={i} className="border-b"><td className="p-2">{d.item}</td><td className="p-2">{d.quantity}</td><td className="p-2">{d.unit}</td><td className="p-2">{d.condition}</td><td className="p-2">{d.notes}</td></tr>)}</tbody>
+            </table>
+          )}
+        </div>
+      )}
+      {report.inspectionChecklist?.length > 0 && (
+        <div className="mb-4">
+          <strong>Inspection Checklist:</strong>
+          <table className="w-full mt-2 text-xs border border-gray-200">
+            <thead className="bg-gray-50"><tr><th className="p-2 text-left border-b">Area / Element</th><th className="p-2 border-b">Status</th><th className="p-2 border-b">Remarks</th></tr></thead>
+            <tbody>{report.inspectionChecklist.map((c, i) => <tr key={i} className="border-b"><td className="p-2">{c.areaElement}</td><td className="p-2 text-center">{c.status.toUpperCase()}</td><td className="p-2">{c.remarks}</td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
       {report.problems?.length > 0 && (
         <div className="mb-4">
           <strong>Problem Log:</strong>
@@ -438,7 +802,6 @@ export default function SiteReports() {
       ]);
       setReports(repRes.data.reports || []);
       setProjects(projRes.data.projects || []);
-      // Fetch team members for assign dropdown
       api.get('/auth/team').then(({ data }) => setTeamMembers(data.members || [])).catch(() => {});
     } finally { setLoading(false); }
   }, [projectFilter, templateFilter]);
@@ -524,10 +887,16 @@ export default function SiteReports() {
                       {openActions > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium">{openActions} action{openActions > 1 ? 's' : ''}</span>}
                     </div>
                     <p className="font-semibold text-gray-800">{r.title}</p>
+                    {/* Site Manager — prominently shown */}
+                    {r.siteManagerName && (
+                      <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                        <UserCheck size={13} className="text-primary-900" />
+                        Site Manager: <span className="font-semibold text-gray-900">{r.siteManagerName}</span>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1 text-xs text-gray-400">
-                      <span>{r.projectId?.name}</span>
+                      {r.projectId?.name && <span>{r.projectId.name}</span>}
                       <span>{new Date(r.reportDate).toLocaleDateString()}</span>
-                      {r.siteManagerName && <span className="flex items-center gap-1"><UserCheck size={10} />{r.siteManagerName}</span>}
                       {r.assignedTo?.name && <span className="flex items-center gap-1"><Users size={10} />→ {r.assignedTo.name}</span>}
                       {location && <span className="flex items-center gap-1"><MapPin size={10} />{location}</span>}
                       {r.workersOnSite != null && <span className="flex items-center gap-1"><Users size={10} />{r.workersOnSite} workers</span>}
