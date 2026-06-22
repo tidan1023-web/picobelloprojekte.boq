@@ -173,7 +173,7 @@ export default function QsPricing() {
   const [subCategoryFilter, setSubCategoryFilter] = useState('');
   const [importMsg, setImportMsg] = useState('');
 
-  const canEdit = ['admin', 'qs'].includes(user?.role);
+  const canEdit = user?.role === 'admin';
 
   const fetchPrices = useCallback(() => {
     const params = categoryFilter ? `?category=${encodeURIComponent(categoryFilter)}` : '';
@@ -261,7 +261,6 @@ export default function QsPricing() {
         )}
       </div>
 
-      {/* Average stats strip */}
       {filtered.length > 0 && (() => {
         const withAvg = filtered.filter((p) => p.userAverage > 0);
         const myAvg   = withAvg.length > 0 ? withAvg.reduce((s, p) => s + p.userAverage, 0) / withAvg.length : null;

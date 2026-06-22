@@ -2,6 +2,16 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, X, Pencil, Trash2, Search, Package } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ExcelImport from '../components/ExcelImport';
+
+const MATERIAL_IMPORT_COLUMNS = [
+  { key: 'name', label: 'Material Name', type: 'string' },
+  { key: 'category', label: 'Category', type: 'string' },
+  { key: 'unit', label: 'Unit', type: 'string' },
+  { key: 'price', label: 'Price (₦)', type: 'number' },
+  { key: 'supplier', label: 'Supplier', type: 'string' },
+  { key: 'source', label: 'Source', type: 'string' },
+];
 
 const CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP'];
 
@@ -118,7 +128,7 @@ export default function MaterialPricing() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  const canEdit = ['admin', 'qs'].includes(user?.role);
+  const canEdit = user?.role === 'admin';
 
   const fetchPrices = useCallback(() => {
     api.get('/material-prices')
@@ -166,14 +176,27 @@ export default function MaterialPricing() {
         </select>
         <span className="text-sm text-gray-400 self-center hidden sm:block">{filtered.length} materials</span>
         {canEdit && (
-          <button onClick={() => { setEditing(null); setModal(true); }}
-            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
-            <Plus size={16} /> Add Material
-          </button>
+          <>
+            <ExcelImport
+              onImport={async (rows) => {
+                let count = 0;
+                for (const row of rows) {
+                  try { await api.post('/material-prices', row); count++; } catch {}
+                }
+                alert(`Imported ${count} items`);
+                fetchPrices();
+              }}
+              columns={MATERIAL_IMPORT_COLUMNS}
+              templateName="material-prices"
+            />
+            <button onClick={() => { setEditing(null); setModal(true); }}
+              className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
+              <Plus size={16} /> Add Material
+            </button>
+          </>
         )}
       </div>
 
-      {/* Stats strip */}
       {filtered.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {[

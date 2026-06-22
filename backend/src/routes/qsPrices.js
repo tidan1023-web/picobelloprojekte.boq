@@ -4,9 +4,9 @@ const { getAll, create, update, remove } = require('../controllers/qsPriceContro
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
 
-router.get('/', authenticate, getAll);
-router.post('/', authenticate, authorize('admin', 'qs'), create);
-router.put('/:id', authenticate, authorize('admin', 'qs'), update);
-router.delete('/:id', authenticate, authorize('admin', 'qs'), remove);
+router.get('/', authenticate, authorize('admin', 'qs', 'project_manager'), getAll);
+router.post('/', authenticate, authorize('admin'), create);
+router.put('/:id', authenticate, authorize('admin'), update);
+router.delete('/:id', authenticate, authorize('admin'), remove);
 
 module.exports = router;

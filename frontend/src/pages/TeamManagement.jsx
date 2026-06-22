@@ -1,1 +1,249 @@
-aW1wb3J0IFJlYWN0LCB7IHVzZUVmZmVjdCwgdXNlU3RhdGUsIHVzZUNhbGxiYWNrIH0gZnJvbSAncmVhY3QnOwppbXBvcnQgeyBQbHVzLCBUcmFzaDIsIE1haWwsIFNoaWVsZENoZWNrLCBYLCBVc2VycywgRWRpdDIgfSBmcm9tICdsdWNpZGUtcmVhY3QnOwppbXBvcnQgYXBpIGZyb20gJy4uL3NlcnZpY2VzL2FwaSc7CmltcG9ydCB7IHVzZUF1dGggfSBmcm9tICcuLi9jb250ZXh0L0F1dGhDb250ZXh0JzsKCmNvbnN0IFJPTEVTID0gWwogIHsgdmFsdWU6ICdxcycsICAgICAgICAgICAgICBsYWJlbDogJ1F1YW50aXR5IFN1cnZleW9yJywgIGRlc2M6ICdGdWxsIGFjY2VzcyBleGNlcHQgY29tcGFueSBzZXR0aW5ncyBhbmQgdGVhbSBtYW5hZ2VtZW50JyB9LAogIHsgdmFsdWU6ICdwcm9qZWN0X21hbmFnZXInLCBsYWJlbDogJ1Byb2plY3QgTWFuYWdlcicsICAgIGRlc2M6ICdDYW4gbWFuYWdlIHByb2plY3RzLCBwcm9ncmVzcywgY2hhbmdlIG9yZGVycywgc2l0ZSByZXBvcnRzJyB9LAogIHsgdmFsdWU6ICdjbGllbnQnLCAgICAgICAgICBsYWJlbDogJ0NsaWVudCcsICAgICAgICAgICAgIGRlc2M6ICdSZWFkLW9ubHkgdmlldyBvZiBlc3RpbWF0ZXMgYW5kIGludm9pY2VzJyB9LApdOwoKY29uc3QgUk9MRV9DT0xPUlMgPSB7CiAgYWRtaW46ICAgICAgICAgICAnYmctYmx1ZS0xMDAgdGV4dC1ibHVlLTcwMCcsCiAgcXM6ICAgICAgICAgICAgICAnYmctcHVycGxlLTEwMCB0ZXh0LXB1cnBsZS03MDAnLAogIHByb2plY3RfbWFuYWdlcjogJ2JnLWdyZWVuLTEwMCB0ZXh0LWdyZWVuLTcwMCcsCiAgY2xpZW50OiAgICAgICAgICAnYmctb3JhbmdlLTEwMCB0ZXh0LW9yYW5nZS03MDAnLAp9OwoKY29uc3QgaW5wdXRDbHMgPSAndy1mdWxsIGJvcmRlciBib3JkZXItZ3JheS0zMDAgcm91bmRlZC1sZyBweC0zIHB5LTIgdGV4dC1zbSBmb2N1czpvdXRsaW5lLW5vbmUgZm9jdXM6cmluZy0yIGZvY3VzOnJpbmctcHJpbWFyeS05MDAvMzAnOwoKZnVuY3Rpb24gSW52aXRlTW9kYWwoeyBvbkNsb3NlLCBvblNhdmVkIH0pIHsKICBjb25zdCBbZm9ybSwgc2V0Rm9ybV0gPSB1c2VTdGF0ZSh7IG5hbWU6ICcnLCBlbWFpbDogJycsIHBhc3N3b3JkOiAnJywgcm9sZTogJ3FzJyB9KTsKICBjb25zdCBbc2F2aW5nLCBzZXRTYXZpbmddID0gdXNlU3RhdGUoZmFsc2UpOwogIGNvbnN0IFtlcnJvciwgc2V0RXJyb3JdID0gdXNlU3RhdGUoJycpOwoKICBjb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSkgPT4gewogICAgZS5wcmV2ZW50RGVmYXVsdCgpOwogICAgc2V0U2F2aW5nKHRydWUpOwogICAgc2V0RXJyb3IoJycpOwogICAgdHJ5IHsKICAgICAgYXdhaXQgYXBpLnBvc3QoJy9hdXRoL2ludml0ZScsIGZvcm0pOwogICAgICBvblNhdmVkKCk7CiAgICB9IGNhdGNoIChlcnIpIHsKICAgICAgc2V0RXJyb3IoZXJyLnJlc3BvbnNlPy5kYXRhPy5tZXNzYWdlIHx8ICdGYWlsZWQgdG8gaW52aXRlIG1lbWJlcicpOwogICAgfSBmaW5hbGx5IHsgc2V0U2F2aW5nKGZhbHNlKTsgfQogIH07CgogIHJldHVybiAoCiAgICA8ZGl2IGNsYXNzTmFtZT0iZml4ZWQgaW5zZXQtMCB6LTUwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGJnLWJsYWNrLzQwIHAtNCI+CiAgICAgIDxkaXYgY2xhc3NOYW1lPSJiZy13aGl0ZSByb3VuZGVkLTJ4bCBzaGFkb3cteGwgdy1mdWxsIG1heC13LW1kIj4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0icHgtNiBweS00IGJvcmRlci1iIGJvcmRlci1ncmF5LTEwMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4iPgogICAgICAgICAgPGgyIGNsYXNzTmFtZT0iZm9udC1zZW1pYm9sZCB0ZXh0LWdyYXktODAwIj5JbnZpdGUgVGVhbSBNZW1iZXI8L2gyPgogICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXtvbkNsb3NlfT48WCBzaXplPXsyMH0gY2xhc3NOYW1lPSJ0ZXh0LWdyYXktNDAwIGhvdmVyOnRleHQtZ3JheS02MDAiIC8+PC9idXR0b24+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPGZvcm0gb25TdWJtaXQ9e2hhbmRsZVN1Ym1pdH0gY2xhc3NOYW1lPSJwLTYgc3BhY2UteS00Ij4KICAgICAgICAgIHtlcnJvciAmJiA8cCBjbGFzc05hbWU9InRleHQtcmVkLTYwMCB0ZXh0LXNtIj57ZXJyb3J9PC9wPn0KCiAgICAgICAgICA8ZGl2PgogICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPSJibG9jayB0ZXh0LXhzIGZvbnQtbWVkaXVtIHRleHQtZ3JheS02MDAgbWItMSI+RnVsbCBOYW1lICo8L2xhYmVsPgogICAgICAgICAgICA8aW5wdXQgcmVxdWlyZWQgdmFsdWU9e2Zvcm0ubmFtZX0gb25DaGFuZ2U9eyhlKSA9PiBzZXRGb3JtKChmKSA9PiAoeyAuLi5mLCBuYW1lOiBlLnRhcmdldC52YWx1ZSB9KSl9IGNsYXNzTmFtZT17aW5wdXRDbHN9IHBsYWNlaG9sZGVyPSJKYW5lIFNtaXRoIiAvPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8ZGl2PgogICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPSJibG9jayB0ZXh0LXhzIGZvbnQtbWVkaXVtIHRleHQtZ3JheS02MDAgbWItMSI+RW1haWwgKjwvbGFiZWw+CiAgICAgICAgICAgIDxpbnB1dCByZXF1aXJlZCB0eXBlPSJlbWFpbCIgdmFsdWU9e2Zvcm0uZW1haWx9IG9uQ2hhbmdlPXsoZSkgPT4gc2V0Rm9ybSgoZikgPT4gKHsgLi4uZiwgZW1haWw6IGUudGFyZ2V0LnZhbHVlIH0pKX0gY2xhc3NOYW1lPXtpbnB1dENsc30gcGxhY2Vob2xkZXI9ImphbmVAY29tcGFueS5jb20iIC8+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9ImJsb2NrIHRleHQteHMgZm9udC1tZWRpdW0gdGV4dC1ncmF5LTYwMCBtYi0xIj5UZW1wb3JhcnkgUGFzc3dvcmQgKjwvbGFiZWw+CiAgICAgICAgICAgIDxpbnB1dCByZXF1aXJlZCB0eXBlPSJwYXNzd29yZCIgbWluTGVuZ3RoPXs2fSB2YWx1ZT17Zm9ybS5wYXNzd29yZH0gb25DaGFuZ2U9eyhlKSA9PiBzZXRGb3JtKChmKSA9PiAoeyAuLi5mLCBwYXNzd29yZDogZS50YXJnZXQudmFsdWUgfSkpfSBjbGFzc05hbWU9e2lucHV0Q2xzfSBwbGFjZWhvbGRlcj0iTWluaW11bSA2IGNoYXJhY3RlcnMiIC8+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9ImJsb2NrIHRleHQteHMgZm9udC1tZWRpdW0gdGV4dC1ncmF5LTYwMCBtYi0xIj5Sb2xlICo8L2xhYmVsPgogICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3BhY2UteS0yIj4KICAgICAgICAgICAgICB7Uk9MRVMubWFwKChyKSA9PiAoCiAgICAgICAgICAgICAgICA8bGFiZWwga2V5PXtyLnZhbHVlfSBjbGFzc05hbWU9e2BmbGV4IGl0ZW1zLXN0YXJ0IGdhcC0zIHAtMyByb3VuZGVkLWxnIGJvcmRlciBjdXJzb3ItcG9pbnRlciB0cmFuc2l0aW9uLWNvbG9ycyAke2Zvcm0ucm9sZSA9PT0gci52YWx1ZSA/ICdib3JkZXItcHJpbWFyeS05MDAgYmctcHJpbWFyeS01MCcgOiAnYm9yZGVyLWdyYXktMjAwIGhvdmVyOmJnLWdyYXktNTAnfWB9PgogICAgICAgICAgICAgICAgICA8aW5wdXQgdHlwZT0icmFkaW8iIG5hbWU9InJvbGUiIHZhbHVlPXtyLnZhbHVlfSBjaGVja2VkPXtmb3JtLnJvbGUgPT09IHIudmFsdWV9IG9uQ2hhbmdlPXsoZSkgPT4gc2V0Rm9ybSgoZikgPT4gKHsgLi4uZiwgcm9sZTogZS50YXJnZXQudmFsdWUgfSkpfSBjbGFzc05hbWU9Im10LTAuNSIgLz4KICAgICAgICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtc20gZm9udC1tZWRpdW0gdGV4dC1ncmF5LTgwMCI+e3IubGFiZWx9PC9wPgogICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC14cyB0ZXh0LWdyYXktNTAwIj57ci5kZXNjfTwvcD4KICAgICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA8L2xhYmVsPgogICAgICAgICAgICAgICkpfQogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJiZy1ibHVlLTUwIGJvcmRlciBib3JkZXItYmx1ZS0yMDAgcm91bmRlZC1sZyBweC00IHB5LTMgdGV4dC14cyB0ZXh0LWJsdWUtNzAwIj4KICAgICAgICAgICAgVGhlIGludml0ZWQgbWVtYmVyIHdpbGwgYmUgYWRkZWQgdG8geW91ciBjb21wYW55IGFjY291bnQgd2l0aCB0aGUgc2VsZWN0ZWQgcm9sZS4gU2hhcmUgdGhlIGxvZ2luIGNyZWRlbnRpYWxzIHdpdGggdGhlbSBkaXJlY3RseS4KICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IGdhcC0zIHB0LTIiPgogICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgb25DbGljaz17b25DbG9zZX0gY2xhc3NOYW1lPSJmbGV4LTEgYm9yZGVyIGJvcmRlci1ncmF5LTMwMCByb3VuZGVkLWxnIHB5LTIgdGV4dC1zbSB0ZXh0LWdyYXktNjAwIGhvdmVyOmJnLWdyYXktNTAiPkNhbmNlbDwvYnV0dG9uPgogICAgICAgICAgICA8YnV0dG9uIHR5cGU9InN1Ym1pdCIgZGlzYWJsZWQ9e3NhdmluZ30gY2xhc3NOYW1lPSJmbGV4LTEgYmctcHJpbWFyeS05MDAgdGV4dC13aGl0ZSByb3VuZGVkLWxnIHB5LTIgdGV4dC1zbSBmb250LW1lZGl1bSBob3ZlcjpiZy1wcmltYXJ5LTgwMCBkaXNhYmxlZDpvcGFjaXR5LTYwIj4KICAgICAgICAgICAgICB7c2F2aW5nID8gJ0ludml0aW5n4oCmJyA6ICdBZGQgTWVtYmVyJ30KICAgICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICA8L2Zvcm0+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgKTsKfQoKZnVuY3Rpb24gRWRpdFJvbGVNb2RhbCh7IG1lbWJlciwgb25DbG9zZSwgb25TYXZlZCB9KSB7CiAgY29uc3QgW3JvbGUsIHNldFJvbGVdID0gdXNlU3RhdGUobWVtYmVyLnJvbGUpOwogIGNvbnN0IFtzYXZpbmcsIHNldFNhdmluZ10gPSB1c2VTdGF0ZShmYWxzZSk7CgogIGNvbnN0IGhhbmRsZVN1Ym1pdCA9IGFzeW5jIChlKSA9PiB7CiAgICBlLnByZXZlbnREZWZhdWx0KCk7CiAgICBzZXRTYXZpbmcodHJ1ZSk7CiAgICB0cnkgewogICAgICBhd2FpdCBhcGkucGF0Y2goYC9hdXRoL3RlYW0vJHttZW1iZXIuX2lkfS9yb2xlYCwgeyByb2xlIH0pOwogICAgICBvblNhdmVkKCk7CiAgICB9IGNhdGNoIHsgfSBmaW5hbGx5IHsgc2V0U2F2aW5nKGZhbHNlKTsgfQogIH07CgogIHJldHVybiAoCiAgICA8ZGl2IGNsYXNzTmFtZT0iZml4ZWQgaW5zZXQtMCB6LTUwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGJnLWJsYWNrLzQwIHAtNCI+CiAgICAgIDxkaXYgY2xhc3NOYW1lPSJiZy13aGl0ZSByb3VuZGVkLTJ4bCBzaGFkb3cteGwgdy1mdWxsIG1heC13LXNtIj4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0icHgtNiBweS00IGJvcmRlci1iIGJvcmRlci1ncmF5LTEwMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4iPgogICAgICAgICAgPGgyIGNsYXNzTmFtZT0iZm9udC1zZW1pYm9sZCB0ZXh0LWdyYXktODAwIj5DaGFuZ2UgUm9sZSDigJQge21lbWJlci5uYW1lfTwvaDI+CiAgICAgICAgICA8YnV0dG9uIG9uQ2xpY2s9e29uQ2xvc2V9PjxYIHNpemU9ezIwfSBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgaG92ZXI6dGV4dC1ncmF5LTYwMCIgLz48L2J1dHRvbj4KICAgICAgICA8L2Rpdj4KICAgICAgICA8Zm9ybSBvblN1Ym1pdD17aGFuZGxlU3VibWl0fSBjbGFzc05hbWU9InAtNiBzcGFjZS15LTMiPgogICAgICAgICAge1JPTEVTLm1hcCgocikgPT4gKAogICAgICAgICAgICA8bGFiZWwga2V5PXtyLnZhbHVlfSBjbGFzc05hbWU9e2BmbGV4IGl0ZW1zLXN0YXJ0IGdhcC0zIHAtMyByb3VuZGVkLWxnIGJvcmRlciBjdXJzb3ItcG9pbnRlciB0cmFuc2l0aW9uLWNvbG9ycyAke3JvbGUgPT09IHIudmFsdWUgPyAnYm9yZGVyLXByaW1hcnktOTAwIGJnLXByaW1hcnktNTAnIDogJ2JvcmRlci1ncmF5LTIwMCBob3ZlcjpiZy1ncmF5LTUwJ31gfT4KICAgICAgICAgICAgICA8aW5wdXQgdHlwZT0icmFkaW8iIG5hbWU9InJvbGUiIHZhbHVlPXtyLnZhbHVlfSBjaGVja2VkPXtyb2xlID09PSByLnZhbHVlfSBvbkNoYW5nZT17KGUpID0+IHNldFJvbGUoZS50YXJnZXQudmFsdWUpfSBjbGFzc05hbWU9Im10LTAuNSIgLz4KICAgICAgICAgICAgICA8ZGl2PgogICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPSJ0ZXh0LXNtIGZvbnQtbWVkaXVtIHRleHQtZ3JheS04MDAiPntyLmxhYmVsfTwvcD4KICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC14cyB0ZXh0LWdyYXktNTAwIj57ci5kZXNjfTwvcD4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9sYWJlbD4KICAgICAgICAgICkpfQogICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImZsZXggZ2FwLTMgcHQtMiI+CiAgICAgICAgICAgIDxidXR0b24gdHlwZT0iYnV0dG9uIiBvbkNsaWNrPXtvbkNsb3NlfSBjbGFzc05hbWU9ImZsZXgtMSBib3JkZXIgYm9yZGVyLWdyYXktMzAwIHJvdW5kZWQtbGcgcHktMiB0ZXh0LXNtIHRleHQtZ3JheS02MDAgaG92ZXI6YmctZ3JheS01MCI+Q2FuY2VsPC9idXR0b24+CiAgICAgICAgICAgIDxidXR0b24gdHlwZT0ic3VibWl0IiBkaXNhYmxlZD17c2F2aW5nfSBjbGFzc05hbWU9ImZsZXgtMSBiZy1wcmltYXJ5LTkwMCB0ZXh0LXdoaXRlIHJvdW5kZWQtbGcgcHktMiB0ZXh0LXNtIGZvbnQtbWVkaXVtIGhvdmVyOmJnLXByaW1hcnktODAwIGRpc2FibGVkOm9wYWNpdHktNjAiPgogICAgICAgICAgICAgIHtzYXZpbmcgPyAnU2F2aW5n4oCmJyA6ICdVcGRhdGUgUm9sZSd9CiAgICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9mb3JtPgogICAgICA8L2Rpdj4KICAgIDwvZGl2PgogICk7Cn0KCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFRlYW1NYW5hZ2VtZW50KCkgewogIGNvbnN0IHsgdXNlciB9ID0gdXNlQXV0aCgpOwogIGNvbnN0IFttZW1iZXJzLCBzZXRNZW1iZXJzXSA9IHVzZVN0YXRlKFtdKTsKICBjb25zdCBbbG9hZGluZywgc2V0TG9hZGluZ10gPSB1c2VTdGF0ZSh0cnVlKTsKICBjb25zdCBbc2hvd0ludml0ZSwgc2V0U2hvd0ludml0ZV0gPSB1c2VTdGF0ZShmYWxzZSk7CiAgY29uc3QgW2VkaXRNZW1iZXIsIHNldEVkaXRNZW1iZXJdID0gdXNlU3RhdGUobnVsbCk7CgogIGlmICh1c2VyPy5yb2xlICE9PSAnYWRtaW4nKSB7CiAgICByZXR1cm4gKAogICAgICA8ZGl2IGNsYXNzTmFtZT0idGV4dC1jZW50ZXIgcHktMjAgdGV4dC1ncmF5LTQwMCI+CiAgICAgICAgPFNoaWVsZENoZWNrIHNpemU9ezQ4fSBjbGFzc05hbWU9Im14LWF1dG8gbWItMyBvcGFjaXR5LTIwIiAvPgogICAgICAgIDxwIGNsYXNzTmFtZT0iZm9udC1tZWRpdW0iPkFkbWluIGFjY2VzcyByZXF1aXJlZDwvcD4KICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtc20iPk9ubHkgYWRtaW5pc3RyYXRvcnMgY2FuIG1hbmFnZSB0ZWFtIG1lbWJlcnMuPC9wPgogICAgICA8L2Rpdj4KICAgICk7CiAgfQoKICBjb25zdCBsb2FkID0gdXNlQ2FsbGJhY2soYXN5bmMgKCkgPT4gewogICAgc2V0TG9hZGluZyh0cnVlKTsKICAgIHRyeSB7CiAgICAgIGNvbnN0IHsgZGF0YSB9ID0gYXdhaXQgYXBpLmdldCgnL2F1dGgvdGVhbScpOwogICAgICBzZXRNZW1iZXJzKGRhdGEubWVtYmVycyB8fCBbXSk7CiAgICB9IGZpbmFsbHkgeyBzZXRMb2FkaW5nKGZhbHNlKTsgfQogIH0sIFtdKTsKCiAgdXNlRWZmZWN0KCgpID0+IHsgbG9hZCgpOyB9LCBbbG9hZF0pOwoKICBjb25zdCBoYW5kbGVSZW1vdmUgPSBhc3luYyAoaWQpID0+IHsKICAgIGlmICghY29uZmlybSgnUmVtb3ZlIHRoaXMgdGVhbSBtZW1iZXIgZnJvbSB5b3VyIGNvbXBhbnk/JykpIHJldHVybjsKICAgIHRyeSB7CiAgICAgIGF3YWl0IGFwaS5kZWxldGUoYC9hdXRoL3RlYW0vJHtpZH1gKTsKICAgICAgbG9hZCgpOwogICAgfSBjYXRjaCB7IH0KICB9OwoKICBjb25zdCByb2xlTGFiZWwgPSAocikgPT4gewogICAgY29uc3QgZm91bmQgPSBST0xFUy5maW5kKCh4KSA9PiB4LnZhbHVlID09PSByKTsKICAgIHJldHVybiBmb3VuZD8ubGFiZWwgfHwgKHIgPT09ICdhZG1pbicgPyAnQWRtaW5pc3RyYXRvcicgOiByKTsKICB9OwoKICByZXR1cm4gKAogICAgPGRpdiBjbGFzc05hbWU9InNwYWNlLXktNSBtYXgtdy0zeGwiPgogICAgICA8ZGl2IGNsYXNzTmFtZT0iZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIj4KICAgICAgICA8ZGl2PgogICAgICAgICAgPGgxIGNsYXNzTmFtZT0idGV4dC14bCBmb250LWJvbGQgdGV4dC1ncmF5LTgwMCI+VGVhbSBNYW5hZ2VtZW50PC9oMT4KICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1zbSB0ZXh0LWdyYXktNTAwIG10LTEiPk1hbmFnZSB3aG8gaGFzIGFjY2VzcyB0byB5b3VyIGNvbXBhbnkncyBCT1Egc3lzdGVtLjwvcD4KICAgICAgICA8L2Rpdj4KICAgICAgICA8YnV0dG9uIG9uQ2xpY2s9eygpID0+IHNldFNob3dJbnZpdGUodHJ1ZSl9CiAgICAgICAgICBjbGFzc05hbWU9ImZsZXggaXRlbXMtY2VudGVyIGdhcC0yIGJnLXByaW1hcnktOTAwIHRleHQtd2hpdGUgcHgtNCBweS0yIHJvdW5kZWQtbGcgdGV4dC1zbSBmb250LW1lZGl1bSBob3ZlcjpiZy1wcmltYXJ5LTgwMCI+CiAgICAgICAgICA8UGx1cyBzaXplPXsxNn0gLz4gQWRkIE1lbWJlcgogICAgICAgIDwvYnV0dG9uPgogICAgICA8L2Rpdj4KCiAgICAgIHsvKiBSb2xlIGxlZ2VuZCAqL30KICAgICAgPGRpdiBjbGFzc05hbWU9ImdyaWQgZ3JpZC1jb2xzLTEgc206Z3JpZC1jb2xzLTMgZ2FwLTMiPgogICAgICAgIHtST0xFUy5tYXAoKHIpID0+ICgKICAgICAgICAgIDxkaXYga2V5PXtyLnZhbHVlfSBjbGFzc05hbWU9ImJnLXdoaXRlIHJvdW5kZWQteGwgYm9yZGVyIGJvcmRlci1ncmF5LTEwMCBzaGFkb3ctc20gcC00Ij4KICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPXtgaW5saW5lLWJsb2NrIHRleHQteHMgcHgtMiBweS0wLjUgcm91bmRlZC1mdWxsIGZvbnQtbWVkaXVtIG1iLTIgJHtST0xFX0NPTE9SU1tyLnZhbHVlXX1gfT57ci5sYWJlbH08L3NwYW4+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC14cyB0ZXh0LWdyYXktNTAwIj57ci5kZXNjfTwvcD4KICAgICAgICAgIDwvZGl2PgogICAgICAgICkpfQogICAgICA8L2Rpdj4KCiAgICAgIHtsb2FkaW5nID8gKAogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJ0ZXh0LWNlbnRlciBweS0xNiB0ZXh0LWdyYXktNDAwIj5Mb2FkaW5nIHRlYW3igKY8L2Rpdj4KICAgICAgKSA6IG1lbWJlcnMubGVuZ3RoID09PSAwID8gKAogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJ0ZXh0LWNlbnRlciBweS0xNiB0ZXh0LWdyYXktNDAwIj4KICAgICAgICAgIDxVc2VycyBzaXplPXs0MH0gY2xhc3NOYW1lPSJteC1hdXRvIG1iLTMgb3BhY2l0eS0yMCIgLz4KICAgICAgICAgIDxwPk5vIHRlYW0gbWVtYmVycyB5ZXQuIEFkZCB5b3VyIGZpcnN0IG1lbWJlciBhYm92ZS48L3A+CiAgICAgICAgPC9kaXY+CiAgICAgICkgOiAoCiAgICAgICAgPGRpdiBjbGFzc05hbWU9ImJnLXdoaXRlIHJvdW5kZWQtMnhsIGJvcmRlciBib3JkZXItZ3JheS0xMDAgc2hhZG93LXNtIG92ZXJmbG93LWhpZGRlbiI+CiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0icHgtNSBweS0zIGJnLWdyYXktNTAgYm9yZGVyLWIgYm9yZGVyLWdyYXktMTAwIHRleHQteHMgdGV4dC1ncmF5LTUwMCBmb250LXNlbWlib2xkIHVwcGVyY2FzZSB0cmFja2luZy13aWRlIj4KICAgICAgICAgICAge21lbWJlcnMubGVuZ3RofSBtZW1iZXJ7bWVtYmVycy5sZW5ndGggIT09IDEgPyAncycgOiAnJ30KICAgICAgICAgIDwvZGl2PgogICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImRpdmlkZS15IGRpdmlkZS1ncmF5LTUwIj4KICAgICAgICAgICAge21lbWJlcnMubWFwKChtKSA9PiAoCiAgICAgICAgICAgICAgPGRpdiBrZXk9e20uX2lkfSBjbGFzc05hbWU9InB4LTUgcHktNCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtNCI+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17YHctMTAgaC0xMCByb3VuZGVkLWZ1bGwgJHtST0xFX0NPTE9SU1ttLnJvbGVdPy5yZXBsYWNlKCd0ZXh0LScsICdiZy0nKS5yZXBsYWNlKCctMTAwJywgJy01MDAnKSB8fCAnYmctZ3JheS00MDAnfSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBzaHJpbmstMCB0ZXh0LXdoaXRlIGZvbnQtYm9sZGB9PgogICAgICAgICAgICAgICAgICB7bS5uYW1lPy5jaGFyQXQoMCk/LnRvVXBwZXJDYXNlKCl9CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4LTEgbWluLXctMCI+CiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiI+CiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPSJmb250LXNlbWlib2xkIHRleHQtZ3JheS04MDAgdHJ1bmNhdGUiPnttLm5hbWV9PC9wPgogICAgICAgICAgICAgICAgICAgIHttLl9pZCA9PT0gdXNlci5faWQgJiYgPHNwYW4gY2xhc3NOYW1lPSJ0ZXh0LXhzIHRleHQtZ3JheS00MDAiPih5b3UpPC9zcGFuPn0KICAgICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC14cyB0ZXh0LWdyYXktNTAwIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xIj48TWFpbCBzaXplPXsxMX0gLz4ge20uZW1haWx9PC9wPgogICAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9e2B0ZXh0LXhzIHB4LTIgcHktMC41IHJvdW5kZWQtZnVsbCBmb250LW1lZGl1bSBzaHJpbmstMCAke1JPTEVfQ09MT1JTW20ucm9sZV0gfHwgJ2JnLWdyYXktMTAwIHRleHQtZ3JheS02MDAnfWB9PgogICAgICAgICAgICAgICAgICB7cm9sZUxhYmVsKG0ucm9sZSl9CiAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICB7bS5faWQgIT09IHVzZXIuX2lkICYmICgKICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImZsZXggaXRlbXMtY2VudGVyIGdhcC0xIHNocmluay0wIj4KICAgICAgICAgICAgICAgICAgICA8YnV0dG9uIG9uQ2xpY2s9eygpID0+IHNldEVkaXRNZW1iZXIobSl9CiAgICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9InAtMS41IHRleHQtZ3JheS00MDAgaG92ZXI6dGV4dC1wcmltYXJ5LTkwMCBob3ZlcjpiZy1wcmltYXJ5LTUwIHJvdW5kZWQtbGciIHRpdGxlPSJDaGFuZ2Ugcm9sZSI+CiAgICAgICAgICAgICAgICAgICAgICA8RWRpdDIgc2l6ZT17MTR9IC8+CiAgICAgICAgICAgICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICAgICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXsoKSA9PiBoYW5kbGVSZW1vdmUobS5faWQpfQogICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPSJwLTEuNSB0ZXh0LWdyYXktNDAwIGhvdmVyOnRleHQtcmVkLTUwMCBob3ZlcjpiZy1yZWQtNTAgcm91bmRlZC1sZyIgdGl0bGU9IlJlbW92ZSI+CiAgICAgICAgICAgICAgICAgICAgICA8VHJhc2gyIHNpemU9ezE0fSAvPgogICAgICAgICAgICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgICl9CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICkpfQogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgICl9CgogICAgICB7c2hvd0ludml0ZSAmJiAoCiAgICAgICAgPEludml0ZU1vZGFsIG9uQ2xvc2U9eygpID0+IHNldFNob3dJbnZpdGUoZmFsc2UpfSBvblNhdmVkPXsoKSA9PiB7IHNldFNob3dJbnZpdGUoZmFsc2UpOyBsb2FkKCk7IH19IC8+CiAgICAgICl9CiAgICAgIHtlZGl0TWVtYmVyICYmICgKICAgICAgICA8RWRpdFJvbGVNb2RhbCBtZW1iZXI9e2VkaXRNZW1iZXJ9IG9uQ2xvc2U9eygpID0+IHNldEVkaXRNZW1iZXIobnVsbCl9IG9uU2F2ZWQ9eygpID0+IHsgc2V0RWRpdE1lbWJlcihudWxsKTsgbG9hZCgpOyB9fSAvPgogICAgICApfQogICAgPC9kaXY+CiAgKTsKfQo=
+import React, { useEffect, useState, useCallback } from 'react';
+import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2 } from 'lucide-react';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+
+const ROLES = [
+  { value: 'qs',              label: 'Quantity Surveyor',  desc: 'Can view pricing library and use estimator; cannot edit rates or manage team' },
+  { value: 'project_manager', label: 'Project Manager',    desc: 'Can manage projects, progress, change orders, and site reports' },
+  { value: 'client',          label: 'Client',             desc: 'Read-only view of estimates, invoices, progress, and site reports' },
+];
+
+const ROLE_COLORS = {
+  admin:           'bg-blue-100 text-blue-700',
+  qs:              'bg-purple-100 text-purple-700',
+  project_manager: 'bg-green-100 text-green-700',
+  client:          'bg-orange-100 text-orange-700',
+};
+
+const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30';
+
+function InviteModal({ onClose, onSaved }) {
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'qs' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await api.post('/auth/invite', form);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to invite member');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Invite Team Member</h2>
+          <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
+            <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={inputCls} placeholder="Jane Smith" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Email *</label>
+            <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="jane@company.com" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Temporary Password *</label>
+            <input required type="password" minLength={6} value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} className={inputCls} placeholder="Minimum 6 characters" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Role *</label>
+            <div className="space-y-2">
+              {ROLES.map((r) => (
+                <label key={r.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.role === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                  <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} className="mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{r.label}</p>
+                    <p className="text-xs text-gray-500">{r.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700">
+            The invited member will be added to your company account with the selected role. Share the login credentials with them directly.
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
+              {saving ? 'Inviting…' : 'Add Member'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditRoleModal({ member, onClose, onSaved }) {
+  const [role, setRole] = useState(member.role);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.patch(`/auth/team/${member._id}/role`, { role });
+      onSaved();
+    } catch { } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Change Role — {member.name}</h2>
+          <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-3">
+          {ROLES.map((r) => (
+            <label key={r.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${role === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+              <input type="radio" name="role" value={r.value} checked={role === r.value} onChange={(e) => setRole(e.target.value)} className="mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-gray-800">{r.label}</p>
+                <p className="text-xs text-gray-500">{r.desc}</p>
+              </div>
+            </label>
+          ))}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
+              {saving ? 'Saving…' : 'Update Role'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default function TeamManagement() {
+  const { user } = useAuth();
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showInvite, setShowInvite] = useState(false);
+  const [editMember, setEditMember] = useState(null);
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="text-center py-20 text-gray-400">
+        <ShieldCheck size={48} className="mx-auto mb-3 opacity-20" />
+        <p className="font-medium">Admin access required</p>
+        <p className="text-sm">Only administrators can manage team members.</p>
+      </div>
+    );
+  }
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/auth/team');
+      setMembers(data.members || []);
+    } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleRemove = async (id) => {
+    if (!confirm('Remove this team member from your company?')) return;
+    try {
+      await api.delete(`/auth/team/${id}`);
+      load();
+    } catch { }
+  };
+
+  const roleLabel = (r) => {
+    const found = ROLES.find((x) => x.value === r);
+    return found?.label || (r === 'admin' ? 'Administrator' : r);
+  };
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">Team Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage who has access to your company's BOQ system.</p>
+        </div>
+        <button onClick={() => setShowInvite(true)}
+          className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-800">
+          <Plus size={16} /> Add Member
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {ROLES.map((r) => (
+          <div key={r.value} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium mb-2 ${ROLE_COLORS[r.value]}`}>{r.label}</span>
+            <p className="text-xs text-gray-500">{r.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="text-center py-16 text-gray-400">Loading team…</div>
+      ) : members.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <Users size={40} className="mx-auto mb-3 opacity-20" />
+          <p>No team members yet. Add your first member above.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-semibold uppercase tracking-wide">
+            {members.length} member{members.length !== 1 ? 's' : ''}
+          </div>
+          <div className="divide-y divide-gray-50">
+            {members.map((m) => (
+              <div key={m._id} className="px-5 py-4 flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full ${ROLE_COLORS[m.role]?.replace('text-', 'bg-').replace('-100', '-500') || 'bg-gray-400'} flex items-center justify-center shrink-0 text-white font-bold`}>
+                  {m.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-gray-800 truncate">{m.name}</p>
+                    {m._id === user._id && <span className="text-xs text-gray-400">(you)</span>}
+                  </div>
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><Mail size={11} /> {m.email}</p>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ROLE_COLORS[m.role] || 'bg-gray-100 text-gray-600'}`}>
+                  {roleLabel(m.role)}
+                </span>
+                {m._id !== user._id && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => setEditMember(m)}
+                      className="p-1.5 text-gray-400 hover:text-primary-900 hover:bg-primary-50 rounded-lg" title="Change role">
+                      <Edit2 size={14} />
+                    </button>
+                    <button onClick={() => handleRemove(m._id)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg" title="Remove">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showInvite && (
+        <InviteModal onClose={() => setShowInvite(false)} onSaved={() => { setShowInvite(false); load(); }} />
+      )}
+      {editMember && (
+        <EditRoleModal member={editMember} onClose={() => setEditMember(null)} onSaved={() => { setEditMember(null); load(); }} />
+      )}
+    </div>
+  );
+}
