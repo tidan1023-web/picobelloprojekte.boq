@@ -39,16 +39,11 @@ const EMPTY_REPORT = {
   siteLocation: '', zone: '', level: '', room: '',
   description: '', workCarriedOut: '', materialsUsed: '',
   workersOnSite: '', visitorsOnSite: '',
-  // weekly
   weeklyWorkPlanned: '', weeklyWorkActual: '', weeklyPercentComplete: '', weeklyMilestones: '', weeklyIssuesSummary: '',
-  // incident
   incidentDateTime: '', incidentLocation: '', incidentType: 'near-miss', incidentDescription: '', incidentPersonsInvolved: '', incidentImmediateActions: '',
   rootCauseAnalysis: '', correctiveActions: '',
-  // snag
   snagItems: [],
-  // delivery
   supplierName: '', deliveryNoteNumber: '', deliveryItems: [],
-  // inspection
   inspectionChecklist: [],
   problems: [], actionsRequired: [], images: [], status: 'draft', projectId: '',
 };
@@ -68,8 +63,6 @@ function Section({ title, icon: Icon, children, defaultOpen = true }) {
     </div>
   );
 }
-
-/* ── Shared sub-sections used by multiple templates ── */
 
 function SiteLocationSection({ form, set }) {
   return (
@@ -215,21 +208,43 @@ function ActionsRequiredSection({ form, setForm, teamMembers }) {
 }
 
 function PhotosSection({ form, setForm }) {
-  const handleImageAdd = () => {
-    const url = prompt('Enter image URL:');
-    if (url) setForm((f) => ({ ...f, images: [...f.images, { url, caption: '' }] }));
+  const fileRef = useRef();
+  const [urlInput, setUrlInput] = useState('');
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setForm((f) => ({ ...f, images: [...f.images, { url: ev.target.result, caption: '', type: 'file', name: file.name }] }));
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
   };
+
+  const handleUrlAdd = () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    setForm((f) => ({ ...f, images: [...f.images, { url: trimmed, caption: '', type: 'url' }] }));
+    setUrlInput('');
+  };
+
   const updateCaption = (i, v) => setForm((f) => ({ ...f, images: f.images.map((img, idx) => idx === i ? { ...img, caption: v } : img) }));
   const removeImage = (i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
+
   return (
-    <Section title="Photos" icon={Camera} defaultOpen={false}>
+    <Section title="Photos & Media" icon={Camera} defaultOpen={false}>
       <div className="space-y-3">
         {form.images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {form.images.map((img, i) => (
               <div key={i} className="relative group">
                 <img src={img.url} alt={img.caption || 'site photo'} className="w-full h-28 object-cover rounded-lg border border-gray-100"
-                  onError={(e) => { e.target.src = ''; e.target.alt = 'Image not found'; }} />
+                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                <div style={{ display: 'none' }} className="w-full h-28 rounded-lg border border-gray-200 bg-gray-50 items-center justify-center text-xs text-gray-400">
+                  {img.name || 'Image'}
+                </div>
                 <button type="button" onClick={() => removeImage(i)}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <X size={10} />
@@ -240,16 +255,29 @@ function PhotosSection({ form, setForm }) {
             ))}
           </div>
         )}
-        <button type="button" onClick={handleImageAdd}
+        <button type="button" onClick={() => fileRef.current?.click()}
           className="flex items-center gap-2 border border-dashed border-gray-300 text-gray-500 px-4 py-3 rounded-xl hover:border-primary-900 hover:text-primary-900 text-sm w-full justify-center transition-colors">
-          <Camera size={16} /> Add Photo URL
+          <Camera size={16} /> Upload Photos
         </button>
+        <input ref={fileRef} type="file" accept="image/*,.pdf" multiple className="hidden" onChange={handleFileChange} />
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleUrlAdd())}
+            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-900"
+            placeholder="Paste Google Photos or Maps URL…"
+          />
+          <button type="button" onClick={handleUrlAdd}
+            className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 shrink-0">
+            Add
+          </button>
+        </div>
       </div>
     </Section>
   );
 }
-
-/* ── Template-specific sections ── */
 
 function DailySections({ form, setForm, set, teamMembers }) {
   return (
@@ -446,7 +474,6 @@ function DeliverySections({ form, setForm, set }) {
               <input value={form.deliveryNoteNumber} onChange={set('deliveryNoteNumber')} className={inputCls} placeholder="e.g. DN-2024-001" />
             </div>
           </div>
-
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-2">Materials Delivered</label>
             <div className="space-y-2">
@@ -545,8 +572,6 @@ function InspectionSections({ form, setForm, set, teamMembers }) {
   );
 }
 
-/* ── Main modal ── */
-
 function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers }) {
   const [form, setForm] = useState(EMPTY_REPORT);
   const [saving, setSaving] = useState(false);
@@ -606,7 +631,6 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
-          {/* 1. Report Details — always visible */}
           <Section title="Report Details" icon={FileText}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
@@ -654,7 +678,6 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
             </div>
           </Section>
 
-          {/* 2. Template picker — always visible */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-2">Template *</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -668,7 +691,6 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
             </div>
           </div>
 
-          {/* 3. Template-specific sections */}
           {templateSections[form.template]}
 
           <div className="flex gap-3 pt-2">
@@ -887,7 +909,6 @@ export default function SiteReports() {
                       {openActions > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium">{openActions} action{openActions > 1 ? 's' : ''}</span>}
                     </div>
                     <p className="font-semibold text-gray-800">{r.title}</p>
-                    {/* Site Manager — prominently shown */}
                     {r.siteManagerName && (
                       <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-gray-700">
                         <UserCheck size={13} className="text-primary-900" />
@@ -908,7 +929,7 @@ export default function SiteReports() {
                     {canEdit && <>
                       <button onClick={() => { setEditing(r); setModal(true); }} className="p-1.5 text-gray-400 hover:text-primary-900 hover:bg-primary-50 rounded-lg"><Pencil size={15} /></button>
                       <button onClick={() => handleDelete(r._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={15} /></button>
-                    </>}
+                    </> }
                   </div>
                 </div>
               </div>

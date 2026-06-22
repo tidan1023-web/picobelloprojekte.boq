@@ -2,12 +2,21 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, X, Pencil, Trash2, ChevronLeft, FileSpreadsheet, CheckCircle } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ExcelImport from '../components/ExcelImport';
+
+const BOQ_ITEM_IMPORT_COLUMNS = [
+  { key: 'description', label: 'Description', type: 'string' },
+  { key: 'unit', label: 'Unit', type: 'string' },
+  { key: 'quantity', label: 'Quantity', type: 'number' },
+  { key: 'baseCost', label: 'Base Cost', type: 'number' },
+  { key: 'overheadPercent', label: 'Overhead %', type: 'number' },
+  { key: 'profitPercent', label: 'Profit %', type: 'number' },
+  { key: 'section', label: 'Section', type: 'string' },
+];
 
 const STATUS_COLORS = { draft: 'bg-yellow-100 text-yellow-700', final: 'bg-blue-100 text-blue-700', approved: 'bg-green-100 text-green-700' };
 const CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP'];
 const inputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 focus:border-transparent';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function calcItem(baseCost, overheadPercent, profitPercent, quantity) {
   const unitPrice = baseCost * (1 + overheadPercent / 100) * (1 + profitPercent / 100);
@@ -17,8 +26,6 @@ function calcItem(baseCost, overheadPercent, profitPercent, quantity) {
 function fmt(n, currency = '') {
   return `${currency} ${Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim();
 }
-
-// ── Version List ──────────────────────────────────────────────────────────────
 
 function VersionModal({ open, onClose, onSaved, editing }) {
   const [projects, setProjects] = useState([]);
@@ -102,8 +109,6 @@ function VersionModal({ open, onClose, onSaved, editing }) {
   );
 }
 
-// ── Item Modal ────────────────────────────────────────────────────────────────
-
 const ITEM_EMPTY = { item: '', description: '', unit: '', quantity: '', baseCost: '', overheadPercent: '0', profitPercent: '0' };
 
 function ItemModal({ open, onClose, onSaved, versionId, editing, currency }) {
@@ -185,8 +190,6 @@ function ItemModal({ open, onClose, onSaved, versionId, editing, currency }) {
               <input type="number" min="0" step="0.1" value={form.profitPercent} onChange={set('profitPercent')} className={inputCls} placeholder="0" />
             </div>
           </div>
-
-          {/* Live calculation preview */}
           {bc > 0 && (
             <div className="bg-primary-50 border border-primary-100 rounded-lg p-4 grid grid-cols-2 gap-2 text-sm">
               <div>
@@ -199,7 +202,6 @@ function ItemModal({ open, onClose, onSaved, versionId, editing, currency }) {
               </div>
             </div>
           )}
-
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
             <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
@@ -211,8 +213,6 @@ function ItemModal({ open, onClose, onSaved, versionId, editing, currency }) {
     </div>
   );
 }
-
-// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function BoqBuilder() {
   const { user } = useAuth();
@@ -272,8 +272,6 @@ export default function BoqBuilder() {
     refreshVersion();
   };
 
-  // ── Version list view ────────────────────────────────────────────────────
-
   if (!activeVersion) {
     return (
       <div>
@@ -331,13 +329,10 @@ export default function BoqBuilder() {
     );
   }
 
-  // ── BOQ detail / items view ──────────────────────────────────────────────
-
   const grandTotal = items.reduce((s, i) => s + (i.totalCost || 0), 0);
 
   return (
     <div>
-      {/* Header */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <button onClick={() => setActiveVersion(null)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-900 transition-colors shrink-0">
           <ChevronLeft size={16} /> Back
@@ -350,10 +345,24 @@ export default function BoqBuilder() {
           <p className="text-xs text-gray-500 truncate">{activeVersion.projectId?.name} — {activeVersion.projectId?.client}</p>
         </div>
         {canEdit && (
-          <button onClick={() => { setEditingItem(null); setItemModal(true); }}
-            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
-            <Plus size={16} /> Add Item
-          </button>
+          <>
+            <ExcelImport
+              onImport={async (rows) => {
+                let count = 0;
+                for (const row of rows) {
+                  try { await api.post(`/boq/${activeVersion._id}/items`, row); count++; } catch {}
+                }
+                alert(`Imported ${count} items`);
+                refreshVersion();
+              }}
+              columns={BOQ_ITEM_IMPORT_COLUMNS}
+              templateName="boq-items"
+            />
+            <button onClick={() => { setEditingItem(null); setItemModal(true); }}
+              className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
+              <Plus size={16} /> Add Item
+            </button>
+          </>
         )}
       </div>
 
@@ -377,7 +386,7 @@ export default function BoqBuilder() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {items.map((item, idx) => (
+                {items.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-800">{item.item}</p>
@@ -403,8 +412,6 @@ export default function BoqBuilder() {
               </tbody>
             </table>
           </div>
-
-          {/* Grand total */}
           <div className="bg-primary-900 text-white rounded-xl px-4 sm:px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <CheckCircle size={18} className="opacity-70" />
