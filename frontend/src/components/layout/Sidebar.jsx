@@ -21,6 +21,7 @@ const NAV_GROUPS = [
   },
   {
     heading: 'Pricing Libraries',
+    clientHidden: true,
     items: [
       { to: '/app/qs-prices',          icon: BookOpen,       label: 'QS Prices' },
       { to: '/app/qs-comparison',      icon: GitCompare,     label: 'QS Comparison' },
@@ -43,8 +44,8 @@ const NAV_GROUPS = [
       { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker' },
       { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders' },
       { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports' },
-      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker' },
-      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics' },
+      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker', clientHidden: true },
+      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics',       clientHidden: true },
     ],
   },
   {
@@ -99,31 +100,38 @@ export default function Sidebar({ onClose }) {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 overflow-y-auto min-h-0 space-y-4">
-        {NAV_GROUPS.map((group, gi) => (
-          <div key={gi}>
-            {group.heading && (
-              <p className="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-wider text-blue-400 select-none">
-                {group.heading}
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {group.items
-                .filter((item) => !item.adminOnly || user?.role === 'admin')
-                .map(({ to, icon: Icon, label }) => (
+        {NAV_GROUPS.map((group, gi) => {
+          const isClient = user?.role === 'client';
+          if (group.clientHidden && isClient) return null;
+          const visibleItems = group.items.filter((item) => {
+            if (item.adminOnly && user?.role !== 'admin') return false;
+            if (item.clientHidden && isClient) return false;
+            return true;
+          });
+          if (visibleItems.length === 0) return null;
+          return (
+            <div key={gi}>
+              {group.heading && (
+                <p className="px-2.5 mb-1 text-[10px] font-semibold uppercase tracking-wider text-blue-400 select-none">
+                  {group.heading}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {visibleItems.map(({ to, icon: Icon, label }) => (
                   <NavLink key={to} to={to} onClick={onClose}
                     className={({ isActive }) => linkCls(isActive)}>
                     <Icon size={15} className="shrink-0" />
                     {label}
                   </NavLink>
                 ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer */}
       <div className="px-2 py-3 border-t border-primary-800 shrink-0">
-        {/* Role badge */}
         <div className="px-2 py-2 mb-1.5 flex items-center gap-2.5">
           <div className={`w-8 h-8 rounded-full ${ROLE_COLOR[user?.role] ?? 'bg-gray-500'} flex items-center justify-center shrink-0 text-white font-bold text-sm`}>
             {user?.name?.charAt(0)?.toUpperCase()}

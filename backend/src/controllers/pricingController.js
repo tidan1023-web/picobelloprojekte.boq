@@ -13,7 +13,7 @@ const getIntelligence = async (req, res) => {
   let results = [];
 
   if (!type || type === 'qs') {
-    const qsPrices = await QsPrice.find({ $or: [{ item: regex }, { category: regex }] });
+    const qsPrices = await QsPrice.find({ companyId: req.user.companyId, $or: [{ item: regex }, { category: regex }] });
     results = [
       ...results,
       ...qsPrices.map((p) => ({
@@ -29,7 +29,7 @@ const getIntelligence = async (req, res) => {
   }
 
   if (!type || type === 'artisan') {
-    const artisanPrices = await ArtisanPrice.find({ service: regex });
+    const artisanPrices = await ArtisanPrice.find({ companyId: req.user.companyId, service: regex });
     results = [
       ...results,
       ...artisanPrices.map((p) => ({
@@ -46,6 +46,7 @@ const getIntelligence = async (req, res) => {
 
   if (!type || type === 'material') {
     const materialPrices = await MaterialPrice.find({
+      companyId: req.user.companyId,
       $or: [{ material: regex }, { supplier: regex }],
     });
     results = [

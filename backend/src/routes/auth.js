@@ -5,11 +5,10 @@ const {
   forgotPassword, resetPassword, deleteAccount,
   listTeam, inviteMember, updateMemberRole, removeMember,
 } = require('../controllers/authController');
-const { authenticate }          = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const { authLimiter }           = require('../middleware/rateLimiter');
 const { zodValidate, schemas }  = require('../middleware/zodValidate');
 
-// Strict rate limit on all auth mutation endpoints to prevent brute-force
 router.post('/register',
   authLimiter,
   zodValidate(schemas.register),
@@ -22,7 +21,6 @@ router.post('/login',
   login,
 );
 
-// Google OAuth — rate-limited but no Zod schema (token comes from Google)
 router.post('/google', authLimiter, googleAuth);
 
 router.post('/forgot-password',
@@ -37,16 +35,14 @@ router.post('/reset-password/:token',
   resetPassword,
 );
 
-// Authenticated routes — no tight rate limit needed (JWT already gates them)
 router.get('/me', authenticate, getMe);
 
-// Team management (admin only)
+// Team management — list visible to all authenticated users, mutations admin-only
 router.get('/team',            authenticate, listTeam);
-router.post('/invite',         authenticate, inviteMember);
-router.patch('/team/:id/role', authenticate, updateMemberRole);
-router.delete('/team/:id',     authenticate, removeMember);
+router.post('/invite',         authenticate, authorize('admin'), inviteMember);
+router.patch('/team/:id/role', authenticate, authorize('admin'), updateMemberRole);
+router.delete('/team/:id',     authenticate, authorize('admin'), removeMember);
 
-// App Store / GDPR compliance — permanently delete the caller's account + all data
 router.delete('/me', authenticate, deleteAccount);
 
 module.exports = router;

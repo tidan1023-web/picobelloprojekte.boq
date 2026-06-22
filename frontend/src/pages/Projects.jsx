@@ -2,6 +2,18 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, X, Pencil, Trash2, FolderOpen, Search } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ExcelImport from '../components/ExcelImport';
+
+const PROJECT_IMPORT_COLUMNS = [
+  { key: 'name', label: 'Project Name', type: 'string' },
+  { key: 'status', label: 'Status', type: 'string' },
+  { key: 'currency', label: 'Currency', type: 'string' },
+  { key: 'budget', label: 'Budget', type: 'number' },
+  { key: 'location', label: 'Location', type: 'string' },
+  { key: 'startDate', label: 'Start Date', type: 'date' },
+  { key: 'endDate', label: 'End Date', type: 'date' },
+  { key: 'description', label: 'Description', type: 'string' },
+];
 
 const STATUSES = ['planning', 'active', 'on_hold', 'completed', 'cancelled'];
 const CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP', 'ZAR'];
@@ -242,7 +254,6 @@ export default function Projects() {
 
   return (
     <div>
-      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1 max-w-xs">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -273,17 +284,30 @@ export default function Projects() {
         </span>
 
         {canEdit && (
-          <button
-            onClick={openNew}
-            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors shrink-0"
-          >
-            <Plus size={16} />
-            New Project
-          </button>
+          <>
+            <ExcelImport
+              onImport={async (rows) => {
+                let count = 0;
+                for (const row of rows) {
+                  try { await api.post('/projects', row); count++; } catch {}
+                }
+                alert(`Imported ${count} projects`);
+                fetchProjects();
+              }}
+              columns={PROJECT_IMPORT_COLUMNS}
+              templateName="projects"
+            />
+            <button
+              onClick={openNew}
+              className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors shrink-0"
+            >
+              <Plus size={16} />
+              New Project
+            </button>
+          </>
         )}
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-900" />

@@ -2,6 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, X, Pencil, Trash2, Search, Phone, Mail, Users, Building2, MessageSquare } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ExcelImport from '../components/ExcelImport';
+
+const CONTACT_IMPORT_COLUMNS = [
+  { key: 'name', label: 'Name', type: 'string' },
+  { key: 'category', label: 'Category', type: 'string' },
+  { key: 'company', label: 'Company', type: 'string' },
+  { key: 'email', label: 'Email', type: 'string' },
+  { key: 'phone', label: 'Phone', type: 'string' },
+  { key: 'address', label: 'Address', type: 'string' },
+  { key: 'notes', label: 'Notes', type: 'string' },
+];
 
 const CATEGORIES = ['client', 'contractor', 'subcontractor', 'supplier', 'consultant', 'architect', 'engineer', 'other'];
 const CAT_COLORS = {
@@ -184,10 +195,24 @@ export default function Contacts() {
         </select>
         <span className="text-sm text-gray-400 self-center hidden sm:block">{contacts.length} contacts</span>
         {canEdit && (
-          <button onClick={() => { setEditing(null); setModal(true); }}
-            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
-            <Plus size={16} /> Add Contact
-          </button>
+          <>
+            <ExcelImport
+              onImport={async (rows) => {
+                let count = 0;
+                for (const row of rows) {
+                  try { await api.post('/contacts', row); count++; } catch {}
+                }
+                alert(`Imported ${count} contacts`);
+                load();
+              }}
+              columns={CONTACT_IMPORT_COLUMNS}
+              templateName="contacts"
+            />
+            <button onClick={() => { setEditing(null); setModal(true); }}
+              className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
+              <Plus size={16} /> Add Contact
+            </button>
+          </>
         )}
       </div>
 
