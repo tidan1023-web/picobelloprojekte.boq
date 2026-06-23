@@ -55,4 +55,73 @@ const sendPasswordReset = (user, resetUrl) =>
     `,
   });
 
-module.exports = { sendEmail, sendWelcome, sendPasswordReset };
+// Build a Google Calendar "Add to Calendar" link from a slot string like
+// "Mon, 23 June 2026 at 9:00 AM"
+function buildCalendarLink(slot) {
+  try {
+    const withoutDay = slot.replace(/^[A-Za-z]+,\s*/, '');
+    const normalized = withoutDay.replace(' at ', ' ');
+    const start = new Date(`${normalized} GMT+0100`);
+    if (isNaN(start)) return null;
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
+
+    const fmt = (d) =>
+      d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'Pico Bello Projekte — Onboarding Call',
+      dates: `${fmt(start)}/${fmt(end)}`,
+      details: 'Your onboarding call with the Pico Bello Projekte team. We will walk you through the platform so you can hit the ground running.',
+      location: 'Garki, Abuja, Nigeria (Video / Phone)',
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  } catch {
+    return null;
+  }
+}
+
+const sendBookingConfirmation = (user, slot) => {
+  const calLink = buildCalendarLink(slot);
+  const calButton = calLink
+    ? `<a href="${calLink}" style="display:inline-block;margin-top:8px;padding:10px 20px;background:#4285f4;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">
+        Add to Google Calendar
+       </a>`
+    : '';
+
+  return sendEmail({
+    to: user.email,
+    subject: 'Your Pico Bello onboarding call is confirmed',
+    html: `
+      <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
+        <div style="background:#1e3a8a;padding:24px 28px">
+          <img src="${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/logo.png"
+               alt="Pico Bello Projekte" height="40"
+               style="display:block;margin-bottom:12px;object-fit:contain" />
+          <h2 style="color:#fff;margin:0;font-size:18px">You're on the calendar!</h2>
+        </div>
+        <div style="padding:28px">
+          <p style="color:#374151;margin-top:0">Hi ${user.name},</p>
+          <p style="color:#374151">Your onboarding call with the Pico Bello team is confirmed for:</p>
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 18px;margin:16px 0">
+            <p style="margin:0;color:#1e3a8a;font-weight:700;font-size:15px">📅 ${slot}</p>
+            <p style="margin:4px 0 0;color:#3b82f6;font-size:13px">30-minute call · Video or phone · West Africa Time (UTC+1)</p>
+          </div>
+          ${calButton}
+          <p style="color:#374151;margin-top:20px">
+            We'll walk you through the platform so you can hit the ground running.
+            If you need to reschedule, just reply to this email.
+          </p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" />
+          <p style="color:#6b7280;font-size:13px;margin:0">
+            <strong>Pico Bello Projekte</strong><br />
+            Garki, Abuja, Nigeria<br />
+            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
+          </p>
+        </div>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation };

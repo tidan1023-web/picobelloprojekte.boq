@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
-import { Building2 } from 'lucide-react';
+import Logo from '../../components/Logo';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -30,8 +30,8 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Brand header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-2xl mb-4 shadow-lg">
-            <Building2 size={32} className="text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Logo size={64} />
           </div>
           <h1 className="text-2xl font-bold text-white">Pico Bello Projekte</h1>
           <p className="text-blue-300 mt-1 text-sm">BOQ Management System</p>

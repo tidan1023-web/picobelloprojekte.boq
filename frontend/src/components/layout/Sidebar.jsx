@@ -7,9 +7,10 @@ import {
   BookOpen, GitCompare, HardHat, Package, Zap,
   FileText, Calculator,
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
-  Settings, LogOut, Building2, Moon, Sun, ShieldCheck,
+  Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library,
 } from 'lucide-react';
+import Logo from '../Logo';
 
 const NAV_GROUPS = [
   {
@@ -93,12 +94,10 @@ export default function Sidebar({ onClose }) {
       {/* Brand */}
       <div className="px-4 py-4 border-b border-primary-800 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shrink-0">
-            <Building2 size={18} />
-          </div>
+          <Logo size={36} />
           <div className="leading-tight">
             <p className="text-sm font-bold leading-tight">Pico Bello Projekte</p>
-            <p className="text-xs text-blue-300">Estimator</p>
+            <p className="text-xs text-blue-300">Construction Management</p>
           </div>
         </div>
       </div>
