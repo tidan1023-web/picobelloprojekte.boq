@@ -3,6 +3,7 @@ import { Plus, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown, Minus, Pri
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const CO_IMPORT_COLUMNS = [
   { key: 'title', label: 'Title', type: 'string' },
@@ -263,6 +264,7 @@ function ChangeOrderDocument({ order, onClose }) {
 
 export default function ChangeOrders() {
   const { user } = useAuth();
+  const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState('');
@@ -490,7 +492,7 @@ export default function ChangeOrders() {
           projects={projects}
           editData={editData}
           onClose={() => setShowModal(false)}
-          onSaved={() => { setShowModal(false); load(); }}
+          onSaved={() => { setShowModal(false); load(); toast(editData ? 'Change order updated' : 'Change order created'); }}
         />
       )}
 

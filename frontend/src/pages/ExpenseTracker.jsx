@@ -3,6 +3,7 @@ import { Plus, Trash2, Camera, X, Search, DollarSign, TrendingUp, Calendar, Tag 
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const EXPENSE_IMPORT_COLUMNS = [
   { key: 'description', label: 'Description', type: 'string' },
@@ -142,6 +143,7 @@ function ExpenseModal({ projects, editData, onClose, onSaved }) {
 
 export default function ExpenseTracker() {
   const { user } = useAuth();
+  const toast = useToast();
   const [expenses, setExpenses] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -383,7 +385,7 @@ export default function ExpenseTracker() {
           projects={projects}
           editData={editData}
           onClose={() => setShowModal(false)}
-          onSaved={() => { setShowModal(false); load(); }}
+          onSaved={() => { setShowModal(false); load(); toast(editData ? 'Expense updated' : 'Expense added'); }}
         />
       )}
     </div>
