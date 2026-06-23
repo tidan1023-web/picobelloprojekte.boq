@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
@@ -48,10 +49,24 @@ import Simulator          from './pages/Simulator';
 // Documents
 import Documents          from './pages/Documents';
 
+// BOQ Builder
+import BoqBuilder         from './pages/BoqBuilder';
+
+// Client Portal
+import ClientPortal       from './pages/ClientPortal';
+import ClientBOQ          from './pages/ClientBOQ';
+import ClientInvoices     from './pages/ClientInvoices';
+import ClientComments     from './pages/ClientComments';
+
 // Admin
 import CompanySettings    from './pages/CompanySettings';
 import TeamManagement     from './pages/TeamManagement';
 import Profile            from './pages/Profile';
+
+function AppHome() {
+  const { user } = useAuth();
+  return <Navigate to={user?.role === 'client' ? '/app/client-portal' : '/app/dashboard'} replace />;
+}
 
 export default function App() {
   return (
@@ -66,7 +81,7 @@ export default function App() {
           <Route path="/accept-invite/:token"    element={<AcceptInvite />} />
 
           <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route index                          element={<Navigate to="/app/dashboard" replace />} />
+            <Route index                          element={<AppHome />} />
 
             {/* Dashboard */}
             <Route path="dashboard"              element={<Dashboard />} />
@@ -102,6 +117,15 @@ export default function App() {
 
             {/* Documents */}
             <Route path="documents"              element={<Documents />} />
+
+            {/* BOQ Builder */}
+            <Route path="boq"                    element={<BoqBuilder />} />
+
+            {/* Client Portal */}
+            <Route path="client-portal"          element={<ClientPortal />} />
+            <Route path="client-boq"             element={<ClientBOQ />} />
+            <Route path="client-invoices"        element={<ClientInvoices />} />
+            <Route path="client-comments"        element={<ClientComments />} />
 
             {/* Admin */}
             <Route path="settings"               element={<CompanySettings />} />
