@@ -56,7 +56,7 @@ function VideoBlock() {
   );
 }
 
-export default function BookCallGate() {
+export default function BookCallGate({ onSkip }) {
   const { user, setUser } = useAuth();
   const [days]        = useState(() => getAvailableDays(14));
   const [weekOffset, setWeekOffset] = useState(0);
@@ -283,6 +283,16 @@ export default function BookCallGate() {
             <p className="text-xs text-gray-400 text-center mt-3">
               All times are in West Africa Time (WAT, UTC+1)
             </p>
+
+            {onSkip && (
+              <p className="text-center mt-4">
+                <button
+                  onClick={onSkip}
+                  className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors">
+                  Skip for now — I'll book later
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

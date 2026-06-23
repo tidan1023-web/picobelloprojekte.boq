@@ -3,28 +3,30 @@ import { Link } from 'react-router-dom';
 import {
   Building2, Calculator, Database, FileText, ArrowRight,
   CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
+  Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
+  Package, Zap, FolderOpen,
 } from 'lucide-react';
 
 const HOW_IT_WORKS = [
   {
     n: '01',
-    title: 'Add Your Past Projects',
-    desc: 'Enter completed residential projects — size, condition, tier, and final cost. Each project becomes a data point that improves your estimates.',
+    title: 'Set Up Your Rate Libraries',
+    desc: 'Enter your QS unit rates, artisan day-rates, and material prices. These feed every estimate, BOQ, and cost report across the platform.',
   },
   {
     n: '02',
-    title: 'Enter the New Project',
-    desc: 'Input the project size in m², select the current condition of the property, and choose the desired finish tier.',
+    title: 'Run a Ballpark Estimate',
+    desc: 'Input project size in m², current condition, and finish tier. The engine prices all three tiers instantly using your own rate data and historical projects.',
   },
   {
     n: '03',
-    title: 'The Engine Calculates',
-    desc: 'The system normalises past projects, removes outliers, adjusts for inflation and size, and produces a reliable ballpark cost.',
+    title: 'Manage the Full Project',
+    desc: 'Create the project, track progress by phase, file site reports, log expenses, raise change orders, and issue invoices — all in one place.',
   },
   {
     n: '04',
-    title: 'Review, Adjust & Send PDF',
-    desc: 'Review the three-tier breakdown, edit client details and scope notes, then download a professional PDF on company letterhead.',
+    title: 'Review, Report & Share',
+    desc: 'Download PDF estimates and invoices on company letterhead. Run analytics on revenue, costs, and profitability. Keep clients updated with live progress reports.',
   },
 ];
 
@@ -43,40 +45,76 @@ const TIERS = [
 
 const FEATURES = [
   {
+    icon: Calculator,
+    color: 'bg-blue-50 text-blue-600',
+    title: 'Project Estimator',
+    desc: 'Generate detailed cost estimates in minutes. Select project type, condition, size, and build tier — the engine prices every element from your rate libraries.',
+  },
+  {
     icon: Database,
     color: 'bg-indigo-50 text-indigo-600',
-    title: 'Learns from Your History',
-    desc: "Every completed project you add makes the next estimate more accurate. The engine uses your own data, not industry averages.",
+    title: 'QS & Rate Libraries',
+    desc: 'Maintain master rate books for unit rates, artisan day-rates, and material prices. Every estimate and BOQ references live rates — update once, reflect everywhere.',
+  },
+  {
+    icon: Zap,
+    color: 'bg-yellow-50 text-yellow-600',
+    title: 'Price Intelligence',
+    desc: 'AI-powered benchmarking that compares your rates against market data. Spot where you\'re over- or under-priced before it costs you a contract.',
   },
   {
     icon: TrendingUp,
     color: 'bg-green-50 text-green-600',
-    title: 'Outlier Removal',
-    desc: "Unusual projects — too cheap or too expensive — are automatically detected and excluded so they don't skew your figures.",
+    title: 'Progress Tracker',
+    desc: 'Log construction progress by phase — substructure, superstructure, finishes, M&E, and more. Clients see live updates without needing to call.',
   },
   {
-    icon: Calculator,
-    color: 'bg-blue-50 text-blue-600',
-    title: 'Transparent Breakdown',
-    desc: 'Every estimate shows exactly how the number was reached: base rate, condition adjustment, tier adjustment, and size scaling.',
+    icon: GitPullRequest,
+    color: 'bg-purple-50 text-purple-600',
+    title: 'Change Orders',
+    desc: 'Manage scope changes formally. Team members submit requests; you review, price, and approve. Every change is logged with a full paper trail.',
+  },
+  {
+    icon: ClipboardList,
+    color: 'bg-orange-50 text-orange-600',
+    title: 'Site Reports',
+    desc: 'Your team files daily or weekly site reports — photos, weather, manpower, and progress notes. Review all reports and add comments from the dashboard.',
+  },
+  {
+    icon: Receipt,
+    color: 'bg-red-50 text-red-600',
+    title: 'Invoices & Expenses',
+    desc: 'Create and track invoices linked to projects. Log every project expense — materials, labour, site costs — and compare actual spend against budget.',
+  },
+  {
+    icon: BarChart2,
+    color: 'bg-teal-50 text-teal-600',
+    title: 'Analytics',
+    desc: 'Company-wide performance charts: revenue trends, project profitability, cost breakdowns by trade. Export to PDF or CSV.',
+  },
+  {
+    icon: FolderOpen,
+    color: 'bg-pink-50 text-pink-600',
+    title: 'Document Library',
+    desc: 'Centralised storage for contracts, permits, site plans, and drawings. Organised by folder or project — always a click away for the whole team.',
   },
   {
     icon: FileText,
-    color: 'bg-orange-50 text-orange-600',
+    color: 'bg-amber-50 text-amber-600',
     title: 'PDF on Letterhead',
-    desc: 'Download a clean, professional preliminary estimate on your company letterhead with your logo, signature, and disclaimer.',
+    desc: 'Download professional estimates and invoices on your company letterhead with your logo, signature, and payment terms.',
   },
   {
     icon: Clock,
-    color: 'bg-yellow-50 text-yellow-600',
-    title: 'Estimate History',
-    desc: 'Every estimate is saved — who it was sent to, what assumptions were used, what rate was applied, and its current status.',
+    color: 'bg-sky-50 text-sky-600',
+    title: 'Estimate History & Simulator',
+    desc: 'Every estimate is saved. Run what-if simulations — change material costs, labour rates, or size — and see the cost impact immediately.',
   },
   {
-    icon: Shield,
-    color: 'bg-red-50 text-red-600',
-    title: 'Economies of Scale',
-    desc: 'Larger projects automatically get a lower rate per m². Smaller projects get a higher rate. The size adjustment is baked in.',
+    icon: Users,
+    color: 'bg-violet-50 text-violet-600',
+    title: 'Team & Role Management',
+    desc: 'Invite QS, Project Managers, and Clients. Each role sees only what\'s relevant to them — clients get progress and invoices, PMs get site tools.',
   },
 ];
 
@@ -93,7 +131,7 @@ export default function Landing() {
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-primary-900 leading-tight">Pico Bello Projekte</p>
-              <p className="text-xs text-gray-400 hidden sm:block">Residential Estimator</p>
+              <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -116,16 +154,15 @@ export default function Landing() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative">
           <span className="inline-block bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full mb-5 tracking-widest uppercase">
-            Residential Construction · Abuja
+            Residential Construction · Abuja, Nigeria
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 sm:mb-6">
-            Ballpark Estimates<br />
-            <span className="text-blue-300">Based on Your Own Projects</span>
+            Estimate, Manage & Deliver<br />
+            <span className="text-blue-300">Every Construction Project</span>
           </h1>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-7 sm:mb-10 leading-relaxed">
-            Before a full BOQ, you need a fast, credible number to share with a client.
-            This tool uses your completed project history to produce a realistic cost estimate —
-            adjusted for condition, finish tier, size, and inflation.
+            From your first ballpark estimate to final invoice — Pico Bello is the complete platform for Nigerian construction firms.
+            Built around your rate libraries and project history so every number is yours, not an industry average.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
@@ -138,7 +175,7 @@ export default function Landing() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-3 sm:gap-6 justify-center mt-8 sm:mt-12 text-blue-300 text-xs sm:text-sm">
-            {['Experience-based', 'Outlier-resistant', 'PDF on letterhead', 'Full audit trail'].map(t => (
+            {['Experience-based estimates', 'Full project management', 'PDF on letterhead', 'Team & client access'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle size={13} className="text-blue-400" /> {t}
               </span>
@@ -152,7 +189,7 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">How It Works</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">From opening the tool to sending a PDF — in under two minutes.</p>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">From rate libraries to final invoice — one connected workflow.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map(({ n, title, desc }) => (
@@ -264,9 +301,9 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Everything Built In</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">No spreadsheets, no manual calculations. The system does the heavy lifting.</p>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">Estimating, project management, invoicing, reporting — one platform, no spreadsheets.</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {FEATURES.map(({ icon: Icon, color, title, desc }) => (
               <div key={title} className="bg-gray-50 rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-primary-200 transition-colors">
                 <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${color} mb-3 sm:mb-4`}>
@@ -402,7 +439,7 @@ export default function Landing() {
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
-            Create your account, add a few past projects, and you'll have a credible ballpark in your client's inbox within minutes.
+            Create your account, set up your rate libraries, and you'll have a credible ballpark estimate in your client's inbox within minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
