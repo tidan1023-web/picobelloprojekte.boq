@@ -19,9 +19,12 @@ const ROLE_COLORS = {
 const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30';
 
 function InviteModal({ onClose, onSaved }) {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'qs' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'qs', phone: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,40 +32,71 @@ function InviteModal({ onClose, onSaved }) {
     setError('');
     try {
       await api.post('/auth/invite', form);
-      onSaved();
+      setSuccess(true);
+      setTimeout(() => { onSaved(); }, 1800);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to invite member');
-    } finally { setSaving(false); }
+      setError(err.response?.data?.message || 'Failed to add member. Please try again.');
+      setSaving(false);
+    }
   };
+
+  if (success) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8 text-center">
+          <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="font-bold text-gray-800 text-lg mb-1">Member Added!</h3>
+          <p className="text-sm text-gray-500">
+            {form.name} has been added to your team.
+            {form.phone && ' A WhatsApp notification with login details has been sent.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-800">Invite Team Member</h2>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[95vh]">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <h2 className="font-semibold text-gray-800">Add Team Member</h2>
           <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
-            <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={inputCls} placeholder="Jane Smith" />
+            <input required value={form.name} onChange={set('name')} className={inputCls} placeholder="Jane Smith" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Email *</label>
-            <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="jane@company.com" />
+            <input required type="email" value={form.email} onChange={set('email')} className={inputCls} placeholder="jane@company.com" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Temporary Password *</label>
-            <input required type="password" minLength={6} value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} className={inputCls} placeholder="Minimum 6 characters" />
+            <input required type="text" minLength={6} value={form.password} onChange={set('password')} className={inputCls} placeholder="Minimum 6 characters" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              WhatsApp Number <span className="text-gray-400 font-normal">(optional — to send login details)</span>
+            </label>
+            <input type="tel" value={form.phone} onChange={set('phone')} className={inputCls} placeholder="+27 82 000 0000" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Role *</label>
             <div className="space-y-2">
               {ROLES.map((r) => (
                 <label key={r.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.role === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} className="mt-0.5" />
+                  <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={set('role')} className="mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-gray-800">{r.label}</p>
                     <p className="text-xs text-gray-500">{r.desc}</p>
@@ -71,18 +105,20 @@ function InviteModal({ onClose, onSaved }) {
               ))}
             </div>
           </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700">
-            The invited member will be added to your company account with the selected role. Share the login credentials with them directly.
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
-              {saving ? 'Inviting…' : 'Add Member'}
-            </button>
-          </div>
         </form>
+
+        <div className="px-6 py-4 border-t border-gray-100 flex gap-3 shrink-0">
+          <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2.5 text-sm text-gray-600 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !form.name || !form.email || !form.password}
+            className="flex-1 bg-primary-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Adding…' : 'Add Member'}
+          </button>
+        </div>
       </div>
     </div>
   );

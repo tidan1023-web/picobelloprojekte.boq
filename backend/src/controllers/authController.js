@@ -8,6 +8,7 @@ const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
 const { sendWelcome, sendPasswordReset } = require('../utils/email');
+const { sendWhatsApp } = require('../utils/whatsapp');
 const logger = require('../utils/logger');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -180,14 +181,31 @@ const listTeam = async (req, res) => {
 };
 
 const inviteMember = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone } = req.body;
   if (!['qs', 'project_manager', 'client'].includes(role)) {
     return res.status(400).json({ message: 'Invalid role. Choose qs, project_manager, or client.' });
   }
   const existing = await User.findOne({ email });
   if (existing) return res.status(409).json({ message: 'Email already registered' });
+
   const user = await User.create({ name, email, password, role, companyId: req.user.companyId, onboarded: false });
   logger.info('Team member invited', { invitedBy: req.user._id, newUserId: user._id, role });
+
+  if (phone) {
+    const appUrl = process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com';
+    const msg =
+      `Hello ${name}! 👋\n\n` +
+      `You have been added to *Pico Bello Projekte BOQ* as *${role.replace('_', ' ')}*.\n\n` +
+      `Your login details:\n` +
+      `🌐 ${appUrl}\n` +
+      `📧 Email: ${email}\n` +
+      `🔑 Password: ${password}\n\n` +
+      `Please log in and change your password after your first sign-in.`;
+    sendWhatsApp(phone, msg).catch((e) =>
+      logger.warn('WhatsApp invite notification failed', { error: e.message }),
+    );
+  }
+
   res.status(201).json({ message: 'Member added successfully', user });
 };
 
