@@ -1,26 +1,45 @@
 const Project = require('../models/Project');
+const Invoice = require('../models/Invoice');
+const Expense = require('../models/Expense');
 
 const getSummary = async (req, res) => {
   const cId = req.user.companyId;
   const f = { companyId: cId };
 
-  const [total, active, planning, completed, onHold, cancelled] = await Promise.all([
+  const now = new Date();
+
+  const [
+    projectTotal, projectActive, projectPlanning, projectCompleted,
+    invoiceTotal, invoicePaid, invoiceOverdue,
+    invoiceTotalAmount, invoiceUnpaidAmount,
+    recentProjects, recentInvoices,
+  ] = await Promise.all([
     Project.countDocuments(f),
     Project.countDocuments({ ...f, status: 'active' }),
     Project.countDocuments({ ...f, status: 'planning' }),
     Project.countDocuments({ ...f, status: 'completed' }),
-    Project.countDocuments({ ...f, status: 'on_hold' }),
-    Project.countDocuments({ ...f, status: 'cancelled' }),
+    Invoice.countDocuments(f),
+    Invoice.countDocuments({ ...f, status: 'paid' }),
+    Invoice.countDocuments({ ...f, status: { $in: ['overdue'] } }),
+    Invoice.aggregate([{ $match: f }, { $group: { _id: null, sum: { $sum: '$total' } } }]),
+    Invoice.aggregate([{ $match: { ...f, status: { $in: ['sent', 'overdue', 'partially_paid'] } } }, { $group: { _id: null, sum: { $sum: '$balance' } } }]),
+    Project.find(f).sort({ updatedAt: -1 }).limit(5).select('name status client updatedAt'),
+    Invoice.find(f).sort({ createdAt: -1 }).limit(5).select('invoiceNumber projectName clientName status total balance currency dueDate createdAt'),
   ]);
 
-  const recentProjects = await Project.find(f)
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .populate('createdBy', 'name');
-
   res.json({
-    stats: { total, active, planning, completed, onHold, cancelled, pendingApprovals: 0, invoices: { total: 0, pending: 0, paid: 0 } },
+    stats: {
+      projects: { total: projectTotal, active: projectActive, planning: projectPlanning, completed: projectCompleted },
+      invoices: {
+        total: invoiceTotal,
+        paid: invoicePaid,
+        overdue: invoiceOverdue,
+        totalAmount: invoiceTotalAmount[0]?.sum || 0,
+        unpaidAmount: invoiceUnpaidAmount[0]?.sum || 0,
+      },
+    },
     recentProjects,
+    recentInvoices,
   });
 };
 

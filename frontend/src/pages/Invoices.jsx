@@ -221,8 +221,16 @@ export default function Invoices() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-900" />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="px-4 py-3.5 border-b border-gray-50 flex items-center gap-4 animate-pulse">
+              <div className="h-4 bg-gray-100 rounded w-24" />
+              <div className="h-4 bg-gray-100 rounded flex-1" />
+              <div className="h-4 bg-gray-100 rounded w-20 hidden sm:block" />
+              <div className="h-5 bg-gray-100 rounded-full w-16" />
+              <div className="h-4 bg-gray-100 rounded w-24 hidden sm:block" />
+            </div>
+          ))}
         </div>
       ) : invoices.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">

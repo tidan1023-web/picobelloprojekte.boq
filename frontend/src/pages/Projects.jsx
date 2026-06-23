@@ -418,8 +418,20 @@ export default function Projects() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-900" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 animate-pulse space-y-3">
+              <div className="flex justify-between">
+                <div className="h-4 bg-gray-100 rounded w-40" />
+                <div className="h-5 bg-gray-100 rounded-full w-16" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-100 rounded w-32" />
+                <div className="h-3 bg-gray-100 rounded w-24" />
+                <div className="h-3 bg-gray-100 rounded w-28" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
