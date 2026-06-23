@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Save, User } from 'lucide-react';
+import { Camera, Save, User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -9,6 +9,92 @@ const ROLE_LABEL = {
   project_manager: 'Project Manager',
   client: 'Client',
 };
+
+function PasswordSection() {
+  const [form, setForm] = useState({ current: '', next: '', confirm: '' });
+  const [show, setShow] = useState({ current: false, next: false, confirm: false });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const toggle = (k) => setShow((s) => ({ ...s, [k]: !s[k] }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+    if (form.next !== form.confirm) return setError('New passwords do not match.');
+    if (form.next.length < 6) return setError('New password must be at least 6 characters.');
+    setSaving(true);
+    try {
+      await api.patch('/auth/me/password', { currentPassword: form.current, newPassword: form.next });
+      setSuccess(true);
+      setForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Failed to change password.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldCls = 'w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-900 pr-10';
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Lock size={15} className="text-gray-500" />
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Change Password</h2>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {['current', 'next', 'confirm'].map((k) => (
+          <div key={k}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              {k === 'current' ? 'Current Password' : k === 'next' ? 'New Password' : 'Confirm New Password'}
+            </label>
+            <div className="relative">
+              <input
+                type={show[k] ? 'text' : 'password'}
+                required
+                value={form[k]}
+                onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
+                className={fieldCls}
+                placeholder={k === 'next' ? 'Minimum 6 characters' : '••••••••'}
+              />
+              <button
+                type="button"
+                onClick={() => toggle(k)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {show[k] ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+            Password changed successfully.
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={saving || !form.current || !form.next || !form.confirm}
+          className="flex items-center gap-2 bg-primary-900 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-primary-800 transition-colors disabled:opacity-60"
+        >
+          <Lock size={15} />
+          {saving ? 'Updating…' : 'Update Password'}
+        </button>
+      </form>
+    </div>
+  );
+}
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -57,11 +143,13 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">My Profile</h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-        Update your display name, photo, and contact details.
-      </p>
+    <div className="max-w-xl mx-auto px-4 py-8 space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">My Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Update your display name, photo, and contact details.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Avatar */}
@@ -109,9 +197,7 @@ export default function Profile() {
         {/* Fields */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Full Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
             <input
               type="text"
               required
@@ -122,9 +208,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Job Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Job Title</label>
             <input
               type="text"
               value={form.jobTitle}
@@ -135,9 +219,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Phone Number
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
             <input
               type="tel"
               value={form.phone}
@@ -148,9 +230,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Email Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
             <input
               type="email"
               value={user?.email ?? ''}
@@ -161,9 +241,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Role
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Role</label>
             <input
               type="text"
               value={ROLE_LABEL[user?.role] ?? user?.role ?? ''}
@@ -178,7 +256,6 @@ export default function Profile() {
             {error}
           </div>
         )}
-
         {success && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
             Profile updated successfully.
@@ -194,6 +271,8 @@ export default function Profile() {
           {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </form>
+
+      <PasswordSection />
     </div>
   );
 }
