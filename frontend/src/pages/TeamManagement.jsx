@@ -3,8 +3,8 @@ import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const ROLES = [
-  { value: 'qs',              label: 'Quantity Surveyor',  desc: 'Can view pricing library and use estimator; cannot edit rates or manage team' },
+const PRESET_ROLES = [
+  { value: 'qs',              label: 'Quantity Surveyor',  desc: 'Can view pricing library and use estimator' },
   { value: 'project_manager', label: 'Project Manager',    desc: 'Can manage projects, progress, change orders, and site reports' },
   { value: 'client',          label: 'Client',             desc: 'Read-only view of estimates, invoices, progress, and site reports' },
 ];
@@ -18,6 +18,77 @@ const ROLE_COLORS = {
 
 const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30';
 
+function roleColor(r) {
+  return ROLE_COLORS[r] || 'bg-gray-100 text-gray-600';
+}
+
+function roleLabel(r) {
+  const found = PRESET_ROLES.find((x) => x.value === r);
+  if (found) return found.label;
+  if (r === 'admin') return 'Administrator';
+  return r ? r.charAt(0).toUpperCase() + r.slice(1) : r;
+}
+
+function RolePicker({ value, onChange }) {
+  const isCustom = value && !PRESET_ROLES.find((r) => r.value === value) && value !== '';
+  const [showCustom, setShowCustom] = useState(isCustom);
+
+  const handleSelect = (v) => {
+    setShowCustom(false);
+    onChange(v);
+  };
+
+  const handleCustomToggle = () => {
+    setShowCustom(true);
+    onChange('');
+  };
+
+  return (
+    <div className="space-y-2">
+      {PRESET_ROLES.map((r) => (
+        <label
+          key={r.value}
+          className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${!showCustom && value === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}
+        >
+          <input
+            type="radio"
+            name="rolePicker"
+            checked={!showCustom && value === r.value}
+            onChange={() => handleSelect(r.value)}
+            className="mt-0.5"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-800">{r.label}</p>
+            <p className="text-xs text-gray-500">{r.desc}</p>
+          </div>
+        </label>
+      ))}
+      <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${showCustom ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+        <input
+          type="radio"
+          name="rolePicker"
+          checked={showCustom}
+          onChange={handleCustomToggle}
+          className="mt-0.5 shrink-0"
+        />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-800">Custom role</p>
+          {showCustom && (
+            <input
+              autoFocus
+              type="text"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="e.g. Site Supervisor, Architect…"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30"
+            />
+          )}
+        </div>
+      </label>
+    </div>
+  );
+}
+
 function InviteModal({ onClose, onSaved }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'qs', phone: '' });
   const [saving, setSaving] = useState(false);
@@ -28,6 +99,7 @@ function InviteModal({ onClose, onSaved }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.role.trim()) return setError('Please select or enter a role.');
     setSaving(true);
     setError('');
     try {
@@ -68,11 +140,8 @@ function InviteModal({ onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
           )}
-
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
             <input required value={form.name} onChange={set('name')} className={inputCls} placeholder="Jane Smith" />
@@ -92,28 +161,17 @@ function InviteModal({ onClose, onSaved }) {
             <input type="tel" value={form.phone} onChange={set('phone')} className={inputCls} placeholder="+27 82 000 0000" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Role *</label>
-            <div className="space-y-2">
-              {ROLES.map((r) => (
-                <label key={r.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.role === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                  <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={set('role')} className="mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{r.label}</p>
-                    <p className="text-xs text-gray-500">{r.desc}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">Role *</label>
+            <RolePicker value={form.role} onChange={(v) => setForm((f) => ({ ...f, role: v }))} />
           </div>
         </form>
-
         <div className="px-6 py-4 border-t border-gray-100 flex gap-3 shrink-0">
           <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2.5 text-sm text-gray-600 hover:bg-gray-50">
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            disabled={saving || !form.name || !form.email || !form.password}
+            disabled={saving || !form.name || !form.email || !form.password || !form.role.trim()}
             className="flex-1 bg-primary-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Adding…' : 'Add Member'}
@@ -127,14 +185,18 @@ function InviteModal({ onClose, onSaved }) {
 function EditRoleModal({ member, onClose, onSaved }) {
   const [role, setRole] = useState(member.role);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!role.trim()) return setError('Please select or enter a role.');
     setSaving(true);
     try {
       await api.patch(`/auth/team/${member._id}/role`, { role });
       onSaved();
-    } catch { } finally { setSaving(false); }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update role.');
+    } finally { setSaving(false); }
   };
 
   return (
@@ -145,18 +207,13 @@ function EditRoleModal({ member, onClose, onSaved }) {
           <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-3">
-          {ROLES.map((r) => (
-            <label key={r.value} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${role === r.value ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-              <input type="radio" name="role" value={r.value} checked={role === r.value} onChange={(e) => setRole(e.target.value)} className="mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-800">{r.label}</p>
-                <p className="text-xs text-gray-500">{r.desc}</p>
-              </div>
-            </label>
-          ))}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+          )}
+          <RolePicker value={role} onChange={setRole} />
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
+            <button type="submit" disabled={saving || !role.trim()} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
               {saving ? 'Saving…' : 'Update Role'}
             </button>
           </div>
@@ -201,11 +258,6 @@ export default function TeamManagement() {
     } catch { }
   };
 
-  const roleLabel = (r) => {
-    const found = ROLES.find((x) => x.value === r);
-    return found?.label || (r === 'admin' ? 'Administrator' : r);
-  };
-
   return (
     <div className="space-y-5 max-w-3xl">
       <div className="flex items-center justify-between">
@@ -217,15 +269,6 @@ export default function TeamManagement() {
           className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-800">
           <Plus size={16} /> Add Member
         </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {ROLES.map((r) => (
-          <div key={r.value} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium mb-2 ${ROLE_COLORS[r.value]}`}>{r.label}</span>
-            <p className="text-xs text-gray-500">{r.desc}</p>
-          </div>
-        ))}
       </div>
 
       {loading ? (
@@ -243,7 +286,7 @@ export default function TeamManagement() {
           <div className="divide-y divide-gray-50">
             {members.map((m) => (
               <div key={m._id} className="px-5 py-4 flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full ${ROLE_COLORS[m.role]?.replace('text-', 'bg-').replace('-100', '-500') || 'bg-gray-400'} flex items-center justify-center shrink-0 text-white font-bold`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white font-bold ${roleColor(m.role).replace('text-', 'bg-').replace('-100', '-500')}`}>
                   {m.name?.charAt(0)?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -253,7 +296,7 @@ export default function TeamManagement() {
                   </div>
                   <p className="text-xs text-gray-500 flex items-center gap-1"><Mail size={11} /> {m.email}</p>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ROLE_COLORS[m.role] || 'bg-gray-100 text-gray-600'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${roleColor(m.role)}`}>
                   {roleLabel(m.role)}
                 </span>
                 {m._id !== user._id && (
