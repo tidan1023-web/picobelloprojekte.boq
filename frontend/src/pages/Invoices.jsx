@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plus, Eye, Download, Trash2, Loader2,
-  CheckCircle, Clock, AlertCircle, XCircle, DollarSign,
+  CheckCircle, Clock, AlertCircle, XCircle, DollarSign, BadgeCheck,
 } from 'lucide-react';
 import api from '../services/api';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const INV_IMPORT_COLUMNS = [
   { key: 'invoiceNumber', label: 'Invoice #',    type: 'string' },
@@ -134,11 +135,13 @@ function CreateModal({ onClose, onSaved }) {
 
 export default function Invoices() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [invoices, setInvoices]   = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [showCreate, setShowCreate]     = useState(false);
   const [loading, setLoading]           = useState(true);
   const [pdfId, setPdfId]               = useState(null);
+  const [markingId, setMarkingId]       = useState(null);
   const [importMsg, setImportMsg]       = useState('');
 
   const load = async () => {
@@ -156,7 +159,21 @@ export default function Invoices() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this invoice? This cannot be undone.')) return;
     await api.delete(`/invoices/${id}`);
+    toast('Invoice deleted', 'info');
     load();
+  };
+
+  const handleMarkPaid = async (inv, e) => {
+    e.stopPropagation();
+    if (!confirm(`Mark ${inv.invoiceNumber} as fully paid?`)) return;
+    setMarkingId(inv._id);
+    try {
+      await api.post(`/invoices/${inv._id}/mark-paid`);
+      toast(`${inv.invoiceNumber} marked as paid`);
+      load();
+    } catch {
+      toast('Failed to mark as paid', 'error');
+    } finally { setMarkingId(null); }
   };
 
   const handlePdf = async (inv) => {
@@ -271,6 +288,12 @@ export default function Invoices() {
                     <div className="flex items-center gap-1">
                       <button onClick={() => navigate(`/app/invoices/${inv._id}`)}
                         className="p-1.5 text-gray-400 hover:text-primary-900 rounded-lg hover:bg-gray-100"><Eye size={14} /></button>
+                      {inv.balance > 0 && (
+                        <button onClick={(e) => handleMarkPaid(inv, e)} title="Mark as paid"
+                          className="p-1.5 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50">
+                          {markingId === inv._id ? <Loader2 size={14} className="animate-spin" /> : <BadgeCheck size={14} />}
+                        </button>
+                      )}
                       <button onClick={() => handlePdf(inv)}
                         className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50">
                         {pdfId === inv._id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -317,6 +340,12 @@ export default function Invoices() {
                       </td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
+                          {inv.balance > 0 && (
+                            <button onClick={(e) => handleMarkPaid(inv, e)} title="Mark as paid"
+                              className="p-1.5 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors">
+                              {markingId === inv._id ? <Loader2 size={14} className="animate-spin" /> : <BadgeCheck size={14} />}
+                            </button>
+                          )}
                           <button onClick={() => handlePdf(inv)}
                             className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors" title="Download PDF">
                             {pdfId === inv._id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}

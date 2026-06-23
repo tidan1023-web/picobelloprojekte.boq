@@ -157,6 +157,24 @@ exports.deletePayment = async (req, res) => {
   res.json({ invoice });
 };
 
+// ── Mark as Paid ───────────────────────────────────────────────────────────────────────
+exports.markAsPaid = async (req, res) => {
+  const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  if (invoice.balance <= 0) return res.json({ invoice });
+
+  invoice.payments.push({
+    amount: invoice.balance,
+    method: req.body.method || 'cash',
+    reference: req.body.reference || '',
+    paymentDate: new Date(),
+    note: 'Manually marked as paid',
+  });
+  recalcTotals(invoice);
+  await invoice.save();
+  res.json({ invoice });
+};
+
 // ── PDF ─────────────────────────────────────────────────────────────────────────────────
 exports.generatePDF = async (req, res) => {
   const invoice = await Invoice

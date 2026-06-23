@@ -3,6 +3,7 @@ import { Plus, X, Pencil, Trash2, Search, Phone, Mail, Users, Building2, Message
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const CONTACT_IMPORT_COLUMNS = [
   { key: 'name', label: 'Name', type: 'string' },
@@ -144,6 +145,7 @@ function ContactModal({ open, onClose, onSaved, editing, projects }) {
 
 export default function Contacts() {
   const { user } = useAuth();
+  const toast = useToast();
   const [contacts, setContacts] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -309,7 +311,7 @@ export default function Contacts() {
         </div>
       )}
 
-      <ContactModal open={modal} onClose={() => setModal(false)} onSaved={() => { setModal(false); load(); }} editing={editing} projects={projects} />
+      <ContactModal open={modal} onClose={() => setModal(false)} onSaved={() => { setModal(false); load(); toast(editing ? 'Contact updated' : 'Contact saved'); }} editing={editing} projects={projects} />
     </div>
   );
 }

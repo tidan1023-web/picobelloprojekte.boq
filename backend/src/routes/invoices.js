@@ -3,7 +3,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const { zodValidate, schemas }    = require('../middleware/zodValidate');
 const {
   getInvoices, getInvoice, createInvoice, updateInvoice, deleteInvoice,
-  addPayment, deletePayment, generatePDF,
+  addPayment, deletePayment, generatePDF, markAsPaid,
 } = require('../controllers/invoiceController');
 
 router.use(authenticate);
@@ -17,6 +17,7 @@ router.put('/:id', authorize('admin', 'qs', 'project_manager'), zodValidate(sche
 
 // Only admin can delete invoices or remove payments
 router.delete('/:id',                     authorize('admin'), deleteInvoice);
+router.post('/:id/mark-paid',             authorize('admin', 'qs', 'project_manager'), markAsPaid);
 router.post('/:id/payments',              authorize('admin', 'qs', 'project_manager'), addPayment);
 router.delete('/:id/payments/:paymentId', authorize('admin'), deletePayment);
 
