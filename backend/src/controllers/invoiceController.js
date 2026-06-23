@@ -357,3 +357,37 @@ exports.generatePDF = async (req, res) => {
 
   doc.end();
 };
+
+// ── Paystack webhook ───────────────────────────────────────────────────────────────────
+exports.paystackWebhook = async (req, res) => {
+  const crypto = require('crypto');
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return res.sendStatus(200);
+
+  const sig = req.headers['x-paystack-signature'];
+  const hash = crypto.createHmac('sha512', secret).update(req.body).digest('hex');
+  if (hash !== sig) return res.sendStatus(400);
+
+  const event = JSON.parse(req.body.toString());
+  if (event.event === 'charge.success') {
+    const ref = event.data?.reference || '';
+    const invoiceId = ref.split('_')[1];
+    if (invoiceId) {
+      const Invoice = require('../models/Invoice');
+      const invoice = await Invoice.findById(invoiceId);
+      if (invoice && invoice.balance > 0) {
+        const paid = event.data.amount / 100;
+        invoice.payments.push({
+          amount: paid,
+          method: 'paystack',
+          reference: ref,
+          paymentDate: new Date(),
+          note: 'Paystack online payment',
+        });
+        recalcTotals(invoice);
+        await invoice.save();
+      }
+    }
+  }
+  res.sendStatus(200);
+};
