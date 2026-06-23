@@ -6,6 +6,8 @@ import OnboardingModal from '../OnboardingModal';
 import BookCallGate from '../BookCallGate';
 import { useAuth } from '../../context/AuthContext';
 
+const CALL_SKIP_KEY = 'pb_call_skipped';
+
 const TITLES = {
   '/app/dashboard':           'Dashboard',
   '/app/projects':            'Projects',
@@ -32,9 +34,17 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [callSkipped, setCallSkipped] = useState(
+    () => !!localStorage.getItem(CALL_SKIP_KEY),
+  );
 
-  if (user?.role === 'admin' && !user?.callCompleted) {
-    return <BookCallGate />;
+  const handleSkipCall = () => {
+    localStorage.setItem(CALL_SKIP_KEY, '1');
+    setCallSkipped(true);
+  };
+
+  if (user?.role === 'admin' && !user?.callCompleted && !callSkipped) {
+    return <BookCallGate onSkip={handleSkipCall} />;
   }
 
   const title = TITLES[pathname]
