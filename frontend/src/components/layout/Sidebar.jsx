@@ -8,7 +8,7 @@ import {
   FileText, Calculator,
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Moon, Sun, ShieldCheck,
-  Receipt, UserCog, Library,
+  Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
 } from 'lucide-react';
 import Logo from '../Logo';
 
@@ -33,9 +33,21 @@ const NAV_GROUPS = [
   },
   {
     heading: 'BOQ & Invoices',
+    clientHidden: true,
     items: [
+      { to: '/app/boq',       icon: Layers,     label: 'BOQ Builder' },
       { to: '/app/estimator', icon: Calculator, label: 'Project Estimator' },
       { to: '/app/invoices',  icon: FileText,   label: 'Invoices' },
+    ],
+  },
+  {
+    heading: 'Client Portal',
+    clientOnly: true,
+    items: [
+      { to: '/app/client-portal',   icon: LayoutDashboard, label: 'My Projects' },
+      { to: '/app/client-boq',      icon: CheckSquare,     label: 'BOQ Approval' },
+      { to: '/app/client-invoices', icon: FileText,        label: 'My Invoices' },
+      { to: '/app/client-comments', icon: MessageSquare,   label: 'Comments' },
     ],
   },
   {
@@ -107,6 +119,7 @@ export default function Sidebar({ onClose }) {
         {NAV_GROUPS.map((group, gi) => {
           const isClient = user?.role === 'client';
           if (group.clientHidden && isClient) return null;
+          if (group.clientOnly && !isClient) return null;
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && user?.role !== 'admin') return false;
             if (item.clientHidden && isClient) return false;
