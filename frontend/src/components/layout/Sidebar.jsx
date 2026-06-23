@@ -136,10 +136,14 @@ export default function Sidebar({ onClose }) {
 
       {/* Footer */}
       <div className="px-2 py-3 border-t border-primary-800 shrink-0">
-        <div className="px-2 py-2 mb-1.5 flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-full ${ROLE_COLOR[user?.role] ?? 'bg-gray-500'} flex items-center justify-center shrink-0 text-white font-bold text-sm`}>
-            {user?.name?.charAt(0)?.toUpperCase()}
-          </div>
+        <NavLink to="/app/profile" className="px-2 py-2 mb-1.5 flex items-center gap-2.5 rounded-lg hover:bg-primary-800 transition-colors">
+          {user?.avatar ? (
+            <img src={user.avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className={`w-8 h-8 rounded-full ${ROLE_COLOR[user?.role] ?? 'bg-gray-500'} flex items-center justify-center shrink-0 text-white font-bold text-sm`}>
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">{user?.name}</p>
             <div className="flex items-center gap-1">
@@ -147,7 +151,7 @@ export default function Sidebar({ onClose }) {
               <p className="text-xs text-blue-300 truncate">{ROLE_LABEL[user?.role] ?? user?.role}</p>
             </div>
           </div>
-        </div>
+        </NavLink>
 
         <button onClick={toggleDark}
           className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-sm text-blue-200 hover:bg-primary-800 hover:text-white transition-colors mb-0.5">
