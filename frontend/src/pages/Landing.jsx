@@ -280,8 +280,125 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* PRICING */}
+      <section className="py-14 sm:py-24 px-4 sm:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Simple, Transparent Pricing</h2>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
+              One tool for your whole team. No hidden fees, no per-seat charges.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 items-start">
+
+            {/* Basic */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-7 flex flex-col">
+              <div className="mb-5">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Basic</span>
+                <div className="mt-3 flex items-end gap-1.5">
+                  <span className="text-4xl font-black text-gray-900">₦50,000</span>
+                  <span className="text-gray-400 text-sm mb-1">/month</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">For teams getting started with digital estimating.</p>
+              </div>
+
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  'Project Estimator',
+                  'Estimate History (last 12 months)',
+                  'Up to 3 team members',
+                  'QS & Material Price Libraries',
+                  'Invoices',
+                  'Document Library',
+                  'PDF downloads',
+                  'Email support',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
+                    <CheckCircle size={15} className="text-green-500 mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+                {[
+                  'Analytics & Reporting',
+                  'Price Intelligence',
+                  'Scenario Simulator',
+                  'Unlimited team members',
+                  'Change Orders & Site Reports',
+                  'Expense Tracker',
+                  'Priority support',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-400 line-through decoration-gray-300">
+                    <div className="w-3.5 h-3.5 mt-0.5 shrink-0 rounded-full border border-gray-200" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link to="/register"
+                className="w-full flex items-center justify-center gap-2 border border-primary-900 text-primary-900 font-semibold py-3 rounded-xl hover:bg-primary-50 transition-colors text-sm">
+                Get Started <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* Premium */}
+            <div className="bg-primary-900 rounded-2xl shadow-xl p-7 flex flex-col relative overflow-hidden">
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-blue-500/20 pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-blue-400/10 pointer-events-none" />
+
+              <div className="mb-5 relative">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold text-blue-300 uppercase tracking-widest">Premium</span>
+                  <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full font-semibold">Best Value</span>
+                </div>
+                <div className="mt-3 flex items-end gap-1.5">
+                  <span className="text-4xl font-black text-white">₦300,000</span>
+                  <span className="text-blue-300 text-sm mb-1">/year</span>
+                </div>
+                <p className="text-sm text-blue-300 mt-2">
+                  Everything in Basic, plus the full platform — unlocked.
+                  <span className="block mt-1 text-blue-400 text-xs">~₦25,000/month — save 50% vs Basic annual</span>
+                </p>
+              </div>
+
+              <ul className="space-y-3 mb-8 flex-1 relative">
+                {[
+                  'Everything in Basic',
+                  'Unlimited team members',
+                  'Full Analytics & Reporting',
+                  'Price Intelligence (AI benchmarking)',
+                  'Scenario Simulator',
+                  'Change Orders & Approvals',
+                  'Site Reports with photos',
+                  'Expense Tracker',
+                  'Progress Tracker',
+                  'Contacts & CRM',
+                  'Unlimited estimate history',
+                  'Priority onboarding & support',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle size={15} className="text-blue-400 mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link to="/register"
+                className="w-full flex items-center justify-center gap-2 bg-white text-primary-900 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm relative shadow-md">
+                Get Full Access <ArrowRight size={15} />
+              </Link>
+            </div>
+
+          </div>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Prices in Nigerian Naira. All plans include a personal onboarding call. No contracts — cancel anytime.
+          </p>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="py-14 sm:py-24 px-4 sm:px-8 bg-gray-50 text-center">
+      <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
