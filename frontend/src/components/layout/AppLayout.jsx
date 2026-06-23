@@ -24,6 +24,7 @@ const TITLES = {
   '/app/estimates':           'Estimate History',
   '/app/historical-projects': 'Historical Projects',
   '/app/settings':            'Company Settings',
+  '/app/documents':           'Document Library',
 };
 
 export default function AppLayout() {

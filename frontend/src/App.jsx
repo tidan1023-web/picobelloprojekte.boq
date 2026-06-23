@@ -45,6 +45,9 @@ import EstimateHistory    from './pages/EstimateHistory';
 import HistoricalProjects from './pages/HistoricalProjects';
 import Simulator          from './pages/Simulator';
 
+// Documents
+import Documents          from './pages/Documents';
+
 // Admin
 import CompanySettings    from './pages/CompanySettings';
 import TeamManagement     from './pages/TeamManagement';
@@ -95,6 +98,9 @@ export default function App() {
             <Route path="estimates/:id"          element={<EstimateDetail />} />
             <Route path="historical-projects"    element={<HistoricalProjects />} />
             <Route path="simulator"              element={<Simulator />} />
+
+            {/* Documents */}
+            <Route path="documents"              element={<Documents />} />
 
             {/* Admin */}
             <Route path="settings"               element={<CompanySettings />} />

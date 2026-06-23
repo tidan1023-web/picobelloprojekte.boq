@@ -10,7 +10,7 @@ const connectDB      = require('./config/database');
 const errorHandler   = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
-// ── Core routes (previously mounted) ─────────────────────────────────────────
+// ── Core routes (previously mounted) ─────────────────────────────────────────────
 const authRoutes               = require('./routes/auth');
 const companyRoutes            = require('./routes/company');
 const siteReportRoutes         = require('./routes/siteReports');
@@ -34,11 +34,12 @@ const dashboardRoutes     = require('./routes/dashboard');
 const commentRoutes       = require('./routes/comments');
 const notificationRoutes  = require('./routes/notifications');
 const expenseRoutes        = require('./routes/expenses');
+const documentRoutes       = require('./routes/documents');
 
 const app = express();
 connectDB();
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
+// ── CORS ───────────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
@@ -55,25 +56,25 @@ app.use(cors({
   credentials: true,
 }));
 
-// ── Security headers ──────────────────────────────────────────────────────────
+// ── Security headers ─────────────────────────────────────────────────────────────────
 app.use(helmet());
 
-// ── Body parsing with size limit ──────────────────────────────────────────────
+// ── Body parsing with size limit ───────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// ── NoSQL injection + HTTP parameter pollution prevention ─────────────────────
+// ── NoSQL injection + HTTP parameter pollution prevention ─────────────────────────
 app.use(mongoSanitize());
 app.use(hpp());
 
-// ── Global rate limiting ──────────────────────────────────────────────────────
+// ── Global rate limiting ──────────────────────────────────────────────────────────────────
 app.use('/api/', apiLimiter);
 
-// ── Health / root ─────────────────────────────────────────────────────────────
+// ── Health / root ──────────────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.json({ status: 'ok', service: 'Pico Bello Estimator API', version: '2.0.0' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// ── Routes — available at /api/v1/* and /api/* (backward-compatible) ──────────
+// ── Routes — available at /api/v1/* and /api/* (backward-compatible) ──────────────────
 ['/api/v1', '/api'].forEach((prefix) => {
   // Auth & company
   app.use(`${prefix}/auth`,                authRoutes);
@@ -111,9 +112,10 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Da
   app.use(`${prefix}/comments`,            commentRoutes);
   app.use(`${prefix}/notifications`,       notificationRoutes);
   app.use(`${prefix}/expenses`,            expenseRoutes);
+  app.use(`${prefix}/documents`,           documentRoutes);
 });
 
-// ── 404 + error handler ───────────────────────────────────────────────────────
+// ── 404 + error handler ───────────────────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ message: 'Not found' }));
 app.use(errorHandler);
 

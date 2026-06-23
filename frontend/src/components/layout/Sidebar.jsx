@@ -8,7 +8,7 @@ import {
   FileSpreadsheet, FileText, Calculator,
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Building2, Moon, Sun, ShieldCheck,
-  Receipt, UserCog,
+  Receipt, UserCog, Library,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -36,6 +36,12 @@ const NAV_GROUPS = [
       { to: '/app/estimator', icon: Calculator,     label: 'Project Estimator' },
       { to: '/app/boq',      icon: FileSpreadsheet, label: 'BOQ Builder' },
       { to: '/app/invoices', icon: FileText,        label: 'Invoices' },
+    ],
+  },
+  {
+    heading: 'Documents',
+    items: [
+      { to: '/app/documents', icon: Library, label: 'Document Library' },
     ],
   },
   {
