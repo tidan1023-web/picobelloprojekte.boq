@@ -1,8 +1,117 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, X, Pencil, Trash2, FolderOpen, Search } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, FolderOpen, Search, FileText, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+
+const DEFAULT_FOLDERS = [
+  'Contracts', 'Receipts', 'Invoices', 'Site Plans & Drawings',
+  'Permits & Approvals', 'Insurance', 'Reports', 'Other',
+];
+const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900';
+
+function ProjectDocs({ project, canEdit }) {
+  const [open, setOpen] = useState(false);
+  const [docs, setDocs] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name: '', url: '', folder: 'Contracts', description: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(() => {
+    if (!open) return;
+    setLoadingDocs(true);
+    api.get(`/documents?projectId=${project._id}`)
+      .then(({ data }) => setDocs(data.documents))
+      .catch(() => {})
+      .finally(() => setLoadingDocs(false));
+  }, [open, project._id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.url) return;
+    setSaving(true);
+    try {
+      await api.post('/documents', { ...form, projectId: project._id });
+      setForm({ name: '', url: '', folder: 'Contracts', description: '' });
+      setShowAdd(false);
+      load();
+    } catch {}
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this document?')) return;
+    await api.delete(`/documents/${id}`);
+    load();
+  };
+
+  return (
+    <div className="border-t border-gray-100 pt-2 mt-2">
+      <button onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-900 transition-colors w-full">
+        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        <FileText size={12} />
+        <span>Documents{docs.length > 0 ? ` (${docs.length})` : ''}</span>
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-1.5">
+          {loadingDocs ? (
+            <p className="text-xs text-gray-400 px-1">Loading…</p>
+          ) : docs.length === 0 ? (
+            <p className="text-xs text-gray-400 px-1">No documents linked to this project yet.</p>
+          ) : docs.map((d) => (
+            <div key={d._id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-2 py-1.5">
+              <FileText size={11} className="text-gray-400 shrink-0" />
+              <span className="text-xs text-gray-700 flex-1 truncate">{d.name}</span>
+              <a href={d.url} target="_blank" rel="noopener noreferrer"
+                className="text-xs text-primary-900 hover:underline shrink-0 flex items-center gap-0.5">
+                <ExternalLink size={10} /> Open
+              </a>
+              {canEdit && (
+                <button onClick={() => handleDelete(d._id)}
+                  className="text-gray-300 hover:text-red-500 shrink-0">
+                  <X size={11} />
+                </button>
+              )}
+            </div>
+          ))}
+
+          {canEdit && !showAdd && (
+            <button onClick={() => setShowAdd(true)}
+              className="flex items-center gap-1 text-xs text-primary-900 hover:underline px-1">
+              <Plus size={11} /> Add document
+            </button>
+          )}
+
+          {canEdit && showAdd && (
+            <form onSubmit={handleAdd} className="space-y-1.5 bg-blue-50 rounded-lg p-2">
+              <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                className={inputCls} placeholder="Document name" />
+              <input required type="url" value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                className={inputCls} placeholder="https://drive.google.com/..." />
+              <select value={form.folder} onChange={(e) => setForm((f) => ({ ...f, folder: e.target.value }))}
+                className={inputCls + ' bg-white'}>
+                {DEFAULT_FOLDERS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+              <div className="flex gap-1.5">
+                <button type="button" onClick={() => setShowAdd(false)}
+                  className="flex-1 border border-gray-300 rounded-lg py-1.5 text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={saving}
+                  className="flex-1 bg-primary-900 text-white rounded-lg py-1.5 text-xs font-medium hover:bg-primary-800 disabled:opacity-60">
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const PROJECT_IMPORT_COLUMNS = [
   { key: 'name', label: 'Project Name', type: 'string' },
@@ -373,8 +482,10 @@ export default function Projects() {
                 )}
               </div>
 
+              <ProjectDocs project={p} canEdit={canEdit} />
+
               {canEdit && (
-                <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-100 mt-2">
                   <button
                     onClick={() => openEdit(p)}
                     className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-900 transition-colors"

@@ -1,23 +1,28 @@
 const Document = require('../models/Document');
 
 const getAll = async (req, res) => {
-  const docs = await Document.find({ companyId: req.user.companyId })
+  const filter = { companyId: req.user.companyId };
+  if (req.query.projectId) filter.projectId = req.query.projectId;
+  const docs = await Document.find(filter)
     .populate('uploadedBy', 'name')
+    .populate('projectId', 'name')
     .sort({ folder: 1, createdAt: -1 });
   res.json({ documents: docs });
 };
 
 const create = async (req, res) => {
-  const { name, url, folder, description } = req.body;
+  const { name, url, folder, description, projectId } = req.body;
   if (!name || !url || !folder) {
     return res.status(400).json({ message: 'name, url, and folder are required' });
   }
   const doc = await Document.create({
     name, url, folder, description,
+    projectId: projectId || null,
     companyId: req.user.companyId,
     uploadedBy: req.user._id,
   });
   await doc.populate('uploadedBy', 'name');
+  await doc.populate('projectId', 'name');
   res.status(201).json({ document: doc });
 };
 
