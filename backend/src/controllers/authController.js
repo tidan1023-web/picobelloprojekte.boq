@@ -8,6 +8,8 @@ const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
 const { sendWelcome, sendPasswordReset, sendBookingConfirmation } = require('../utils/email');
+const { validateImageBuffer, uploadImageToS3, deleteImageFromS3 } = require('../utils/s3Upload');
+const { S3_CONFIGURED } = require('../config/s3');
 const { sendWhatsApp } = require('../utils/whatsapp');
 const logger = require('../utils/logger');
 
@@ -18,13 +20,13 @@ const generateToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────────────────
 
 function getIp(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 }
 
-// ── register ──────────────────────────────────────────────────────────────────
+// ── register ──────────────────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -46,7 +48,7 @@ const register = async (req, res) => {
   res.status(201).json({ message: 'Registration successful', token, user });
 };
 
-// ── login ─────────────────────────────────────────────────────────────────────
+// ── login ─────────────────────────────────────────────────────────────────────────────────
 const login = async (req, res) => {
   const { email, password } = req.body;
   const ip = getIp(req);
@@ -69,12 +71,12 @@ const login = async (req, res) => {
   res.json({ message: 'Login successful', token, user });
 };
 
-// ── getMe ─────────────────────────────────────────────────────────────────────
+// ── getMe ─────────────────────────────────────────────────────────────────────────────────
 const getMe = async (req, res) => {
   res.json({ user: req.user });
 };
 
-// ── googleAuth ────────────────────────────────────────────────────────────────
+// ── googleAuth ────────────────────────────────────────────────────────────────────────────
 const googleAuth = async (req, res) => {
   const { credential } = req.body;
   if (!credential) return res.status(400).json({ message: 'Google credential required' });
@@ -108,7 +110,7 @@ const googleAuth = async (req, res) => {
   res.json({ message: 'Google login successful', token, user });
 };
 
-// ── forgotPassword ────────────────────────────────────────────────────────────
+// ── forgotPassword ──────────────────────────────────────────────────────────────────────────
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -127,7 +129,7 @@ const forgotPassword = async (req, res) => {
   res.json({ message: 'If that email is registered, a reset link has been sent.' });
 };
 
-// ── resetPassword ─────────────────────────────────────────────────────────────
+// ── resetPassword ───────────────────────────────────────────────────────────────────────────
 const resetPassword = async (req, res) => {
   const { token }    = req.params;
   const { password } = req.body;
@@ -148,7 +150,7 @@ const resetPassword = async (req, res) => {
   res.json({ message: 'Password reset successful. You can now log in.' });
 };
 
-// ── deleteAccount ─────────────────────────────────────────────────────────────
+// ── deleteAccount ───────────────────────────────────────────────────────────────────────────
 const deleteAccount = async (req, res) => {
   const { _id: userId, companyId } = req.user;
   const ip = getIp(req);
@@ -170,7 +172,7 @@ const deleteAccount = async (req, res) => {
   res.json({ message: 'Account and all associated data have been permanently deleted.' });
 };
 
-// ── Team Management ───────────────────────────────────────────────────────────
+// ── Team Management ─────────────────────────────────────────────────────────────────────────
 
 const listTeam = async (req, res) => {
   const members = await User.find({ companyId: req.user.companyId, isActive: true })
@@ -235,14 +237,14 @@ const removeMember = async (req, res) => {
   res.json({ message: 'Member removed' });
 };
 
-// ── Onboarding ────────────────────────────────────────────────────────────────
+// ── Onboarding ───────────────────────────────────────────────────────────────────────────────
 
 const markOnboarded = async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { onboarded: true });
   res.json({ message: 'Onboarded' });
 };
 
-// ── Call Booking ──────────────────────────────────────────────────────────────
+// ── Call Booking ─────────────────────────────────────────────────────────────────────────────
 
 const bookCall = async (req, res) => {
   const { slot } = req.body;
@@ -272,9 +274,32 @@ const completeCall = async (req, res) => {
   res.json({ message: 'Call marked complete', user });
 };
 
+const updateProfile = async (req, res) => {
+  const { name, phone, jobTitle } = req.body;
+  const updates = {};
+  if (name?.trim()) updates.name = name.trim();
+  if (phone !== undefined) updates.phone = phone.trim();
+  if (jobTitle !== undefined) updates.jobTitle = jobTitle.trim();
+
+  if (req.file) {
+    validateImageBuffer(req.file.buffer, req.file.mimetype, req.file.size);
+    const s3Key = `avatars/${req.user._id}/${Date.now()}.${req.file.originalname.split('.').pop() || 'jpg'}`;
+    const { s3Url } = await uploadImageToS3(req.file.buffer, req.file.mimetype, s3Key);
+    if (req.user.avatar && req.user.avatar.includes('.amazonaws.com/')) {
+      const oldKey = req.user.avatar.split('.amazonaws.com/')[1];
+      deleteImageFromS3(oldKey).catch(() => {});
+    }
+    updates.avatar = s3Url;
+  }
+
+  const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true });
+  res.json({ user });
+};
+
 module.exports = {
   register, login, getMe, googleAuth,
   forgotPassword, resetPassword, deleteAccount,
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
+  updateProfile,
 };
