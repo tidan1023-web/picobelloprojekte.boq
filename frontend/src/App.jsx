@@ -11,6 +11,7 @@ import Login              from './pages/auth/Login';
 import Register           from './pages/auth/Register';
 import ForgotPassword     from './pages/auth/ForgotPassword';
 import ResetPassword      from './pages/auth/ResetPassword';
+import AcceptInvite       from './pages/auth/AcceptInvite';
 
 // Dashboard
 import Dashboard          from './pages/Dashboard';
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/register"                element={<Register />} />
           <Route path="/forgot-password"         element={<ForgotPassword />} />
           <Route path="/reset-password/:token"   element={<ResetPassword />} />
+          <Route path="/accept-invite/:token"    element={<AcceptInvite />} />
 
           <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index                          element={<Navigate to="/app/dashboard" replace />} />

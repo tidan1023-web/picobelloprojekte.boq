@@ -26,6 +26,8 @@ const userSchema = new mongoose.Schema({
   callBookedSlot: { type: String, default: '' },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  inviteToken: { type: String },
+  inviteTokenExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

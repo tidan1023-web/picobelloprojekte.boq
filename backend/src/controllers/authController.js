@@ -7,7 +7,7 @@ const Estimate = require('../models/Estimate');
 const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
-const { sendWelcome, sendPasswordReset, sendBookingConfirmation } = require('../utils/email');
+const { sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite } = require('../utils/email');
 const { validateImageBuffer, uploadImageToS3, deleteImageFromS3 } = require('../utils/s3Upload');
 const { S3_CONFIGURED } = require('../config/s3');
 const { sendWhatsApp } = require('../utils/whatsapp');
@@ -183,32 +183,66 @@ const listTeam = async (req, res) => {
 };
 
 const inviteMember = async (req, res) => {
-  const { name, email, password, role, phone } = req.body;
+  const { name, email, role, phone } = req.body;
   if (!role || !role.trim()) {
     return res.status(400).json({ message: 'Role is required.' });
   }
   const existing = await User.findOne({ email });
   if (existing) return res.status(409).json({ message: 'Email already registered' });
 
-  const user = await User.create({ name, email, password, role, companyId: req.user.companyId, onboarded: false });
+  const inviteToken = crypto.randomBytes(32).toString('hex');
+  const randomPw = crypto.randomBytes(24).toString('hex');
+  const user = await User.create({
+    name, email, password: randomPw, role,
+    companyId: req.user.companyId,
+    onboarded: false,
+    inviteToken,
+    inviteTokenExpires: Date.now() + 48 * 3600 * 1000,
+  });
   logger.info('Team member invited', { invitedBy: req.user._id, newUserId: user._id, role });
 
+  const appUrl = process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com';
+  const inviteUrl = `${appUrl}/accept-invite/${inviteToken}`;
+
+  sendTeamInvite(user, inviteUrl).catch((e) =>
+    logger.warn('Invite email failed', { error: e.message }),
+  );
+
   if (phone) {
-    const appUrl = process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com';
     const msg =
       `Hello ${name}! 👋\n\n` +
-      `You have been added to *Pico Bello Projekte BOQ* as *${role.replace('_', ' ')}*.\n\n` +
-      `Your login details:\n` +
-      `🌐 ${appUrl}\n` +
-      `📧 Email: ${email}\n` +
-      `🔑 Password: ${password}\n\n` +
-      `Please log in and change your password after your first sign-in.`;
+      `You have been added to *Pico Bello Projekte BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
+      `Click the link below to set your password and sign in:\n${inviteUrl}\n\n` +
+      `The link expires in 48 hours.`;
     sendWhatsApp(phone, msg).catch((e) =>
       logger.warn('WhatsApp invite notification failed', { error: e.message }),
     );
   }
 
-  res.status(201).json({ message: 'Member added successfully', user });
+  res.status(201).json({ message: 'Invitation sent', user, inviteUrl });
+};
+
+const acceptInvite = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+  }
+  const user = await User.findOne({
+    inviteToken: token,
+    inviteTokenExpires: { $gt: Date.now() },
+  });
+  if (!user) return res.status(400).json({ message: 'Invite link is invalid or has expired.' });
+
+  user.password = password;
+  user.inviteToken = undefined;
+  user.inviteTokenExpires = undefined;
+  user.onboarded = true;
+  await user.save();
+
+  logger.info('Invite accepted', { userId: user._id });
+  const authToken = generateToken(user._id);
+  res.json({ message: 'Account activated', token: authToken, user });
 };
 
 const updateMemberRole = async (req, res) => {
@@ -319,4 +353,5 @@ module.exports = {
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
+  acceptInvite,
 };

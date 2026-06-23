@@ -125,4 +125,38 @@ const sendBookingConfirmation = (user, slot) => {
   });
 };
 
-module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation };
+const sendTeamInvite = async (user, inviteUrl) => {
+  return sendEmail({
+    to: user.email,
+    subject: 'You've been invited to Pico Bello Projekte BOQ',
+    html: `
+      <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
+        <div style="background:#1e3a8a;padding:24px 28px">
+          <h2 style="color:#fff;margin:0;font-size:18px">You're invited!</h2>
+        </div>
+        <div style="padding:28px">
+          <p style="color:#374151;margin-top:0">Hi ${user.name},</p>
+          <p style="color:#374151">
+            You've been added to <strong>Pico Bello Projekte BOQ</strong> as
+            <strong>${user.role.replace(/_/g, ' ')}</strong>.
+          </p>
+          <p style="color:#374151">Click the button below to set your password and sign in:</p>
+          <a href="${inviteUrl}"
+             style="display:inline-block;background:#1e3a8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;margin:8px 0">
+            Accept Invitation
+          </a>
+          <p style="color:#6b7280;font-size:13px;margin-top:20px">
+            This link expires in <strong>48 hours</strong>. If you didn't expect this invitation, you can ignore this email.
+          </p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" />
+          <p style="color:#6b7280;font-size:13px;margin:0">
+            <strong>Pico Bello Projekte</strong><br />
+            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
+          </p>
+        </div>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite };
