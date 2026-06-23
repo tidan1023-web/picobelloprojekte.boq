@@ -50,6 +50,7 @@ import Documents          from './pages/Documents';
 // Admin
 import CompanySettings    from './pages/CompanySettings';
 import TeamManagement     from './pages/TeamManagement';
+import Profile            from './pages/Profile';
 
 export default function App() {
   return (
@@ -103,6 +104,7 @@ export default function App() {
             {/* Admin */}
             <Route path="settings"               element={<CompanySettings />} />
             <Route path="team"                   element={<TeamManagement />} />
+            <Route path="profile"                element={<Profile />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

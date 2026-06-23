@@ -8,6 +8,8 @@ const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
 const { sendWelcome, sendPasswordReset, sendBookingConfirmation } = require('../utils/email');
+const { validateImageBuffer, uploadImageToS3, deleteImageFromS3 } = require('../utils/s3Upload');
+const { S3_CONFIGURED } = require('../config/s3');
 const { sendWhatsApp } = require('../utils/whatsapp');
 const logger = require('../utils/logger');
 
@@ -272,9 +274,32 @@ const completeCall = async (req, res) => {
   res.json({ message: 'Call marked complete', user });
 };
 
+const updateProfile = async (req, res) => {
+  const { name, phone, jobTitle } = req.body;
+  const updates = {};
+  if (name?.trim()) updates.name = name.trim();
+  if (phone !== undefined) updates.phone = phone.trim();
+  if (jobTitle !== undefined) updates.jobTitle = jobTitle.trim();
+
+  if (req.file) {
+    validateImageBuffer(req.file.buffer, req.file.mimetype, req.file.size);
+    const s3Key = `avatars/${req.user._id}/${Date.now()}.${req.file.originalname.split('.').pop() || 'jpg'}`;
+    const { s3Url } = await uploadImageToS3(req.file.buffer, req.file.mimetype, s3Key);
+    if (req.user.avatar && req.user.avatar.includes('.amazonaws.com/')) {
+      const oldKey = req.user.avatar.split('.amazonaws.com/')[1];
+      deleteImageFromS3(oldKey).catch(() => {});
+    }
+    updates.avatar = s3Url;
+  }
+
+  const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true });
+  res.json({ user });
+};
+
 module.exports = {
   register, login, getMe, googleAuth,
   forgotPassword, resetPassword, deleteAccount,
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
+  updateProfile,
 };
