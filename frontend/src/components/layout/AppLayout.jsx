@@ -13,7 +13,6 @@ const TITLES = {
   '/app/artisan-prices':      'Artisan Rates',
   '/app/materials':           'Materials',
   '/app/price-intelligence':  'Price Intelligence',
-  '/app/boq':                 'BOQ Builder',
   '/app/invoices':            'Invoices',
   '/app/progress':            'Progress Tracker',
   '/app/change-orders':       'Change Orders',

@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard, FolderOpen, Users,
   BookOpen, GitCompare, HardHat, Package, Zap,
-  FileSpreadsheet, FileText, Calculator,
+  FileText, Calculator,
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Building2, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library,
@@ -33,9 +33,8 @@ const NAV_GROUPS = [
   {
     heading: 'BOQ & Invoices',
     items: [
-      { to: '/app/estimator', icon: Calculator,     label: 'Project Estimator' },
-      { to: '/app/boq',      icon: FileSpreadsheet, label: 'BOQ Builder' },
-      { to: '/app/invoices', icon: FileText,        label: 'Invoices' },
+      { to: '/app/estimator', icon: Calculator, label: 'Project Estimator' },
+      { to: '/app/invoices',  icon: FileText,   label: 'Invoices' },
     ],
   },
   {
