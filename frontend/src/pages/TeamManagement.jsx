@@ -42,7 +42,7 @@ function InviteModal({ onClose, onSaved }) {
           <h2 className="font-semibold text-gray-800">Invite Team Member</h2>
           <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <div>
