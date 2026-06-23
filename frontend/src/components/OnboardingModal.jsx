@@ -15,11 +15,6 @@ const GUIDES = {
       title: 'Estimator',
       desc: 'Use the Estimator to generate cost estimates for projects. Pick a condition, size, and tier — the engine calculates instantly.',
     },
-    {
-      icon: BarChart2,
-      title: 'BOQ Builder',
-      desc: 'Open BOQ Builder to build or review bills of quantities. You can add items and sections but rates are locked to admin.',
-    },
   ],
   project_manager: [
     {

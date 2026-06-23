@@ -26,8 +26,7 @@ import ArtisanPricing     from './pages/ArtisanPricing';
 import MaterialPricing    from './pages/MaterialPricing';
 import PricingIntelligence from './pages/PricingIntelligence';
 
-// BOQ & Invoices
-import BoqBuilder         from './pages/BoqBuilder';
+// Invoices
 import Invoices           from './pages/Invoices';
 import InvoiceDetail      from './pages/InvoiceDetail';
 
@@ -80,8 +79,7 @@ export default function App() {
             <Route path="materials"              element={<MaterialPricing />} />
             <Route path="price-intelligence"     element={<PricingIntelligence />} />
 
-            {/* BOQ & Invoices */}
-            <Route path="boq"                    element={<BoqBuilder />} />
+            {/* Invoices */}
             <Route path="invoices"               element={<Invoices />} />
             <Route path="invoices/:id"           element={<InvoiceDetail />} />
 
