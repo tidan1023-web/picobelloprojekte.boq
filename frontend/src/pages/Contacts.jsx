@@ -217,7 +217,21 @@ export default function Contacts() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-900" /></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100 shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3.5 bg-gray-100 rounded w-32" />
+                  <div className="h-3 bg-gray-100 rounded w-20" />
+                </div>
+              </div>
+              <div className="h-3 bg-gray-100 rounded w-40" />
+              <div className="h-3 bg-gray-100 rounded w-28" />
+            </div>
+          ))}
+        </div>
       ) : contacts.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
           <Users size={48} className="mx-auto mb-3 text-gray-200" />
