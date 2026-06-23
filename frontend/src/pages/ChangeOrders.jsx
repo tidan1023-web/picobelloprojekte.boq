@@ -368,11 +368,59 @@ export default function ChangeOrders() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Loading…</div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="px-5 py-4 border-b border-gray-50 flex gap-3 animate-pulse">
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-48" />
+                <div className="h-3 bg-gray-100 rounded w-32" />
+              </div>
+              <div className="h-5 bg-gray-100 rounded-full w-20" />
+            </div>
+          ))}
+        </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-16 text-gray-400">No change orders found.</div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-gray-50">
+            {orders.map((o) => {
+              const Icon = STATUS_ICONS[o.status] || Clock;
+              return (
+                <div key={o._id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-800 text-sm">{o.title}</p>
+                      <p className="text-xs text-gray-400">{o.projectId?.name} · {o.requestedBy?.name}</p>
+                    </div>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_STYLES[o.status]}`}>
+                      <Icon size={10} /> {o.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Diff: <span className={`font-semibold ${o.difference > 0 ? 'text-red-600' : o.difference < 0 ? 'text-green-600' : 'text-gray-400'}`}>{o.difference > 0 ? '+' : ''}₦{fmt(o.difference)}</span></span>
+                    <div className="flex gap-1">
+                      <button onClick={() => setDocOrder(o)} className="text-xs text-gray-400 hover:text-primary-900 px-2 py-1 hover:bg-primary-50 rounded-lg flex items-center gap-1">
+                        <Printer size={12} /> Doc
+                      </button>
+                      {canDecide && o.status === 'pending' && (
+                        <>
+                          <button onClick={() => decide(o._id, 'approved')} className="text-xs bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700">Approve</button>
+                          <button onClick={() => decide(o._id, 'rejected')} className="text-xs bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">Reject</button>
+                        </>
+                      )}
+                      {canManage && o.status === 'pending' && (
+                        <button onClick={() => { setEditData(o); setShowModal(true); }} className="text-xs text-gray-400 hover:text-primary-900 px-2 py-1 hover:bg-primary-50 rounded-lg">Edit</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -433,6 +481,7 @@ export default function ChangeOrders() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

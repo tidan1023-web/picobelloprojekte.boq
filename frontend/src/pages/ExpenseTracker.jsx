@@ -264,7 +264,18 @@ export default function ExpenseTracker() {
 
       {/* List */}
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Loading…</div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="px-5 py-4 border-b border-gray-50 flex gap-3 animate-pulse">
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-48" />
+                <div className="h-3 bg-gray-100 rounded w-24" />
+              </div>
+              <div className="h-5 bg-gray-100 rounded-full w-16" />
+              <div className="h-4 bg-gray-100 rounded w-20" />
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <DollarSign size={40} className="mx-auto mb-3 opacity-20" />
@@ -272,7 +283,36 @@ export default function ExpenseTracker() {
           {canManage && <button onClick={() => { setEditData(null); setShowModal(true); }} className="mt-3 text-primary-900 text-sm font-medium hover:underline">Add your first expense</button>}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-gray-50">
+            {filtered.map((e) => (
+              <div key={e._id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{e.description}</p>
+                    {e.vendor && <p className="text-xs text-gray-400">{e.vendor}</p>}
+                  </div>
+                  <p className="text-sm font-bold text-gray-800 shrink-0">{e.currency} {fmt(e.amount)}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[e.category] || 'bg-gray-100 text-gray-600'}`}>{e.category}</span>
+                    <span className="text-xs text-gray-400">{new Date(e.date).toLocaleDateString('en-GB')}</span>
+                    {e.projectId?.name && <span className="text-xs text-gray-400">{e.projectId.name}</span>}
+                  </div>
+                  {canManage && (
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => { setEditData(e); setShowModal(true); }} className="text-xs text-gray-400 hover:text-primary-900 px-2 py-1 hover:bg-primary-50 rounded-lg">Edit</button>
+                      <button onClick={() => handleDelete(e._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={13} /></button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
@@ -328,6 +368,7 @@ export default function ExpenseTracker() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
