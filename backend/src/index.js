@@ -9,8 +9,8 @@ const hpp            = require('hpp');
 const connectDB      = require('./config/database');
 const errorHandler   = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const { paystackWebhook } = require('./controllers/invoiceController');
 
-// ── Core routes (previously mounted) ─────────────────────────────────────────────
 const authRoutes               = require('./routes/auth');
 const companyRoutes            = require('./routes/company');
 const siteReportRoutes         = require('./routes/siteReports');
@@ -18,7 +18,6 @@ const historicalProjectRoutes  = require('./routes/historicalProjects');
 const estimateRoutes           = require('./routes/estimates');
 const invoiceRoutes            = require('./routes/invoices');
 
-// ── Feature routes (previously built but not mounted) ─────────────────────────
 const projectRoutes       = require('./routes/projects');
 const contactRoutes       = require('./routes/contacts');
 const qsPriceRoutes       = require('./routes/qsPrices');
@@ -59,7 +58,13 @@ app.use(cors({
 // ── Security headers ─────────────────────────────────────────────────────────────────
 app.use(helmet());
 
-// ── Body parsing with size limit ───────────────────────────────────────────────────────
+// ── Paystack webhook: must use raw body BEFORE express.json() ─────────────────────────
+// Paystack signs the raw request body; if JSON middleware runs first the sig check fails.
+['/api/paystack/webhook', '/api/v1/paystack/webhook'].forEach((path) => {
+  app.post(path, express.raw({ type: 'application/json' }), paystackWebhook);
+});
+
+// ── Body parsing ───────────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
@@ -74,41 +79,33 @@ app.use('/api/', apiLimiter);
 app.get('/', (_req, res) => res.json({ status: 'ok', service: 'Pico Bello Estimator API', version: '2.0.0' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// ── Routes — available at /api/v1/* and /api/* (backward-compatible) ──────────────────
+// ── Routes ──────────────────────────────────────────────────────────────────────
 ['/api/v1', '/api'].forEach((prefix) => {
-  // Auth & company
   app.use(`${prefix}/auth`,                authRoutes);
   app.use(`${prefix}/company`,             companyRoutes);
 
-  // Core features
   app.use(`${prefix}/estimates`,           estimateRoutes);
   app.use(`${prefix}/invoices`,            invoiceRoutes);
   app.use(`${prefix}/site-reports`,        siteReportRoutes);
   app.use(`${prefix}/historical-projects`, historicalProjectRoutes);
 
-  // Projects & contacts
   app.use(`${prefix}/projects`,            projectRoutes);
   app.use(`${prefix}/contacts`,            contactRoutes);
 
-  // Pricing libraries
   app.use(`${prefix}/qs-prices`,           qsPriceRoutes);
   app.use(`${prefix}/artisan-prices`,      artisanPriceRoutes);
   app.use(`${prefix}/material-prices`,     materialPriceRoutes);
   app.use(`${prefix}/pricing`,             pricingRoutes);
 
-  // BOQ & execution
   app.use(`${prefix}/boq`,                 boqRoutes);
   app.use(`${prefix}/change-orders`,       changeOrderRoutes);
   app.use(`${prefix}/progress`,            progressRoutes);
 
-  // Analytics & approvals
   app.use(`${prefix}/analytics`,           analyticsRoutes);
   app.use(`${prefix}/approvals`,           approvalRoutes);
 
-  // Dashboard summary
   app.use(`${prefix}/dashboard`,           dashboardRoutes);
 
-  // Collaboration
   app.use(`${prefix}/comments`,            commentRoutes);
   app.use(`${prefix}/notifications`,       notificationRoutes);
   app.use(`${prefix}/expenses`,            expenseRoutes);

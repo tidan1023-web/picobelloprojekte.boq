@@ -45,6 +45,7 @@ const invoiceSchema = new mongoose.Schema({
     enum: ['draft', 'sent', 'paid', 'partially_paid', 'overdue'],
     default: 'draft',
   },
+  publicToken:   { type: String, unique: true, sparse: true },
   notes:     { type: String, trim: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });

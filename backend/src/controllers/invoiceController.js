@@ -1,7 +1,9 @@
+const crypto     = require('crypto');
 const PDFDocument = require('pdfkit');
 const Invoice  = require('../models/Invoice');
 const Estimate = require('../models/Estimate');
 const Company  = require('../models/Company');
+const logger   = require('../utils/logger');
 
 const TIER_LABELS = { basic: 'Basic', mid_range: 'Mid-Range', premium: 'Premium' };
 
@@ -157,6 +159,149 @@ exports.deletePayment = async (req, res) => {
   res.json({ invoice });
 };
 
+// ── Payment link (authenticated) ───────────────────────────────────────────────────────
+exports.getPaymentLink = async (req, res) => {
+  const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+  if (!invoice.publicToken) {
+    invoice.publicToken = crypto.randomBytes(32).toString('hex');
+    await invoice.save();
+  }
+
+  const url = `${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/pay/${invoice.publicToken}`;
+  res.json({ url, publicToken: invoice.publicToken });
+};
+
+// ── Public invoice view (no auth) ─────────────────────────────────────────────────────
+exports.getPublicInvoice = async (req, res) => {
+  const invoice = await Invoice
+    .findOne({ publicToken: req.params.token })
+    .populate('companyId', 'companyName address phone email logo bankDetails paymentInstructions')
+    .lean();
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  res.json({ invoice });
+};
+
+// ── Initialise Paystack payment (no auth) ─────────────────────────────────────────────
+exports.initPayment = async (req, res) => {
+  const invoice = await Invoice.findOne({ publicToken: req.params.token });
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  if (invoice.balance <= 0) return res.status(400).json({ message: 'This invoice is already fully paid.' });
+  if (invoice.currency !== 'NGN') return res.status(400).json({ message: 'Online payment is only available for NGN invoices.' });
+
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) return res.status(503).json({ message: 'Payment gateway not configured. Please pay via bank transfer.' });
+
+  const email = invoice.clientEmail || process.env.PAYSTACK_FALLBACK_EMAIL;
+  if (!email) return res.status(400).json({ message: 'Client email is required for online payment. Please ask your contractor to add it to the invoice.' });
+
+  const reference = `PB-${invoice._id}-${Date.now()}`;
+  const callbackUrl = `${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/pay/${req.params.token}?ref=${reference}`;
+
+  const resp = await fetch('https://api.paystack.co/transaction/initialize', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      amount: Math.round(invoice.balance * 100),
+      reference,
+      callback_url: callbackUrl,
+      metadata: {
+        invoice_id: invoice._id.toString(),
+        invoice_number: invoice.invoiceNumber,
+        public_token: req.params.token,
+      },
+    }),
+  });
+
+  const data = await resp.json();
+  if (!data.status) {
+    logger.error('Paystack init failed', { data });
+    return res.status(502).json({ message: 'Payment initialization failed. Please try again.' });
+  }
+
+  res.json({ authorizationUrl: data.data.authorization_url, reference });
+};
+
+// ── Verify payment after Paystack callback ─────────────────────────────────────────────
+exports.verifyPayment = async (req, res) => {
+  const { reference } = req.params;
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) return res.status(503).json({ message: 'Not configured' });
+
+  const resp = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+    headers: { Authorization: `Bearer ${secretKey}` },
+  });
+  const data = await resp.json();
+  if (!data.status || data.data.status !== 'success') {
+    return res.status(400).json({ message: 'Payment not confirmed yet.' });
+  }
+
+  const invoiceId = data.data.metadata?.invoice_id;
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+  const already = invoice.payments.some((p) => p.reference === reference);
+  if (!already) {
+    invoice.payments.push({
+      amount: data.data.amount / 100,
+      method: 'card',
+      reference,
+      paymentDate: new Date(),
+      note: 'Paid online via Paystack',
+    });
+    recalcTotals(invoice);
+    await invoice.save();
+  }
+
+  res.json({ paid: true, invoice });
+};
+
+// ── Paystack webhook (raw body, verified by HMAC) ─────────────────────────────────────
+exports.paystackWebhook = async (req, res) => {
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return res.sendStatus(200);
+
+  const sig  = req.headers['x-paystack-signature'];
+  const hash = crypto.createHmac('sha512', secret).update(req.body).digest('hex');
+  if (hash !== sig) {
+    logger.warn('Paystack webhook: invalid signature');
+    return res.status(400).send('Invalid signature');
+  }
+
+  let event;
+  try { event = JSON.parse(req.body.toString()); } catch { return res.sendStatus(200); }
+
+  if (event.event !== 'charge.success') return res.sendStatus(200);
+
+  const { reference, amount, metadata } = event.data;
+  const invoiceId = metadata?.invoice_id;
+  if (!invoiceId) return res.sendStatus(200);
+
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) return res.sendStatus(200);
+
+  const already = invoice.payments.some((p) => p.reference === reference);
+  if (!already) {
+    invoice.payments.push({
+      amount: amount / 100,
+      method: 'card',
+      reference,
+      paymentDate: new Date(),
+      note: 'Paid online via Paystack',
+    });
+    recalcTotals(invoice);
+    await invoice.save();
+    logger.info('Paystack payment recorded', { invoiceId, reference, amount: amount / 100 });
+  }
+
+  res.sendStatus(200);
+};
+
 // ── PDF ─────────────────────────────────────────────────────────────────────────────────
 exports.generatePDF = async (req, res) => {
   const invoice = await Invoice
@@ -180,10 +325,8 @@ exports.generatePDF = async (req, res) => {
   const W = doc.page.width;
   const M = 50;
 
-  // Header band
   doc.rect(0, 0, W, 130).fill(PRIMARY);
 
-  // Logo
   let logoLoaded = false;
   if (co.logo) {
     try {
@@ -207,7 +350,6 @@ exports.generatePDF = async (req, res) => {
     .text(`Issued: ${fmtDate(invoice.issueDate)}`, M, 80, { width: W - M * 2, align: 'right' })
     .text(`Due: ${fmtDate(invoice.dueDate)}`, M, 92, { width: W - M * 2, align: 'right' });
 
-  // Status badge
   const badgeColors = { draft: '#6b7280', sent: '#2563eb', paid: '#16a34a', partially_paid: '#d97706', overdue: '#dc2626' };
   doc.roundedRect(W - M - 72, 108, 72, 16, 4).fill(badgeColors[invoice.status] || '#6b7280');
   doc.font('Helvetica-Bold').fontSize(8).fillColor('white')
@@ -215,7 +357,6 @@ exports.generatePDF = async (req, res) => {
 
   let y = 148;
 
-  // Bill-to / project info
   doc.font('Helvetica-Bold').fontSize(8.5).fillColor(GRAY)
     .text('BILL TO', M, y)
     .text('PROJECT', W / 2, y);
@@ -234,7 +375,6 @@ exports.generatePDF = async (req, res) => {
   }
   y += 36;
 
-  // Line items table
   const colX = [M, M + 245, M + 295, M + 355, M + 415];
   const colW = [245, 50, 60, 60, W - M - 415 - M];
   const headers = ['Description', 'Unit', 'Qty', 'Rate', 'Amount'];
@@ -265,7 +405,6 @@ exports.generatePDF = async (req, res) => {
 
   y += 10;
 
-  // Totals block
   const totalsX = W / 2;
   const totalsW = W - M - totalsX;
   const drawRow = (label, value, bold = false) => {
@@ -288,7 +427,6 @@ exports.generatePDF = async (req, res) => {
   drawRow('Amount Paid', fmt(invoice.amountPaid));
   drawRow('Balance Due', fmt(invoice.balance));
 
-  // Bank details
   if (co.bankDetails && co.bankDetails.length > 0) {
     y += 18;
     doc.rect(M, y, W - M * 2, 1).fill(LIGHT_BLUE);
@@ -307,7 +445,6 @@ exports.generatePDF = async (req, res) => {
     y += doc.heightOfString(co.paymentInstructions, { width: W - M * 2 }) + 8;
   }
 
-  // Payments recorded
   if ((invoice.payments || []).length > 0) {
     y += 8;
     doc.font('Helvetica-Bold').fontSize(9).fillColor(PRIMARY).text('PAYMENTS RECEIVED', M, y);
@@ -329,7 +466,6 @@ exports.generatePDF = async (req, res) => {
     y += doc.heightOfString(invoice.notes, { width: W - M * 2 }) + 8;
   }
 
-  // Footer
   doc.rect(0, doc.page.height - 40, W, 40).fill(PRIMARY);
   doc.font('Helvetica').fontSize(7.5).fillColor(LIGHT_BLUE)
     .text(
