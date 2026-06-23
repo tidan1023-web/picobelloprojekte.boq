@@ -90,10 +90,10 @@ function RolePicker({ value, onChange }) {
 }
 
 function InviteModal({ onClose, onSaved }) {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'qs', phone: '' });
+  const [form, setForm] = useState({ name: '', email: '', role: 'qs', phone: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState(null);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -103,29 +103,35 @@ function InviteModal({ onClose, onSaved }) {
     setSaving(true);
     setError('');
     try {
-      await api.post('/auth/invite', form);
-      setSuccess(true);
-      setTimeout(() => { onSaved(); }, 1800);
+      const { data } = await api.post('/auth/invite', form);
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add member. Please try again.');
+      setError(err.response?.data?.message || 'Failed to send invite. Please try again.');
       setSaving(false);
     }
   };
 
-  if (success) {
+  if (result) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8 text-center">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8">
           <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="font-bold text-gray-800 text-lg mb-1">Member Added!</h3>
-          <p className="text-sm text-gray-500">
-            {form.name} has been added to your team.
-            {form.phone && ' A WhatsApp notification with login details has been sent.'}
+          <h3 className="font-bold text-gray-800 text-lg mb-1 text-center">Invitation sent!</h3>
+          <p className="text-sm text-gray-500 text-center mb-4">
+            {form.name} will receive an email to set their password.
+            {form.phone && ' A WhatsApp message was also sent.'}
           </p>
+          <p className="text-xs text-gray-400 mb-1 font-medium">Share this link manually if needed:</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 break-all select-all mb-4">
+            {result.inviteUrl}
+          </div>
+          <button onClick={onSaved} className="w-full bg-primary-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-primary-800">
+            Done
+          </button>
         </div>
       </div>
     );
@@ -151,19 +157,18 @@ function InviteModal({ onClose, onSaved }) {
             <input required type="email" value={form.email} onChange={set('email')} className={inputCls} placeholder="jane@company.com" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Temporary Password *</label>
-            <input required type="text" minLength={6} value={form.password} onChange={set('password')} className={inputCls} placeholder="Minimum 6 characters" />
-          </div>
-          <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              WhatsApp Number <span className="text-gray-400 font-normal">(optional — to send login details)</span>
+              WhatsApp Number <span className="text-gray-400 font-normal">(optional — also sends invite via WhatsApp)</span>
             </label>
-            <input type="tel" value={form.phone} onChange={set('phone')} className={inputCls} placeholder="+27 82 000 0000" />
+            <input type="tel" value={form.phone} onChange={set('phone')} className={inputCls} placeholder="+234 000 000 0000" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-2">Role *</label>
             <RolePicker value={form.role} onChange={(v) => setForm((f) => ({ ...f, role: v }))} />
           </div>
+          <p className="text-xs text-gray-400">
+            An invitation email will be sent with a link to set their password. The link expires in 48 hours.
+          </p>
         </form>
         <div className="px-6 py-4 border-t border-gray-100 flex gap-3 shrink-0">
           <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2.5 text-sm text-gray-600 hover:bg-gray-50">
@@ -171,10 +176,10 @@ function InviteModal({ onClose, onSaved }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={saving || !form.name || !form.email || !form.password || !form.role.trim()}
+            disabled={saving || !form.name || !form.email || !form.role.trim()}
             className="flex-1 bg-primary-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Adding…' : 'Add Member'}
+            {saving ? 'Sending…' : 'Send Invite'}
           </button>
         </div>
       </div>
