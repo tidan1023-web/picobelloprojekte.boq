@@ -35,7 +35,7 @@ const register = async (req, res) => {
   }
 
   const company = await Company.create({ companyName: req.body.companyName || 'My Company' });
-  const user    = await User.create({ name, email, password, role: 'admin', companyId: company._id, onboarded: true });
+  const user    = await User.create({ name, email, password, role: 'admin', companyId: company._id, onboarded: false, callBooked: false, callCompleted: false });
   company.createdBy = user._id;
   await company.save();
 
@@ -91,7 +91,7 @@ const googleAuth = async (req, res) => {
   if (!user) {
     const company  = await Company.create({ companyName: 'My Company' });
     const randomPw = crypto.randomBytes(24).toString('hex');
-    user = await User.create({ name, email, password: randomPw, role: 'admin', companyId: company._id, avatar: picture, onboarded: true });
+    user = await User.create({ name, email, password: randomPw, role: 'admin', companyId: company._id, avatar: picture, onboarded: false, callBooked: false, callCompleted: false });
     company.createdBy = user._id;
     await company.save();
     logger.info('New user via Google OAuth', { userId: user._id, email, ip });
@@ -242,9 +242,36 @@ const markOnboarded = async (req, res) => {
   res.json({ message: 'Onboarded' });
 };
 
+// ── Call Booking ──────────────────────────────────────────────────────────────
+
+const bookCall = async (req, res) => {
+  const { slot } = req.body;
+  if (!slot) return res.status(400).json({ message: 'slot is required' });
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { callBooked: true, callBookedSlot: slot },
+    { new: true },
+  );
+  res.json({ message: 'Call booked', user });
+};
+
+const completeCall = async (req, res) => {
+  const secret = req.headers['x-unlock-secret'];
+  if (!secret || secret !== process.env.UNLOCK_SECRET) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  const user = await User.findOneAndUpdate(
+    { _id: req.params.id },
+    { callCompleted: true },
+    { new: true },
+  );
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json({ message: 'Call marked complete', user });
+};
+
 module.exports = {
   register, login, getMe, googleAuth,
   forgotPassword, resetPassword, deleteAccount,
   listTeam, inviteMember, updateMemberRole, removeMember,
-  markOnboarded,
+  markOnboarded, bookCall, completeCall,
 };

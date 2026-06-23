@@ -3,7 +3,8 @@ const router     = express.Router();
 const {
   register, login, getMe, googleAuth,
   forgotPassword, resetPassword, deleteAccount,
-  listTeam, inviteMember, updateMemberRole, removeMember, markOnboarded,
+  listTeam, inviteMember, updateMemberRole, removeMember,
+  markOnboarded, bookCall, completeCall,
 } = require('../controllers/authController');
 const { authenticate, authorize } = require('../middleware/auth');
 const { authLimiter }           = require('../middleware/rateLimiter');
@@ -43,7 +44,9 @@ router.post('/invite',         authenticate, authorize('admin'), inviteMember);
 router.patch('/team/:id/role', authenticate, authorize('admin'), updateMemberRole);
 router.delete('/team/:id',     authenticate, authorize('admin'), removeMember);
 
-router.patch('/me/onboarded', authenticate, markOnboarded);
+router.patch('/me/onboarded',           authenticate, markOnboarded);
+router.patch('/me/book-call',           authenticate, bookCall);
+router.patch('/team/:id/complete-call', completeCall);
 router.delete('/me', authenticate, deleteAccount);
 
 module.exports = router;

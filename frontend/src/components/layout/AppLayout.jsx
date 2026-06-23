@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import OnboardingModal from '../OnboardingModal';
+import BookCallGate from '../BookCallGate';
+import { useAuth } from '../../context/AuthContext';
 
 const TITLES = {
   '/app/dashboard':           'Dashboard',
@@ -28,7 +30,12 @@ const TITLES = {
 
 export default function AppLayout() {
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (user?.role === 'admin' && !user?.callCompleted) {
+    return <BookCallGate />;
+  }
 
   const title = TITLES[pathname]
     ?? (pathname.startsWith('/app/estimates/') ? 'Estimate Detail'
