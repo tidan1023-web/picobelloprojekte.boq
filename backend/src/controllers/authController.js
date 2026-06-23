@@ -184,8 +184,8 @@ const listTeam = async (req, res) => {
 
 const inviteMember = async (req, res) => {
   const { name, email, password, role, phone } = req.body;
-  if (!['qs', 'project_manager', 'client'].includes(role)) {
-    return res.status(400).json({ message: 'Invalid role. Choose qs, project_manager, or client.' });
+  if (!role || !role.trim()) {
+    return res.status(400).json({ message: 'Role is required.' });
   }
   const existing = await User.findOne({ email });
   if (existing) return res.status(409).json({ message: 'Email already registered' });
@@ -213,8 +213,8 @@ const inviteMember = async (req, res) => {
 
 const updateMemberRole = async (req, res) => {
   const { role } = req.body;
-  if (!['qs', 'project_manager', 'client'].includes(role)) {
-    return res.status(400).json({ message: 'Invalid role' });
+  if (!role || !role.trim()) {
+    return res.status(400).json({ message: 'Role is required.' });
   }
   if (req.params.id === req.user._id.toString()) {
     return res.status(400).json({ message: 'Cannot change your own role' });

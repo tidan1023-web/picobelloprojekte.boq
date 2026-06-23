@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   role: {
     type: String,
-    enum: ['admin', 'qs', 'project_manager', 'client'],
     default: 'admin',
   },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
