@@ -3,6 +3,7 @@ import { Plus, X, Pencil, Trash2, Search, Phone, Mail, Users, Building2, Message
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const CONTACT_IMPORT_COLUMNS = [
   { key: 'name', label: 'Name', type: 'string' },
@@ -144,6 +145,7 @@ function ContactModal({ open, onClose, onSaved, editing, projects }) {
 
 export default function Contacts() {
   const { user } = useAuth();
+  const toast = useToast();
   const [contacts, setContacts] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -236,6 +238,12 @@ export default function Contacts() {
         <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
           <Users size={48} className="mx-auto mb-3 text-gray-200" />
           <p className="text-gray-500 text-sm">No contacts yet.</p>
+          {canEdit && (
+            <button onClick={() => { setEditing(null); setModal(true); }}
+              className="mt-3 bg-primary-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-800">
+              Add First Contact
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -309,7 +317,7 @@ export default function Contacts() {
         </div>
       )}
 
-      <ContactModal open={modal} onClose={() => setModal(false)} onSaved={() => { setModal(false); load(); }} editing={editing} projects={projects} />
+      <ContactModal open={modal} onClose={() => setModal(false)} onSaved={() => { setModal(false); load(); toast(editing ? 'Contact updated' : 'Contact saved'); }} editing={editing} projects={projects} />
     </div>
   );
 }

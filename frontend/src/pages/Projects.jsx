@@ -3,6 +3,7 @@ import { Plus, X, Pencil, Trash2, FolderOpen, Search, FileText, ExternalLink, Ch
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { useToast } from '../context/ToastContext';
 
 const DEFAULT_FOLDERS = [
   'Contracts', 'Receipts', 'Invoices', 'Site Plans & Drawings',
@@ -307,6 +308,7 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
 
 export default function Projects() {
   const { user } = useAuth();
+  const toast = useToast();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -349,6 +351,7 @@ export default function Projects() {
   const handleSaved = () => {
     setModal(false);
     fetchProjects();
+    toast(editing ? 'Project updated' : 'Project created');
   };
 
   const filtered = projects.filter((p) => {
