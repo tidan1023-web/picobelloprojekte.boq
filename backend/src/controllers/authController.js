@@ -7,7 +7,7 @@ const Estimate = require('../models/Estimate');
 const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
-const { sendWelcome, sendPasswordReset } = require('../utils/email');
+const { sendWelcome, sendPasswordReset, sendBookingConfirmation } = require('../utils/email');
 const { sendWhatsApp } = require('../utils/whatsapp');
 const logger = require('../utils/logger');
 
@@ -251,6 +251,9 @@ const bookCall = async (req, res) => {
     req.user._id,
     { callBooked: true, callBookedSlot: slot },
     { new: true },
+  );
+  sendBookingConfirmation(user, slot).catch((err) =>
+    logger.warn('Booking confirmation email failed:', err.message),
   );
   res.json({ message: 'Call booked', user });
 };

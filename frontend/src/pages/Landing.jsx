@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Building2, Calculator, Database, FileText, ArrowRight,
-  CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
+  Calculator, Database, FileText, ArrowRight,
+  CheckCircle, TrendingUp, Clock, ChevronRight,
   Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
-  Package, Zap, FolderOpen,
+  Zap, FolderOpen,
 } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const HOW_IT_WORKS = [
   {
@@ -126,9 +127,7 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary-900 rounded-xl flex items-center justify-center shrink-0">
-              <Building2 size={16} className="text-white" />
-            </div>
+            <Logo size={36} />
             <div className="leading-tight">
               <p className="text-sm font-bold text-primary-900 leading-tight">Pico Bello Projekte</p>
               <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
@@ -458,9 +457,7 @@ export default function Landing() {
       <footer className="border-t border-gray-100 py-6 sm:py-8 px-4 sm:px-8 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-primary-900 rounded-lg flex items-center justify-center">
-              <Building2 size={14} className="text-white" />
-            </div>
+            <Logo size={28} />
             <span className="text-sm font-semibold text-gray-700">Pico Bello Projekte Limited</span>
           </div>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Pico Bello Projekte. All rights reserved.</p>

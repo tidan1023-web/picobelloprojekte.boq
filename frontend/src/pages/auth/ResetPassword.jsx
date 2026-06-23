@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Building2 } from 'lucide-react';
 import api from '../../services/api';
+import Logo from '../../components/Logo';
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -34,8 +34,8 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-primary-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-2xl mb-4 shadow-lg">
-            <Building2 size={32} className="text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Logo size={64} />
           </div>
           <h1 className="text-2xl font-bold text-white">Pico Bello Projekte</h1>
           <p className="text-blue-300 mt-1 text-sm">BOQ Management System</p>
