@@ -36,6 +36,7 @@ const expenseRoutes        = require('./routes/expenses');
 const documentRoutes       = require('./routes/documents');
 
 const app = express();
+app.set('trust proxy', 1); // Render sits behind a reverse proxy
 connectDB();
 
 // ── CORS ───────────────────────────────────────────────────────────────────────────
