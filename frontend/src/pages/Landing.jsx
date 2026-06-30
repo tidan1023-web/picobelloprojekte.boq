@@ -236,10 +236,10 @@ export default function Landing() {
             <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-900 transition-colors px-2 py-1">
               Sign In
             </Link>
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="bg-primary-900 text-white text-sm font-medium px-3 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors">
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -263,10 +263,10 @@ export default function Landing() {
             Built around your rate libraries and project history so every number is yours, not an industry average.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="flex items-center justify-center gap-2 bg-white text-primary-900 font-semibold px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg">
-              Get Started <ArrowRight size={17} />
-            </button>
+              Start for Free <ArrowRight size={17} />
+            </Link>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-blue-400/40 text-white font-medium px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-primary-800 transition-colors">
               Sign In
@@ -425,6 +425,21 @@ export default function Landing() {
             </p>
           </div>
 
+          {/* Free tier banner */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Free</span>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Always free</span>
+              </div>
+              <p className="text-sm text-gray-600">Create an account and access the Project Estimator, BOQ tools, and basic invoicing — no card required.</p>
+            </div>
+            <Link to="/register"
+              className="shrink-0 flex items-center gap-2 border border-primary-900 text-primary-900 font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-50 transition-colors text-sm">
+              Get Started Free <ArrowRight size={14} />
+            </Link>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 items-start">
 
             {/* Basic */}
@@ -527,7 +542,7 @@ export default function Landing() {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Prices in Nigerian Naira. All plans include a personal onboarding call. Access is opened after your call — no self-sign-up.
+            Prices in Nigerian Naira. Paid plans are activated after an onboarding call — we set you up personally.
           </p>
         </div>
       </section>
@@ -535,15 +550,15 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
-            Book a free onboarding call. We'll walk you through the platform, set up your rate libraries, and have you running estimates within the hour.
+            Create a free account, set up your rate libraries, and have a credible ballpark estimate in your client's inbox within minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="flex items-center justify-center gap-2 bg-primary-900 text-white font-semibold px-7 py-3 rounded-xl hover:bg-primary-800 transition-colors shadow-md">
-              Book a Call <ArrowRight size={17} />
-            </button>
+              Create Free Account <ArrowRight size={17} />
+            </Link>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-medium px-7 py-3 rounded-xl hover:bg-white transition-colors">
               Sign In
