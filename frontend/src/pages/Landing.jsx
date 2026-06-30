@@ -12,6 +12,7 @@ import axios from 'axios';
 function BookCallModal({ plan, onClose }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +22,7 @@ function BookCallModal({ plan, onClose }) {
     setSubmitting(true);
     setError('');
     try {
-      await axios.post('/api/auth/request-onboarding', { name, email, plan });
+      await axios.post('/api/auth/request-onboarding', { name, email, phone, plan });
       setDone(true);
     } catch {
       setError('Something went wrong. Please email us directly at hello@picobelloprojekte.com');
@@ -83,6 +84,16 @@ function BookCallModal({ plan, onClose }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tunde@yourfirm.com"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Phone / WhatsApp</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+234 800 000 0000"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
                 />
               </div>

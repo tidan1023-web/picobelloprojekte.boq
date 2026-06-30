@@ -156,7 +156,7 @@ const sendTeamInvite = async (user, inviteUrl) => {
   });
 };
 
-const sendOnboardingRequest = ({ name, email, plan }) =>
+const sendOnboardingRequest = ({ name, email, phone, plan }) =>
   sendEmail({
     to: process.env.OWNER_EMAIL || 'tidan1023@gmail.com',
     subject: `New onboarding request — ${plan} plan`,
@@ -167,6 +167,7 @@ const sendOnboardingRequest = ({ name, email, plan }) =>
         <table style="width:100%;border-collapse:collapse;margin:16px 0">
           <tr><td style="padding:8px;color:#666;width:100px">Name</td><td style="padding:8px;font-weight:600">${name}</td></tr>
           <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px;font-weight:600">${email}</td></tr>
+          <tr><td style="padding:8px;color:#666">Phone</td><td style="padding:8px;font-weight:600">${phone || '—'}</td></tr>
           <tr><td style="padding:8px;color:#666">Plan</td><td style="padding:8px;font-weight:600">${plan}</td></tr>
         </table>
         <p>Send them an invite from the Team page, or reply to this email to schedule their onboarding call.</p>

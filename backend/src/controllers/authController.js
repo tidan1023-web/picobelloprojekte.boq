@@ -349,11 +349,11 @@ const updateMemberPlan = async (req, res) => {
 
 // ── requestOnboarding ─────────────────────────────────────────────────────────
 const requestOnboarding = async (req, res) => {
-  const { name, email, plan } = req.body;
+  const { name, email, phone, plan } = req.body;
   if (!name || !email || !plan) {
     return res.status(400).json({ message: 'name, email, and plan are required' });
   }
-  sendOnboardingRequest({ name, email, plan }).catch((e) =>
+  sendOnboardingRequest({ name, email, phone, plan }).catch((e) =>
     logger.warn('Onboarding request email failed', { error: e.message }),
   );
   res.json({ message: 'Request received' });
