@@ -165,7 +165,7 @@ const deleteAccount = async (req, res) => {
 
 const listTeam = async (req, res) => {
   const members = await User.find({ companyId: req.user.companyId, isActive: true })
-    .select('name email role createdAt')
+    .select('name email role plan createdAt')
     .sort({ createdAt: 1 })
     .lean();
   res.json({ members });

@@ -9,8 +9,11 @@ import {
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
+  Lock,
 } from 'lucide-react';
 import Logo from '../Logo';
+
+const PLAN_RANK = { free: 0, basic: 1, premium: 2 };
 
 const NAV_GROUPS = [
   {
@@ -24,20 +27,21 @@ const NAV_GROUPS = [
     heading: 'Pricing Libraries',
     clientHidden: true,
     items: [
-      { to: '/app/qs-prices',          icon: BookOpen,       label: 'QS Prices' },
-      { to: '/app/qs-comparison',      icon: GitCompare,     label: 'QS Comparison' },
-      { to: '/app/artisan-prices',     icon: HardHat,        label: 'Artisan Rates' },
-      { to: '/app/materials',          icon: Package,        label: 'Materials' },
-      { to: '/app/price-intelligence', icon: Zap,            label: 'Price Intelligence' },
+      { to: '/app/qs-prices',          icon: BookOpen,       label: 'QS Prices',          plan: 'basic' },
+      { to: '/app/qs-comparison',      icon: GitCompare,     label: 'QS Comparison',      plan: 'basic' },
+      { to: '/app/artisan-prices',     icon: HardHat,        label: 'Artisan Rates',      plan: 'basic' },
+      { to: '/app/materials',          icon: Package,        label: 'Materials',          plan: 'basic' },
+      { to: '/app/price-intelligence', icon: Zap,            label: 'Price Intelligence', plan: 'premium' },
     ],
   },
   {
     heading: 'BOQ & Invoices',
     clientHidden: true,
     items: [
-      { to: '/app/boq',       icon: Layers,     label: 'BOQ Builder' },
-      { to: '/app/estimator', icon: Calculator, label: 'Project Estimator' },
-      { to: '/app/invoices',  icon: FileText,   label: 'Invoices' },
+      { to: '/app/boq',             icon: Layers,     label: 'BOQ Builder' },
+      { to: '/app/estimator',       icon: Calculator, label: 'Project Estimator' },
+      { to: '/app/estimates',       icon: FileText,   label: 'Estimate History',   plan: 'basic' },
+      { to: '/app/invoices',        icon: FileText,   label: 'Invoices' },
     ],
   },
   {
@@ -59,11 +63,11 @@ const NAV_GROUPS = [
   {
     heading: 'Execution',
     items: [
-      { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker' },
-      { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders' },
-      { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports' },
-      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker', clientHidden: true },
-      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics',       clientHidden: true },
+      { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker', plan: 'premium' },
+      { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders',    plan: 'premium' },
+      { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports',     plan: 'premium' },
+      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker',  plan: 'premium', clientHidden: true },
+      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics',        plan: 'premium', clientHidden: true },
     ],
   },
   {
@@ -134,13 +138,27 @@ export default function Sidebar({ onClose }) {
                 </p>
               )}
               <div className="space-y-0.5">
-                {visibleItems.map(({ to, icon: Icon, label }) => (
-                  <NavLink key={to} to={to} onClick={onClose}
-                    className={({ isActive }) => linkCls(isActive)}>
-                    <Icon size={15} className="shrink-0" />
-                    {label}
-                  </NavLink>
-                ))}
+                {visibleItems.map(({ to, icon: Icon, label, plan: requiredPlan }) => {
+                  const isLocked = requiredPlan &&
+                    (PLAN_RANK[user?.plan || 'free'] < PLAN_RANK[requiredPlan]);
+                  if (isLocked) {
+                    return (
+                      <NavLink key={to} to={to} onClick={onClose}
+                        className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-blue-400/50 cursor-pointer hover:bg-primary-800/50 transition-colors">
+                        <Icon size={15} className="shrink-0" />
+                        <span className="flex-1">{label}</span>
+                        <Lock size={11} className="shrink-0 opacity-60" />
+                      </NavLink>
+                    );
+                  }
+                  return (
+                    <NavLink key={to} to={to} onClick={onClose}
+                      className={({ isActive }) => linkCls(isActive)}>
+                      <Icon size={15} className="shrink-0" />
+                      {label}
+                    </NavLink>
+                  );
+                })}
               </div>
             </div>
           );
