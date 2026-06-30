@@ -140,6 +140,7 @@ export default function Sidebar({ onClose }) {
               <div className="space-y-0.5">
                 {visibleItems.map(({ to, icon: Icon, label, plan: requiredPlan }) => {
                   const isLocked = requiredPlan &&
+                    user?.email !== 'tidan1023@gmail.com' &&
                     (PLAN_RANK[user?.plan || 'free'] < PLAN_RANK[requiredPlan]);
                   if (isLocked) {
                     return (

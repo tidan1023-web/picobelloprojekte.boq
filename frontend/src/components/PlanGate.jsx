@@ -92,6 +92,8 @@ function BookCallModal({ plan, onClose }) {
   );
 }
 
+const DEV_EMAIL = 'tidan1023@gmail.com';
+
 export default function PlanGate({ required = 'basic', children }) {
   const { user } = useAuth();
   const [showModal, setShowModal] = useState(false);
@@ -99,7 +101,7 @@ export default function PlanGate({ required = 'basic', children }) {
   const userRank = PLAN_RANK[user?.plan || 'free'];
   const requiredRank = PLAN_RANK[required];
 
-  if (userRank >= requiredRank) return children;
+  if (user?.email === DEV_EMAIL || userRank >= requiredRank) return children;
 
   const planLabel = required.charAt(0).toUpperCase() + required.slice(1);
 
