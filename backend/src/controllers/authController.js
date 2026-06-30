@@ -7,7 +7,7 @@ const Estimate = require('../models/Estimate');
 const Invoice  = require('../models/Invoice');
 const SiteReport = require('../models/SiteReport');
 const HistoricalProject = require('../models/HistoricalProject');
-const { sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite } = require('../utils/email');
+const { sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite, sendOnboardingRequest } = require('../utils/email');
 const { validateImageBuffer, uploadImageToS3, deleteImageFromS3 } = require('../utils/s3Upload');
 const { S3_CONFIGURED } = require('../config/s3');
 const { sendWhatsApp } = require('../utils/whatsapp');
@@ -347,11 +347,23 @@ const updateProfile = async (req, res) => {
   res.json({ user });
 };
 
+// ── requestOnboarding ─────────────────────────────────────────────────────────
+const requestOnboarding = async (req, res) => {
+  const { name, email, plan } = req.body;
+  if (!name || !email || !plan) {
+    return res.status(400).json({ message: 'name, email, and plan are required' });
+  }
+  sendOnboardingRequest({ name, email, plan }).catch((e) =>
+    logger.warn('Onboarding request email failed', { error: e.message }),
+  );
+  res.json({ message: 'Request received' });
+};
+
 module.exports = {
   register, login, getMe, googleAuth,
   forgotPassword, resetPassword, deleteAccount,
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
-  acceptInvite,
+  acceptInvite, requestOnboarding,
 };
