@@ -334,6 +334,22 @@ const updateProfile = async (req, res) => {
   res.json({ user });
 };
 
+// ── adminResetPassword ────────────────────────────────────────────────────────
+const adminResetPassword = async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+  }
+  const member = await User.findOne({ _id: req.params.id, companyId: req.user.companyId });
+  if (!member) return res.status(404).json({ message: 'Member not found' });
+  member.password = password;
+  member.resetPasswordToken = undefined;
+  member.resetPasswordExpires = undefined;
+  await member.save();
+  logger.info('Admin reset member password', { adminId: req.user._id, memberId: member._id });
+  res.json({ message: 'Password reset successfully.' });
+};
+
 // ── updateMemberPlan ──────────────────────────────────────────────────────────
 const updateMemberPlan = async (req, res) => {
   const { plan } = req.body;
@@ -367,5 +383,5 @@ module.exports = {
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
-  acceptInvite, requestOnboarding, updateMemberPlan,
+  acceptInvite, requestOnboarding, updateMemberPlan, adminResetPassword,
 };

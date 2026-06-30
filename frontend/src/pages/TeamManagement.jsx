@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2, CreditCard } from 'lucide-react';
+import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2, CreditCard, KeyRound } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -243,6 +243,58 @@ function EditPlanModal({ member, onClose, onSaved }) {
   );
 }
 
+function ResetPasswordModal({ member, onClose }) {
+  const [password, setPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password.length < 6) return setError('Password must be at least 6 characters.');
+    setSaving(true);
+    try {
+      await api.patch(`/auth/team/${member._id}/password`, { password });
+      setDone(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to reset password.');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Reset Password — {member.name}</h2>
+          <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
+        </div>
+        {done ? (
+          <div className="p-6 text-center">
+            <p className="text-green-600 font-medium mb-4">Password reset successfully.</p>
+            <button onClick={onClose} className="bg-primary-900 text-white rounded-lg px-6 py-2 text-sm font-medium hover:bg-primary-800">Done</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min. 6 characters"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30" />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
+                {saving ? 'Saving…' : 'Reset Password'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EditRoleModal({ member, onClose, onSaved }) {
   const [role, setRole] = useState(member.role);
   const [saving, setSaving] = useState(false);
@@ -291,6 +343,7 @@ export default function TeamManagement() {
   const [showInvite, setShowInvite] = useState(false);
   const [editMember, setEditMember] = useState(null);
   const [editPlanMember, setEditPlanMember] = useState(null);
+  const [resetPwMember, setResetPwMember] = useState(null);
 
   if (user?.role !== 'admin') {
     return (
@@ -376,6 +429,12 @@ export default function TeamManagement() {
                     <CreditCard size={14} />
                   </button>
                   {m._id !== user._id && (
+                    <button onClick={() => setResetPwMember(m)}
+                      className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg" title="Reset password">
+                      <KeyRound size={14} />
+                    </button>
+                  )}
+                  {m._id !== user._id && (
                     <button onClick={() => handleRemove(m._id)}
                       className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg" title="Remove">
                       <Trash2 size={14} />
@@ -396,6 +455,9 @@ export default function TeamManagement() {
       )}
       {editPlanMember && (
         <EditPlanModal member={editPlanMember} onClose={() => setEditPlanMember(null)} onSaved={() => { setEditPlanMember(null); load(); }} />
+      )}
+      {resetPwMember && (
+        <ResetPasswordModal member={resetPwMember} onClose={() => setResetPwMember(null)} />
       )}
     </div>
   );
