@@ -6,7 +6,7 @@ const {
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
-  acceptInvite,
+  acceptInvite, requestOnboarding,
 } = require('../controllers/authController');
 const { multerMemoryConfig } = require('../utils/s3Upload');
 const upload = multerMemoryConfig();
@@ -48,6 +48,7 @@ router.patch('/team/:id/role', authenticate, authorize('admin'), updateMemberRol
 router.delete('/team/:id',     authenticate, authorize('admin'), removeMember);
 
 router.post('/accept-invite/:token', acceptInvite);
+router.post('/request-onboarding', authLimiter, requestOnboarding);
 router.patch('/me/profile', authenticate, upload.single('avatar'), updateProfile);
 router.patch('/me/password', authenticate, changePassword);
 router.patch('/me/onboarded',           authenticate, markOnboarded);

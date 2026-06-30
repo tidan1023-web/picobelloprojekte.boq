@@ -156,4 +156,27 @@ const sendTeamInvite = async (user, inviteUrl) => {
   });
 };
 
-module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite };
+const sendOnboardingRequest = ({ name, email, plan }) =>
+  sendEmail({
+    to: process.env.OWNER_EMAIL || 'tidan1023@gmail.com',
+    subject: `New onboarding request — ${plan} plan`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:auto">
+        <h2 style="color:#1e3a5f">New Onboarding Request</h2>
+        <p>Someone wants to join Pico Bello Projekte.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;color:#666;width:100px">Name</td><td style="padding:8px;font-weight:600">${name}</td></tr>
+          <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px;font-weight:600">${email}</td></tr>
+          <tr><td style="padding:8px;color:#666">Plan</td><td style="padding:8px;font-weight:600">${plan}</td></tr>
+        </table>
+        <p>Send them an invite from the Team page, or reply to this email to schedule their onboarding call.</p>
+        <a href="${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/settings/team"
+           style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1e3a5f;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+          Open Team Settings
+        </a>
+        <p style="margin-top:24px;color:#666;font-size:13px">Pico Bello Projekte BOQ System</p>
+      </div>
+    `,
+  });
+
+module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite, sendOnboardingRequest };

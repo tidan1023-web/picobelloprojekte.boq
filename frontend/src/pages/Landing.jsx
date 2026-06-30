@@ -1,11 +1,106 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Building2, Calculator, Database, FileText, ArrowRight,
   CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
   Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
-  Package, Zap, FolderOpen,
+  Package, Zap, FolderOpen, X, Phone,
 } from 'lucide-react';
+import Logo from '../components/Logo';
+import axios from 'axios';
+
+function BookCallModal({ plan, onClose }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      await axios.post('/api/auth/request-onboarding', { name, email, plan });
+      setDone(true);
+    } catch {
+      setError('Something went wrong. Please email us directly at hello@picobelloprojekte.com');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7 relative" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+          <X size={20} />
+        </button>
+        {done ? (
+          <div className="text-center py-4">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={28} className="text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Request Sent!</h3>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              We've received your request for the <strong>{plan}</strong> plan.
+              We'll be in touch within 24 hours to schedule your onboarding call.
+            </p>
+            <button onClick={onClose} className="mt-6 bg-primary-900 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-primary-800 transition-colors">
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
+                <Phone size={18} className="text-primary-900" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Book an Onboarding Call</h3>
+                <p className="text-sm text-gray-400">{plan} plan</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+              Leave your details and we'll reach out within 24 hours to schedule a personal walkthrough and open your account.
+            </p>
+            <form onSubmit={submit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Your Name</label>
+                <input
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Tunde Adeyemi"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email Address</label>
+                <input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tunde@yourfirm.com"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
+                />
+              </div>
+              {error && <p className="text-red-500 text-xs">{error}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-primary-900 text-white font-semibold py-3 rounded-xl hover:bg-primary-800 transition-colors text-sm disabled:opacity-60"
+              >
+                {submitting ? 'Sending…' : 'Request Onboarding Call'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const HOW_IT_WORKS = [
   {
@@ -119,8 +214,11 @@ const FEATURES = [
 ];
 
 export default function Landing() {
+  const [bookPlan, setBookPlan] = useState(null);
+
   return (
     <div className="min-h-screen bg-white font-sans">
+      {bookPlan && <BookCallModal plan={bookPlan} onClose={() => setBookPlan(null)} />
 
       {/* NAV */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
@@ -138,10 +236,10 @@ export default function Landing() {
             <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-900 transition-colors px-2 py-1">
               Sign In
             </Link>
-            <Link to="/register"
+            <button onClick={() => setBookPlan('Premium')}
               className="bg-primary-900 text-white text-sm font-medium px-3 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors">
               Get Started
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -165,10 +263,10 @@ export default function Landing() {
             Built around your rate libraries and project history so every number is yours, not an industry average.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/register"
+            <button onClick={() => setBookPlan('Premium')}
               className="flex items-center justify-center gap-2 bg-white text-primary-900 font-semibold px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg">
-              Start Estimating <ArrowRight size={17} />
-            </Link>
+              Get Started <ArrowRight size={17} />
+            </button>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-blue-400/40 text-white font-medium px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-primary-800 transition-colors">
               Sign In
@@ -372,10 +470,10 @@ export default function Landing() {
                 ))}
               </ul>
 
-              <Link to="/register"
+              <button onClick={() => setBookPlan('Basic')}
                 className="w-full flex items-center justify-center gap-2 border border-primary-900 text-primary-900 font-semibold py-3 rounded-xl hover:bg-primary-50 transition-colors text-sm">
-                Get Started <ArrowRight size={15} />
-              </Link>
+                Book a Call <ArrowRight size={15} />
+              </button>
             </div>
 
             {/* Premium */}
@@ -420,16 +518,16 @@ export default function Landing() {
                 ))}
               </ul>
 
-              <Link to="/register"
+              <button onClick={() => setBookPlan('Premium')}
                 className="w-full flex items-center justify-center gap-2 bg-white text-primary-900 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm relative shadow-md">
-                Get Full Access <ArrowRight size={15} />
-              </Link>
+                Book a Call <ArrowRight size={15} />
+              </button>
             </div>
 
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Prices in Nigerian Naira. All plans include a personal onboarding call. No contracts — cancel anytime.
+            Prices in Nigerian Naira. All plans include a personal onboarding call. Access is opened after your call — no self-sign-up.
           </p>
         </div>
       </section>
@@ -437,15 +535,15 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
-            Create your account, set up your rate libraries, and you'll have a credible ballpark estimate in your client's inbox within minutes.
+            Book a free onboarding call. We'll walk you through the platform, set up your rate libraries, and have you running estimates within the hour.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/register"
+            <button onClick={() => setBookPlan('Premium')}
               className="flex items-center justify-center gap-2 bg-primary-900 text-white font-semibold px-7 py-3 rounded-xl hover:bg-primary-800 transition-colors shadow-md">
-              Create Account <ArrowRight size={17} />
-            </Link>
+              Book a Call <ArrowRight size={17} />
+            </button>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-medium px-7 py-3 rounded-xl hover:bg-white transition-colors">
               Sign In
