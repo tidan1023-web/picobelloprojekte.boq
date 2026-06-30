@@ -1,23 +1,15 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: Number(process.env.EMAIL_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = process.env.EMAIL_FROM || 'Pico Bello Projekte <noreply@picobello.com>';
+const FROM = process.env.EMAIL_FROM || 'Pico Bello Projekte <onboarding@resend.dev>';
 
 const sendEmail = async ({ to, subject, html }) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn('Email not configured — skipping send to', to);
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY not set — skipping send to', to);
     return;
   }
-  await transporter.sendMail({ from: FROM, to, subject, html });
+  await resend.emails.send({ from: FROM, to, subject, html });
 };
 
 const sendWelcome = (user) =>
