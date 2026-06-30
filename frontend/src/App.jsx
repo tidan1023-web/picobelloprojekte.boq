@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import PlanGate from './components/PlanGate';
 
 // Auth
 import Landing            from './pages/Landing';
@@ -92,30 +93,30 @@ export default function App() {
             <Route path="projects"               element={<Projects />} />
             <Route path="contacts"               element={<Contacts />} />
 
-            {/* Pricing Libraries */}
-            <Route path="qs-prices"              element={<QsPricing />} />
-            <Route path="qs-comparison"          element={<QsComparison />} />
-            <Route path="artisan-prices"         element={<ArtisanPricing />} />
-            <Route path="materials"              element={<MaterialPricing />} />
-            <Route path="price-intelligence"     element={<PricingIntelligence />} />
+            {/* Pricing Libraries — basic+ */}
+            <Route path="qs-prices"              element={<PlanGate required="basic"><QsPricing /></PlanGate>} />
+            <Route path="qs-comparison"          element={<PlanGate required="basic"><QsComparison /></PlanGate>} />
+            <Route path="artisan-prices"         element={<PlanGate required="basic"><ArtisanPricing /></PlanGate>} />
+            <Route path="materials"              element={<PlanGate required="basic"><MaterialPricing /></PlanGate>} />
+            <Route path="price-intelligence"     element={<PlanGate required="premium"><PricingIntelligence /></PlanGate>} />
 
             {/* Invoices */}
             <Route path="invoices"               element={<Invoices />} />
             <Route path="invoices/:id"           element={<InvoiceDetail />} />
 
-            {/* Execution */}
-            <Route path="progress"               element={<ProgressTracker />} />
-            <Route path="change-orders"          element={<ChangeOrders />} />
-            <Route path="site-reports"           element={<SiteReports />} />
-            <Route path="analytics"              element={<Analytics />} />
-            <Route path="expenses"               element={<ExpenseTracker />} />
+            {/* Execution — premium */}
+            <Route path="progress"               element={<PlanGate required="premium"><ProgressTracker /></PlanGate>} />
+            <Route path="change-orders"          element={<PlanGate required="premium"><ChangeOrders /></PlanGate>} />
+            <Route path="site-reports"           element={<PlanGate required="premium"><SiteReports /></PlanGate>} />
+            <Route path="analytics"              element={<PlanGate required="premium"><Analytics /></PlanGate>} />
+            <Route path="expenses"               element={<PlanGate required="premium"><ExpenseTracker /></PlanGate>} />
 
-            {/* Estimator */}
+            {/* Estimator — free; history & simulator premium */}
             <Route path="estimator"              element={<Estimator />} />
-            <Route path="estimates"              element={<EstimateHistory />} />
-            <Route path="estimates/:id"          element={<EstimateDetail />} />
-            <Route path="historical-projects"    element={<HistoricalProjects />} />
-            <Route path="simulator"              element={<Simulator />} />
+            <Route path="estimates"              element={<PlanGate required="basic"><EstimateHistory /></PlanGate>} />
+            <Route path="estimates/:id"          element={<PlanGate required="basic"><EstimateDetail /></PlanGate>} />
+            <Route path="historical-projects"    element={<PlanGate required="basic"><HistoricalProjects /></PlanGate>} />
+            <Route path="simulator"              element={<PlanGate required="premium"><Simulator /></PlanGate>} />
 
             {/* Documents */}
             <Route path="documents"              element={<Documents />} />

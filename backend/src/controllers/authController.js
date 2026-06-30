@@ -332,6 +332,21 @@ const updateProfile = async (req, res) => {
   res.json({ user });
 };
 
+// ── updateMemberPlan ──────────────────────────────────────────────────────────
+const updateMemberPlan = async (req, res) => {
+  const { plan } = req.body;
+  if (!['free', 'basic', 'premium'].includes(plan)) {
+    return res.status(400).json({ message: 'Invalid plan' });
+  }
+  const user = await User.findOneAndUpdate(
+    { _id: req.params.id, companyId: req.user.companyId },
+    { plan },
+    { new: true },
+  );
+  if (!user) return res.status(404).json({ message: 'Member not found' });
+  res.json({ user });
+};
+
 // ── requestOnboarding ─────────────────────────────────────────────────────────
 const requestOnboarding = async (req, res) => {
   const { name, email, plan } = req.body;
@@ -350,5 +365,5 @@ module.exports = {
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
-  acceptInvite, requestOnboarding,
+  acceptInvite, requestOnboarding, updateMemberPlan,
 };

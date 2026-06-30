@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Mail, ShieldCheck, X, Users, Edit2, CreditCard } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -187,6 +187,62 @@ function InviteModal({ onClose, onSaved }) {
   );
 }
 
+const PLAN_COLORS = {
+  free:    'bg-gray-100 text-gray-500',
+  basic:   'bg-blue-100 text-blue-700',
+  premium: 'bg-purple-100 text-purple-700',
+};
+
+function EditPlanModal({ member, onClose, onSaved }) {
+  const [plan, setPlan] = useState(member.plan || 'free');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.patch(`/auth/team/${member._id}/plan`, { plan });
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update plan.');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Change Plan — {member.name}</h2>
+          <button onClick={onClose}><X size={20} className="text-gray-400 hover:text-gray-600" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-3">
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+          {['free', 'basic', 'premium'].map((p) => (
+            <label key={p} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${plan === p ? 'border-primary-900 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+              <input type="radio" name="plan" checked={plan === p} onChange={() => setPlan(p)} />
+              <div>
+                <p className="text-sm font-medium text-gray-800 capitalize">{p}</p>
+                <p className="text-xs text-gray-500">
+                  {p === 'free' && 'Estimator, BOQ, Invoices'}
+                  {p === 'basic' && '+ Rate Libraries, Estimate History'}
+                  {p === 'premium' && '+ Analytics, Change Orders, Site Reports, all features'}
+                </p>
+              </div>
+            </label>
+          ))}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-primary-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-primary-800 disabled:opacity-60">
+              {saving ? 'Saving…' : 'Update Plan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function EditRoleModal({ member, onClose, onSaved }) {
   const [role, setRole] = useState(member.role);
   const [saving, setSaving] = useState(false);
@@ -234,6 +290,7 @@ export default function TeamManagement() {
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [editMember, setEditMember] = useState(null);
+  const [editPlanMember, setEditPlanMember] = useState(null);
 
   if (user?.role !== 'admin') {
     return (
@@ -304,11 +361,18 @@ export default function TeamManagement() {
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${roleColor(m.role)}`}>
                   {roleLabel(m.role)}
                 </span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 capitalize ${PLAN_COLORS[m.plan || 'free']}`}>
+                  {m.plan || 'free'}
+                </span>
                 {m._id !== user._id && (
                   <div className="flex items-center gap-1 shrink-0">
                     <button onClick={() => setEditMember(m)}
                       className="p-1.5 text-gray-400 hover:text-primary-900 hover:bg-primary-50 rounded-lg" title="Change role">
                       <Edit2 size={14} />
+                    </button>
+                    <button onClick={() => setEditPlanMember(m)}
+                      className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg" title="Change plan">
+                      <CreditCard size={14} />
                     </button>
                     <button onClick={() => handleRemove(m._id)}
                       className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg" title="Remove">
@@ -327,6 +391,9 @@ export default function TeamManagement() {
       )}
       {editMember && (
         <EditRoleModal member={editMember} onClose={() => setEditMember(null)} onSaved={() => { setEditMember(null); load(); }} />
+      )}
+      {editPlanMember && (
+        <EditPlanModal member={editPlanMember} onClose={() => setEditPlanMember(null)} onSaved={() => { setEditPlanMember(null); load(); }} />
       )}
     </div>
   );

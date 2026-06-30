@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
   },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   isActive: { type: Boolean, default: true },
+  plan: { type: String, enum: ['free', 'basic', 'premium'], default: 'free' },
   onboarded: { type: Boolean, default: false },
   callBooked:    { type: Boolean, default: false },
   callCompleted: { type: Boolean, default: false },
