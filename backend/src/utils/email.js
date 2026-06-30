@@ -12,22 +12,69 @@ const sendEmail = async ({ to, subject, html }) => {
   await resend.emails.send({ from: FROM, to, subject, html });
 };
 
-const sendWelcome = (user) =>
-  sendEmail({
+const sendWelcome = (user) => {
+  const appUrl = process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com';
+  return sendEmail({
     to: user.email,
-    subject: 'Welcome to Pico Bello Projekte',
+    subject: 'Welcome to Pico Bello Projekte — here\'s how to get started',
     html: `
-      <div style="font-family:sans-serif;max-width:520px;margin:auto">
-        <h2 style="color:#1e3a5f">Welcome, ${user.name}!</h2>
-        <p>Your account has been created. You can now log in and start managing your BOQ projects.</p>
-        <a href="${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/login"
-           style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1e3a5f;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
-          Go to Dashboard
-        </a>
-        <p style="margin-top:24px;color:#666;font-size:13px">Pico Bello Projekte BOQ System</p>
+      <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
+        <!-- Header -->
+        <div style="background:#1e3a8a;padding:28px">
+          <h1 style="color:#fff;margin:0;font-size:20px">Welcome to Pico Bello Projekte, ${user.name}!</h1>
+          <p style="color:#93c5fd;margin:8px 0 0;font-size:14px">Your BOQ management account is ready.</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:28px">
+          <p style="color:#374151;margin-top:0">Here's a quick overview of what you can do and how to get the most out of the platform.</p>
+
+          <!-- Free features -->
+          <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">✅ Available on your free account</p>
+            <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
+              <li><strong>Project Estimator</strong> — generate cost estimates for any project</li>
+              <li><strong>BOQ Builder</strong> — build and manage Bills of Quantities</li>
+              <li><strong>Invoices</strong> — create and send professional invoices</li>
+              <li><strong>Projects & Contacts</strong> — organise your clients and jobs</li>
+              <li><strong>Document Library</strong> — store and share project documents</li>
+            </ul>
+          </div>
+
+          <!-- Paid features -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">🔒 Unlock more with a paid plan</p>
+            <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
+              <li><strong>Basic</strong> — QS & Artisan Rate Libraries, Material Prices, Estimate History</li>
+              <li><strong>Premium</strong> — Analytics, Change Orders, Site Reports, Progress Tracker, Expense Tracker, Price Intelligence</li>
+            </ul>
+          </div>
+
+          <!-- CTA -->
+          <p style="color:#374151;font-size:14px">Ready to unlock the full platform? Book a quick call with us — we'll walk you through everything and get you set up on the right plan.</p>
+
+          <a href="${appUrl}/app/settings"
+             style="display:inline-block;margin-top:4px;padding:12px 24px;background:#1e3a8a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+            Book an Upgrade Call
+          </a>
+
+          <p style="color:#374151;font-size:14px;margin-top:24px">Or just log in and start exploring your free features:</p>
+          <a href="${appUrl}/app"
+             style="display:inline-block;padding:12px 24px;background:#f3f4f6;color:#1e3a8a;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;border:1px solid #e5e7eb">
+            Go to Dashboard
+          </a>
+
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:28px 0" />
+          <p style="color:#6b7280;font-size:13px;margin:0">
+            <strong>Pico Bello Projekte</strong><br />
+            Garki, Abuja, Nigeria<br />
+            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
+          </p>
+        </div>
       </div>
     `,
   });
+};
 
 const sendPasswordReset = (user, resetUrl) =>
   sendEmail({
