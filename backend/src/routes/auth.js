@@ -42,7 +42,6 @@ router.post('/reset-password/:token',
 
 router.get('/me', authenticate, getMe);
 
-// Team management — list visible to all authenticated users, mutations admin-only
 router.get('/team',            authenticate, listTeam);
 router.post('/invite',         authenticate, authorize('admin'), inviteMember);
 router.patch('/team/:id/role', authenticate, authorize('admin'), updateMemberRole);

@@ -20,13 +20,10 @@ const generateToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function getIp(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
 }
 
-// ── register ──────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -48,7 +45,6 @@ const register = async (req, res) => {
   res.status(201).json({ message: 'Registration successful', token, user });
 };
 
-// ── login ─────────────────────────────────────────────────────────────────────
 const login = async (req, res) => {
   const { email, password } = req.body;
   const ip = getIp(req);
@@ -71,12 +67,10 @@ const login = async (req, res) => {
   res.json({ message: 'Login successful', token, user });
 };
 
-// ── getMe ─────────────────────────────────────────────────────────────────────
 const getMe = async (req, res) => {
   res.json({ user: req.user });
 };
 
-// ── googleAuth ────────────────────────────────────────────────────────────────
 const googleAuth = async (req, res) => {
   const { credential } = req.body;
   if (!credential) return res.status(400).json({ message: 'Google credential required' });
@@ -110,7 +104,6 @@ const googleAuth = async (req, res) => {
   res.json({ message: 'Google login successful', token, user });
 };
 
-// ── forgotPassword ────────────────────────────────────────────────────────────
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -129,7 +122,6 @@ const forgotPassword = async (req, res) => {
   res.json({ message: 'If that email is registered, a reset link has been sent.' });
 };
 
-// ── resetPassword ─────────────────────────────────────────────────────────────
 const resetPassword = async (req, res) => {
   const { token }    = req.params;
   const { password } = req.body;
@@ -150,7 +142,6 @@ const resetPassword = async (req, res) => {
   res.json({ message: 'Password reset successful. You can now log in.' });
 };
 
-// ── deleteAccount ─────────────────────────────────────────────────────────────
 const deleteAccount = async (req, res) => {
   const { _id: userId, companyId } = req.user;
   const ip = getIp(req);
@@ -171,8 +162,6 @@ const deleteAccount = async (req, res) => {
   logger.warn('Account and all company data deleted', { userId, companyId, ip });
   res.json({ message: 'Account and all associated data have been permanently deleted.' });
 };
-
-// ── Team Management ───────────────────────────────────────────────────────────
 
 const listTeam = async (req, res) => {
   const members = await User.find({ companyId: req.user.companyId, isActive: true })
@@ -271,14 +260,10 @@ const removeMember = async (req, res) => {
   res.json({ message: 'Member removed' });
 };
 
-// ── Onboarding ────────────────────────────────────────────────────────────────
-
 const markOnboarded = async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { onboarded: true });
   res.json({ message: 'Onboarded' });
 };
-
-// ── Call Booking ──────────────────────────────────────────────────────────────
 
 const bookCall = async (req, res) => {
   const { slot } = req.body;

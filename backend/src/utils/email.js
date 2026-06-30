@@ -55,16 +55,13 @@ const sendPasswordReset = (user, resetUrl) =>
     `,
   });
 
-// Build a Google Calendar "Add to Calendar" link from a slot string like
-// "Mon, 23 June 2026 at 9:00 AM"
 function buildCalendarLink(slot) {
   try {
-    // Parse "Mon, 23 June 2026 at 9:00 AM" → Date (WAT = UTC+1)
-    const withoutDay = slot.replace(/^[A-Za-z]+,\s*/, ''); // "23 June 2026 at 9:00 AM"
-    const normalized = withoutDay.replace(' at ', ' ');    // "23 June 2026 9:00 AM"
+    const withoutDay = slot.replace(/^[A-Za-z]+,\s*/, '');
+    const normalized = withoutDay.replace(' at ', ' ');
     const start = new Date(`${normalized} GMT+0100`);
     if (isNaN(start)) return null;
-    const end = new Date(start.getTime() + 30 * 60 * 1000); // +30 min
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
 
     const fmt = (d) =>
       d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -128,7 +125,7 @@ const sendBookingConfirmation = (user, slot) => {
 const sendTeamInvite = async (user, inviteUrl) => {
   return sendEmail({
     to: user.email,
-    subject: 'You've been invited to Pico Bello Projekte BOQ',
+    subject: "You've been invited to Pico Bello Projekte BOQ",
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
         <div style="background:#1e3a8a;padding:24px 28px">

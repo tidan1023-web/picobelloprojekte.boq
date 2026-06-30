@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Calculator, Database, FileText, ArrowRight,
-  CheckCircle, TrendingUp, Clock, ChevronRight,
+  Building2, Calculator, Database, FileText, ArrowRight,
+  CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
   Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
-  Zap, FolderOpen, X, Phone,
+  Package, Zap, FolderOpen, X, Phone,
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import axios from 'axios';
@@ -224,7 +224,9 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Logo size={36} />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary-900 rounded-xl flex items-center justify-center shrink-0">
+              <Building2 size={16} className="text-white" />
+            </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-primary-900 leading-tight">Pico Bello Projekte</p>
               <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
@@ -234,10 +236,10 @@ export default function Landing() {
             <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-900 transition-colors px-2 py-1">
               Sign In
             </Link>
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="bg-primary-900 text-white text-sm font-medium px-3 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors">
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -261,10 +263,10 @@ export default function Landing() {
             Built around your rate libraries and project history so every number is yours, not an industry average.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="flex items-center justify-center gap-2 bg-white text-primary-900 font-semibold px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg">
-              Get Started <ArrowRight size={17} />
-            </button>
+              Start for Free <ArrowRight size={17} />
+            </Link>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-blue-400/40 text-white font-medium px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-primary-800 transition-colors">
               Sign In
@@ -423,6 +425,21 @@ export default function Landing() {
             </p>
           </div>
 
+          {/* Free tier banner */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Free</span>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Always free</span>
+              </div>
+              <p className="text-sm text-gray-600">Create an account and access the Project Estimator, BOQ tools, and basic invoicing — no card required.</p>
+            </div>
+            <Link to="/register"
+              className="shrink-0 flex items-center gap-2 border border-primary-900 text-primary-900 font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-50 transition-colors text-sm">
+              Get Started Free <ArrowRight size={14} />
+            </Link>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 items-start">
 
             {/* Basic */}
@@ -525,7 +542,7 @@ export default function Landing() {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Prices in Nigerian Naira. All plans include a personal onboarding call. Access is opened after your call — no self-sign-up.
+            Prices in Nigerian Naira. Paid plans are activated after an onboarding call — we set you up personally.
           </p>
         </div>
       </section>
@@ -533,15 +550,15 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
-            Book a free onboarding call. We'll walk you through the platform, set up your rate libraries, and have you running estimates within the hour.
+            Create a free account, set up your rate libraries, and have a credible ballpark estimate in your client's inbox within minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => setBookPlan('Premium')}
+            <Link to="/register"
               className="flex items-center justify-center gap-2 bg-primary-900 text-white font-semibold px-7 py-3 rounded-xl hover:bg-primary-800 transition-colors shadow-md">
-              Book a Call <ArrowRight size={17} />
-            </button>
+              Create Free Account <ArrowRight size={17} />
+            </Link>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-medium px-7 py-3 rounded-xl hover:bg-white transition-colors">
               Sign In
@@ -554,7 +571,9 @@ export default function Landing() {
       <footer className="border-t border-gray-100 py-6 sm:py-8 px-4 sm:px-8 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Logo size={28} />
+            <div className="w-7 h-7 bg-primary-900 rounded-lg flex items-center justify-center">
+              <Building2 size={14} className="text-white" />
+            </div>
             <span className="text-sm font-semibold text-gray-700">Pico Bello Projekte Limited</span>
           </div>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Pico Bello Projekte. All rights reserved.</p>

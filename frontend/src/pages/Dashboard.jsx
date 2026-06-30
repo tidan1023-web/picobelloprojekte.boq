@@ -104,7 +104,7 @@ export default function Dashboard() {
             <p className="text-blue-300 text-sm">Good day,</p>
             <h1 className="text-2xl font-bold mt-1">{user?.name}</h1>
             <p className="text-blue-200 text-sm mt-2">
-              {projects.total ?? 0} project{projects.total !== 1 ? 's' : ''} &nbsp;·&nbsp;
+              {projects.total ?? 0} project{projects.total !== 1 ? 's' : ''} &nbsp;&middot;&nbsp;
               {invoices.total ?? 0} invoice{invoices.total !== 1 ? 's' : ''}
               {projects.active > 0 && ` · ${projects.active} active`}
             </p>

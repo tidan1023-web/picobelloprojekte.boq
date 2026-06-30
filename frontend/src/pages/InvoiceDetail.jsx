@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Save, Download, Trash2, Plus, X, Loader2,
-  CheckCircle, Send, XCircle, DollarSign,
+  CheckCircle, Send, XCircle, DollarSign, Link, Copy,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -92,6 +92,61 @@ function PaymentModal({ invoiceId, currency, onClose, onSaved }) {
   );
 }
 
+function PaymentLinkModal({ invoiceId, onClose }) {
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get(`/invoices/${invoiceId}/payment-link`)
+      .then(({ data }) => setUrl(data.url))
+      .catch((err) => setError(err.response?.data?.message || 'Failed to generate link'))
+      .finally(() => setLoading(false));
+  }, [invoiceId]);
+
+  const copy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Client Payment Link</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        </div>
+        <div className="p-5 space-y-4">
+          {loading ? (
+            <p className="text-sm text-gray-400 text-center">Generating link…</p>
+          ) : error ? (
+            <p className="text-sm text-red-600">{error}</p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500">Share this link with your client. They can view the invoice and pay online without logging in.</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-600 break-all select-all">
+                {url}
+              </div>
+              <button
+                onClick={copy}
+                className="w-full flex items-center justify-center gap-2 bg-primary-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors"
+              >
+                {copied ? <><CheckCircle size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
+              </button>
+              <p className="text-xs text-gray-400 text-center">
+                The link stays active &mdash; same URL every time you open this.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -100,6 +155,7 @@ export default function InvoiceDetail() {
   const [saving, setSaving] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showPaymentLink, setShowPaymentLink] = useState(false);
   const [toast, setToast] = useState('');
   const [form, setForm] = useState(null);
 
@@ -130,7 +186,6 @@ export default function InvoiceDetail() {
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  // Computed totals from current form state
   const subtotal  = (form?.lineItems || []).reduce((s, i) => s + (Number(i.amount) || 0), 0);
   const vatAmount = subtotal * (Number(form?.vatRate) || 0) / 100;
   const total     = subtotal + vatAmount;
@@ -226,6 +281,10 @@ export default function InvoiceDetail() {
             className="flex items-center gap-1.5 border border-red-200 text-red-500 px-3 py-2 rounded-lg text-sm hover:bg-red-50">
             <Trash2 size={14} /> Delete
           </button>
+          <button onClick={() => setShowPaymentLink(true)}
+            className="flex items-center gap-1.5 border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
+            <Link size={14} /> Payment Link
+          </button>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-1.5 border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
@@ -279,10 +338,8 @@ export default function InvoiceDetail() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
-        {/* Left col: client info + line items */}
+        {/* Left col */}
         <div className="lg:col-span-2 space-y-5">
-
-          {/* Client info */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
             <h3 className="font-semibold text-gray-800">Invoice Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -299,7 +356,7 @@ export default function InvoiceDetail() {
                 <input value={form.clientPhone} onChange={(e) => set('clientPhone', e.target.value)} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Client Email</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Client Email <span className="text-blue-500">(required for online payment)</span></label>
                 <input value={form.clientEmail} onChange={(e) => set('clientEmail', e.target.value)} className={inputCls} />
               </div>
               <div>
@@ -318,8 +375,6 @@ export default function InvoiceDetail() {
                 <Plus size={13} /> Add Row
               </button>
             </div>
-
-            {/* Desktop table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -368,7 +423,6 @@ export default function InvoiceDetail() {
               )}
             </div>
 
-            {/* Mobile line items */}
             <div className="sm:hidden divide-y divide-gray-50">
               {form.lineItems.map((item, idx) => (
                 <div key={idx} className="p-4 space-y-2">
@@ -399,7 +453,6 @@ export default function InvoiceDetail() {
               )}
             </div>
 
-            {/* Totals */}
             <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-1.5">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
@@ -424,10 +477,8 @@ export default function InvoiceDetail() {
           </div>
         </div>
 
-        {/* Right col: settings + payments */}
+        {/* Right col */}
         <div className="space-y-5">
-
-          {/* Invoice settings */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
             <h3 className="font-semibold text-gray-800 text-sm">Settings</h3>
             <div>
@@ -445,9 +496,9 @@ export default function InvoiceDetail() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Currency</label>
               <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={inputCls}>
-                <option value="NGN">NGN (₦)</option>
+                <option value="NGN">NGN (&#8358;)</option>
                 <option value="USD">USD ($)</option>
-                <option value="GBP">GBP (£)</option>
+                <option value="GBP">GBP (&pound;)</option>
               </select>
             </div>
             <div>
@@ -479,6 +530,7 @@ export default function InvoiceDetail() {
                         <p className="text-sm font-semibold text-gray-800">{invoice.currency} {fmt(p.amount)}</p>
                         <p className="text-xs text-gray-400">{METHOD_LABELS[p.method] || p.method} · {fmtDate(p.paymentDate)}</p>
                         {p.reference && <p className="text-xs text-gray-400">Ref: {p.reference}</p>}
+                        {p.note && <p className="text-xs text-gray-400">{p.note}</p>}
                       </div>
                       <button onClick={() => deletePayment(p._id)} className="text-gray-300 hover:text-red-500 shrink-0">
                         <XCircle size={14} />
@@ -490,7 +542,6 @@ export default function InvoiceDetail() {
             </div>
           </div>
 
-          {/* Save shortcut */}
           <button onClick={handleSave} disabled={saving}
             className="w-full flex items-center justify-center gap-2 bg-primary-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-800 disabled:opacity-60">
             {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
@@ -505,6 +556,12 @@ export default function InvoiceDetail() {
           currency={invoice.currency}
           onClose={() => setShowPayment(false)}
           onSaved={() => { setShowPayment(false); load(); }}
+        />
+      )}
+      {showPaymentLink && (
+        <PaymentLinkModal
+          invoiceId={id}
+          onClose={() => setShowPaymentLink(false)}
         />
       )}
     </div>

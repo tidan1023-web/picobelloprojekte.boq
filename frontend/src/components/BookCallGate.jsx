@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Play } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Building2, ChevronLeft, ChevronRight, MapPin, Phone, Mail, Play } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import Logo from './Logo';
 
 const TIME_SLOTS = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'];
 
@@ -117,9 +116,9 @@ export default function BookCallGate({ onSkip }) {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-2">
-            <Logo size={20} />
-            <span className="text-xs text-gray-400">Pico Bello Projekte</span>
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+            <Building2 size={13} />
+            <span>Pico Bello Projekte</span>
           </div>
         </div>
       </div>
@@ -133,7 +132,9 @@ export default function BookCallGate({ onSkip }) {
         {/* Header */}
         <div className="bg-primary-900 rounded-2xl px-8 py-6 text-white">
           <div className="flex items-center gap-3 mb-3">
-            <Logo size={36} />
+            <div className="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center shrink-0">
+              <Building2 size={18} />
+            </div>
             <span className="font-bold">Pico Bello Projekte</span>
           </div>
           <h1 className="text-xl font-bold mb-1">Welcome, {user?.name?.split(' ')[0]}!</h1>

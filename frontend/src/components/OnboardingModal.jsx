@@ -48,7 +48,7 @@ const GUIDES = {
     {
       icon: Zap,
       title: 'Price Intelligence',
-      desc: 'AI-powered benchmarking that compares your rates against market data. Spot where you\'re over- or under-priced and adjust before it costs you a contract.',
+      desc: "AI-powered benchmarking that compares your rates against market data. Spot where you're over- or under-priced and adjust before it costs you a contract.",
     },
     {
       icon: Calculator,
@@ -98,7 +98,7 @@ const GUIDES = {
     {
       icon: UserCog,
       title: 'Team Management',
-      desc: 'Invite team members and assign them roles (QS, Project Manager, Client). Each role sees only what\'s relevant to them. Remove or change roles at any time.',
+      desc: "Invite team members and assign them roles (QS, Project Manager, Client). Each role sees only what's relevant to them. Remove or change roles at any time.",
     },
     {
       icon: Settings,
@@ -135,7 +135,7 @@ const GUIDES = {
     {
       icon: Zap,
       title: 'Price Intelligence',
-      desc: 'See how your company\'s rates compare to market benchmarks. Useful when preparing bids or advising on budget.',
+      desc: "See how your company's rates compare to market benchmarks. Useful when preparing bids or advising on budget.",
     },
     {
       icon: Calculator,
@@ -145,7 +145,7 @@ const GUIDES = {
     {
       icon: History,
       title: 'Estimate History',
-      desc: 'Every estimate you\'ve created is saved here. Review, duplicate, or export any past estimate. Great for building on previous work.',
+      desc: "Every estimate you've created is saved here. Review, duplicate, or export any past estimate. Great for building on previous work.",
     },
     {
       icon: Sliders,
@@ -167,7 +167,7 @@ const GUIDES = {
     {
       icon: LayoutDashboard,
       title: 'Dashboard',
-      desc: 'A live snapshot of your projects — what\'s active, what\'s behind schedule, and what needs your attention today.',
+      desc: "A live snapshot of your projects — what's active, what's behind schedule, and what needs your attention today.",
     },
     {
       icon: FolderOpen,
@@ -197,12 +197,12 @@ const GUIDES = {
     {
       icon: Receipt,
       title: 'Expense Tracker',
-      desc: 'Log project expenses as they happen — materials, labour, transport. Your admin sees the full cost picture; you make sure nothing is missed.',
+      desc: "Log project expenses as they happen — materials, labour, transport. Your admin sees the full cost picture; you make sure nothing is missed.",
     },
     {
       icon: Library,
       title: 'Document Library',
-      desc: 'Access and upload documents for your projects — permits, site plans, contracts. Organised by folder and project so nothing gets lost.',
+      desc: "Access and upload documents for your projects — permits, site plans, contracts. Organised by folder and project so nothing gets lost.",
     },
   ],
   client: [
@@ -219,17 +219,17 @@ const GUIDES = {
     {
       icon: FileText,
       title: 'Estimates & Invoices',
-      desc: 'View and download your project cost estimates and invoices. Track what\'s been paid and what\'s outstanding. PDFs available at any time.',
+      desc: "View and download your project cost estimates and invoices. Track what's been paid and what's outstanding. PDFs available at any time.",
     },
     {
       icon: TrendingUp,
       title: 'Progress Updates',
-      desc: 'See real-time progress on your project broken down by construction phase. Know exactly what stage the work is at without needing to call.',
+      desc: "See real-time progress on your project broken down by construction phase. Know exactly what stage the work is at without needing to call.",
     },
     {
       icon: ClipboardList,
       title: 'Site Reports',
-      desc: 'Read daily and weekly reports filed by the project team — photos, activities, and any issues flagged. Full transparency on what\'s happening on site.',
+      desc: "Read daily and weekly reports filed by the project team — photos, activities, and any issues flagged. Full transparency on what's happening on site.",
     },
     {
       icon: Library,
