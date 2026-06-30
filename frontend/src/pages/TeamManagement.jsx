@@ -364,22 +364,24 @@ export default function TeamManagement() {
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 capitalize ${PLAN_COLORS[m.plan || 'free']}`}>
                   {m.plan || 'free'}
                 </span>
-                {m._id !== user._id && (
-                  <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
+                  {m._id !== user._id && (
                     <button onClick={() => setEditMember(m)}
                       className="p-1.5 text-gray-400 hover:text-primary-900 hover:bg-primary-50 rounded-lg" title="Change role">
                       <Edit2 size={14} />
                     </button>
-                    <button onClick={() => setEditPlanMember(m)}
-                      className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg" title="Change plan">
-                      <CreditCard size={14} />
-                    </button>
+                  )}
+                  <button onClick={() => setEditPlanMember(m)}
+                    className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg" title="Change plan">
+                    <CreditCard size={14} />
+                  </button>
+                  {m._id !== user._id && (
                     <button onClick={() => handleRemove(m._id)}
                       className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg" title="Remove">
                       <Trash2 size={14} />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
