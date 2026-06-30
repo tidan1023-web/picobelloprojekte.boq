@@ -114,7 +114,7 @@ export default function App() {
             {/* Estimator — free; history & simulator premium */}
             <Route path="estimator"              element={<Estimator />} />
             <Route path="estimates"              element={<PlanGate required="basic"><EstimateHistory /></PlanGate>} />
-            <Route path="estimates/:id"          element={<PlanGate required="basic"><EstimateDetail /></PlanGate>} />
+            <Route path="estimates/:id"          element={<EstimateDetail />} />
             <Route path="historical-projects"    element={<PlanGate required="basic"><HistoricalProjects /></PlanGate>} />
             <Route path="simulator"              element={<PlanGate required="premium"><Simulator /></PlanGate>} />
 
