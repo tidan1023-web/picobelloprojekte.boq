@@ -218,7 +218,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      {bookPlan && <BookCallModal plan={bookPlan} onClose={() => setBookPlan(null)} />
+      {bookPlan && <BookCallModal plan={bookPlan} onClose={() => setBookPlan(null)} />}
 
       {/* NAV */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
