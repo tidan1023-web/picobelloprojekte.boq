@@ -116,7 +116,13 @@ export default function BookCallGate({ onSkip }) {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+          <button
+            onClick={onSkip}
+            className="mt-6 w-full bg-primary-900 text-white font-semibold py-3 rounded-xl text-sm hover:bg-primary-800 transition-colors">
+            Continue to App
+          </button>
+
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
             <Building2 size={13} />
             <span>Pico Bello Projekte</span>
           </div>
