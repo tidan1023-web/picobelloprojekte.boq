@@ -69,8 +69,8 @@ const updateModules = async (req, res) => {
   const valid = activeModules.filter((m) => ALL_MODULES.includes(m));
   const company = await Company.findByIdAndUpdate(
     req.user.companyId,
-    { activeModules: valid, updatedBy: req.user._id, updatedAt: Date.now() },
-    { new: true }
+    { $set: { activeModules: valid, updatedBy: req.user._id, updatedAt: Date.now() } },
+    { new: true, upsert: true }
   );
   res.json({ activeModules: company.activeModules });
 };

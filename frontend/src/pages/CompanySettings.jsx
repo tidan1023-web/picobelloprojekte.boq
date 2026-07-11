@@ -105,7 +105,7 @@ export default function CompanySettings() {
     setSavingModules(true);
     try {
       await api.patch('/company/modules', { activeModules: localModules });
-      reloadModules();
+      await reloadModules();
       showToast('Modules updated');
     } catch {
       setError('Failed to save modules');

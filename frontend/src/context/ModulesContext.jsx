@@ -22,11 +22,10 @@ export function ModulesProvider({ children }) {
       .catch(() => setActiveModules(ALL_MODULES));
   }, [user]);
 
-  const reload = () => {
+  const reload = () =>
     api.get('/company/modules')
       .then(({ data }) => setActiveModules(data.activeModules ?? ALL_MODULES))
       .catch(() => {});
-  };
 
   return (
     <ModulesContext.Provider value={{ activeModules, reload }}>
