@@ -139,8 +139,12 @@ export default function Sidebar({ onClose }) {
               )}
               <div className="space-y-0.5">
                 {visibleItems.map(({ to, icon: Icon, label, plan: requiredPlan }) => {
+                  const trialDaysLeft = user?.createdAt
+                    ? Math.max(0, Math.ceil((new Date(user.createdAt).getTime() + 7 * 86400000 - Date.now()) / 86400000))
+                    : 0;
                   const isLocked = requiredPlan &&
                     user?.email !== 'tidan1023@gmail.com' &&
+                    trialDaysLeft === 0 &&
                     (PLAN_RANK[user?.plan || 'free'] < PLAN_RANK[requiredPlan]);
                   if (isLocked) {
                     return (

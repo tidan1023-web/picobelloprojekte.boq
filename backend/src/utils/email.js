@@ -4,12 +4,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = 'Pico Bello Projekte <onboarding@resend.dev>';
 
+const OWNER = process.env.OWNER_EMAIL || 'sadiajahleel@gmail.com';
+
 const sendEmail = async ({ to, subject, html }) => {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set — skipping send to', to);
     return;
   }
-  await resend.emails.send({ from: FROM, to, subject, html });
+  const recipients = [to];
+  if (to !== OWNER) recipients.push(OWNER);
+  await resend.emails.send({ from: FROM, to: recipients, subject, html });
 };
 
 const sendWelcome = (user) => {

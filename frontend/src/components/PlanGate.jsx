@@ -93,6 +93,13 @@ function BookCallModal({ plan, onClose }) {
 }
 
 const DEV_EMAIL = 'tidan1023@gmail.com';
+const TRIAL_DAYS = 7;
+
+function getTrialDaysLeft(user) {
+  if (!user?.createdAt) return 0;
+  const msLeft = new Date(user.createdAt).getTime() + TRIAL_DAYS * 86400000 - Date.now();
+  return Math.max(0, Math.ceil(msLeft / 86400000));
+}
 
 export default function PlanGate({ required = 'basic', children }) {
   const { user } = useAuth();
@@ -100,8 +107,10 @@ export default function PlanGate({ required = 'basic', children }) {
 
   const userRank = PLAN_RANK[user?.plan || 'free'];
   const requiredRank = PLAN_RANK[required];
+  const trialDaysLeft = getTrialDaysLeft(user);
+  const inTrial = trialDaysLeft > 0;
 
-  if (user?.email === DEV_EMAIL || userRank >= requiredRank) return children;
+  if (user?.email === DEV_EMAIL || userRank >= requiredRank || inTrial) return children;
 
   const planLabel = required.charAt(0).toUpperCase() + required.slice(1);
 
@@ -126,6 +135,33 @@ export default function PlanGate({ required = 'basic', children }) {
           </button>
           <p className="text-xs text-gray-400 mt-4">Currently on free plan · No card needed until you're ready</p>
         </div>
+      </div>
+    </>
+  );
+}
+
+export function TrialBanner() {
+  const { user } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+
+  if (user?.email === DEV_EMAIL) return null;
+  if ((PLAN_RANK[user?.plan || 'free']) > 0) return null;
+
+  const daysLeft = getTrialDaysLeft(user);
+  if (daysLeft > 3) return null;
+  if (daysLeft === 0) return null;
+
+  return (
+    <>
+      {showModal && <BookCallModal plan="basic" onClose={() => setShowModal(false)} />}
+      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-4">
+        <p className="text-amber-800 text-xs font-medium">
+          ⏳ Your free trial ends in <strong>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> — upgrade to keep access to all features.
+        </p>
+        <button onClick={() => setShowModal(true)}
+          className="shrink-0 text-xs font-semibold bg-amber-800 text-white px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors">
+          Book Upgrade Call
+        </button>
       </div>
     </>
   );
