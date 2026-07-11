@@ -12,7 +12,7 @@ import {
   Lock, LayoutGrid,
 } from 'lucide-react';
 
-const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
+const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
 import Logo from '../Logo';
 
 const PLAN_RANK = { free: 0, basic: 1, premium: 2 };

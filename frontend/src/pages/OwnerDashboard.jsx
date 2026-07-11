@@ -3,7 +3,7 @@ import { Building2, Users, CreditCard, X } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
+const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
 const PLAN_COLORS = {
   free:    'bg-gray-100 text-gray-600',
   basic:   'bg-blue-100 text-blue-700',

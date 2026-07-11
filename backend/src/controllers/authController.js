@@ -354,7 +354,7 @@ const adminResetPassword = async (req, res) => {
 };
 
 // ── shared super-admin list ───────────────────────────────────────────────────
-const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
+const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
 
 // ── ownerDashboard ────────────────────────────────────────────────────────────
 const ownerDashboard = async (req, res) => {
