@@ -26,7 +26,7 @@ const sendWelcome = (user) => {
         <!-- Header -->
         <div style="background:#1e3a8a;padding:28px">
           <h1 style="color:#fff;margin:0;font-size:20px">Welcome to Pico Bello Projekte, ${user.name}!</h1>
-          <p style="color:#93c5fd;margin:8px 0 0;font-size:14px">Your BOQ management account is ready.</p>
+          <p style="color:#93c5fd;margin:8px 0 0;font-size:14px">Your 7-day free trial has started — full access, no card needed.</p>
         </div>
 
         <!-- Body -->

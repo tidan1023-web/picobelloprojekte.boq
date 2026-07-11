@@ -170,6 +170,21 @@ export default function Sidebar({ onClose }) {
         })}
       </nav>
 
+      {/* Trial countdown */}
+      {user?.email !== 'tidan1023@gmail.com' && (PLAN_RANK[user?.plan || 'free'] === 0) && (() => {
+        const daysLeft = user?.createdAt
+          ? Math.max(0, Math.ceil((new Date(user.createdAt).getTime() + 7 * 86400000 - Date.now()) / 86400000))
+          : 0;
+        if (daysLeft === 0) return null;
+        const urgent = daysLeft <= 3;
+        return (
+          <div className={`mx-2 mb-2 px-3 py-2 rounded-lg text-xs ${urgent ? 'bg-amber-500/20 text-amber-300' : 'bg-primary-800 text-blue-300'}`}>
+            <p className="font-semibold">⏳ Free Trial</p>
+            <p>{daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining</p>
+          </div>
+        );
+      })()}
+
       {/* Footer */}
       <div className="px-2 py-3 border-t border-primary-800 shrink-0">
         <NavLink to="/app/profile" className="px-2 py-2 mb-1.5 flex items-center gap-2.5 rounded-lg hover:bg-primary-800 transition-colors">
