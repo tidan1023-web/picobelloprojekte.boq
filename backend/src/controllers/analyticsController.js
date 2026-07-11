@@ -14,7 +14,7 @@ exports.getProfitReport = async (req, res) => {
 
   const rows = await Promise.all(
     projects.map(async (p) => {
-      const invoices = await Invoice.find({ projectId: p._id, companyId: cId, status: { $ne: 'cancelled' } });
+      const invoices = await Invoice.find({ projectId: p._id, companyId: cId, status: { $ne: 'draft' } });
       const paidInvoices = invoices.filter((i) => i.status === 'paid');
 
       const totalInvoiced = fmt2(invoices.reduce((s, i) => s + i.total, 0));
@@ -112,7 +112,7 @@ exports.getCostVariance = getCostVariance;
 
 // ── 3. Outstanding Invoices ───────────────────────────────────────────────────────────────────
 const getOutstandingInvoices = async (req, res) => {
-  const invoices = await Invoice.find({ companyId: req.user.companyId, balance: { $gt: 0 }, status: { $nin: ['cancelled', 'paid'] } })
+  const invoices = await Invoice.find({ companyId: req.user.companyId, balance: { $gt: 0 }, status: { $nin: ['draft', 'paid'] } })
     .populate('projectId', 'name client')
     .sort({ dueDate: 1 });
 
@@ -198,7 +198,7 @@ const sendPaymentReminders = async (req, res) => {
   const overdueInvoices = await Invoice.find({
     balance: { $gt: 0 },
     dueDate: { $lt: now },
-    status: { $nin: ['cancelled', 'paid'] },
+    status: { $nin: ['draft', 'paid'] },
   }).populate('projectId', 'name assignedClientId');
 
   let created = 0;

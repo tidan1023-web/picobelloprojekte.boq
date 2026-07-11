@@ -154,12 +154,12 @@ export default function Sidebar({ onClose }) {
                     (PLAN_RANK[user?.plan || 'free'] < PLAN_RANK[requiredPlan]);
                   if (isLocked) {
                     return (
-                      <NavLink key={to} to={to} onClick={onClose}
-                        className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-blue-400/50 cursor-pointer hover:bg-primary-800/50 transition-colors">
+                      <div key={to}
+                        className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-blue-400/50 cursor-not-allowed select-none">
                         <Icon size={15} className="shrink-0" />
                         <span className="flex-1">{label}</span>
                         <Lock size={11} className="shrink-0 opacity-60" />
-                      </NavLink>
+                      </div>
                     );
                   }
                   return (
