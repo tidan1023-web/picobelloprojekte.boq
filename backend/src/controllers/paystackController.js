@@ -97,5 +97,5 @@ exports.initiateTransfer = async (req, res) => {
 exports.listTeamBankAccounts = async (req, res) => {
   const members = await User.find({ companyId: req.user.companyId, isActive: true })
     .select('name email role bankAccount');
-  res.json({ members });
+  res.json({ members, paystackReady: !!SECRET() });
 };

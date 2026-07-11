@@ -102,8 +102,14 @@ exports.deleteInvoice = async (req, res) => {
 exports.addPayment = async (req, res) => {
   const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
   if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  const amount = Number(req.body.amount);
+  if (!amount || amount <= 0) return res.status(400).json({ message: 'Amount must be greater than 0' });
+  const maxAllowed = invoice.total - (invoice.amountPaid || 0);
+  if (amount > maxAllowed + 0.01) {
+    return res.status(400).json({ message: `Payment of ${amount} exceeds outstanding balance of ${maxAllowed.toFixed(2)}` });
+  }
   invoice.payments.push({
-    amount     : req.body.amount,
+    amount     : Math.min(amount, maxAllowed),
     method     : req.body.method     || 'cash',
     reference  : req.body.reference  || '',
     paymentDate: req.body.paymentDate || new Date(),

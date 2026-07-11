@@ -176,15 +176,21 @@ export default function Payments() {
   const { user } = useAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [paystackReady, setPaystackReady] = useState(true);
   const [search, setSearch] = useState('');
   const [bankModal, setBankModal] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await api.get('/paystack/team');
       setMembers(data.members || []);
+      setPaystackReady(data.paystackReady !== false);
+    } catch (err) {
+      setLoadError(err.response?.data?.message || 'Failed to load team members');
     } finally { setLoading(false); }
   }, []);
 
@@ -204,10 +210,16 @@ export default function Payments() {
         <p className="text-sm text-gray-500 mt-1">Pay team members directly to their bank accounts via Paystack.</p>
       </div>
 
-      {!process.env.PAYSTACK_SECRET_KEY && (
+      {!paystackReady && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-amber-800">
           <AlertCircle size={16} className="shrink-0 mt-0.5" />
           <p>Add <strong>PAYSTACK_SECRET_KEY</strong> to your Render environment variables to enable transfers.</p>
+        </div>
+      )}
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-red-700">
+          <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <p>{loadError}</p>
         </div>
       )}
 
