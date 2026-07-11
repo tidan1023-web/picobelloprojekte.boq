@@ -25,6 +25,15 @@ const companySchema = new mongoose.Schema({
   paymentInstructions: { type: String },
   signature: { type: String },
   stamp: { type: String },
+  activeModules: {
+    type: [String],
+    default: [
+      'projects', 'contacts', 'qs-prices', 'qs-comparison', 'artisan-prices',
+      'materials', 'price-intelligence', 'boq', 'estimator', 'estimates',
+      'invoices', 'documents', 'progress', 'change-orders', 'site-reports',
+      'expenses', 'analytics',
+    ],
+  },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   updatedAt: { type: Date, default: Date.now },

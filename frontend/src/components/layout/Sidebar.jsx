@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useModules } from '../../context/ModulesContext';
 import {
   LayoutDashboard, FolderOpen, Users,
   BookOpen, GitCompare, HardHat, Package, Zap,
@@ -21,29 +22,29 @@ const NAV_GROUPS = [
   {
     items: [
       { to: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/app/projects',  icon: FolderOpen,      label: 'Projects' },
-      { to: '/app/contacts',  icon: Users,           label: 'Contacts' },
+      { to: '/app/projects',  icon: FolderOpen,      label: 'Projects',  module: 'projects' },
+      { to: '/app/contacts',  icon: Users,           label: 'Contacts',  module: 'contacts' },
     ],
   },
   {
     heading: 'Pricing Libraries',
     clientHidden: true,
     items: [
-      { to: '/app/qs-prices',          icon: BookOpen,       label: 'QS Prices',          plan: 'basic' },
-      { to: '/app/qs-comparison',      icon: GitCompare,     label: 'QS Comparison',      plan: 'basic' },
-      { to: '/app/artisan-prices',     icon: HardHat,        label: 'Artisan Rates',      plan: 'basic' },
-      { to: '/app/materials',          icon: Package,        label: 'Materials',          plan: 'basic' },
-      { to: '/app/price-intelligence', icon: Zap,            label: 'Price Intelligence', plan: 'premium' },
+      { to: '/app/qs-prices',          icon: BookOpen,       label: 'QS Prices',          plan: 'basic',   module: 'qs-prices' },
+      { to: '/app/qs-comparison',      icon: GitCompare,     label: 'QS Comparison',      plan: 'basic',   module: 'qs-comparison' },
+      { to: '/app/artisan-prices',     icon: HardHat,        label: 'Artisan Rates',      plan: 'basic',   module: 'artisan-prices' },
+      { to: '/app/materials',          icon: Package,        label: 'Materials',          plan: 'basic',   module: 'materials' },
+      { to: '/app/price-intelligence', icon: Zap,            label: 'Price Intelligence', plan: 'premium', module: 'price-intelligence' },
     ],
   },
   {
     heading: 'BOQ & Invoices',
     clientHidden: true,
     items: [
-      { to: '/app/boq',             icon: Layers,     label: 'BOQ Builder' },
-      { to: '/app/estimator',       icon: Calculator, label: 'Project Estimator' },
-      { to: '/app/estimates',       icon: FileText,   label: 'Estimate History',   plan: 'basic' },
-      { to: '/app/invoices',        icon: FileText,   label: 'Invoices' },
+      { to: '/app/boq',             icon: Layers,     label: 'BOQ Builder',      module: 'boq' },
+      { to: '/app/estimator',       icon: Calculator, label: 'Project Estimator',module: 'estimator' },
+      { to: '/app/estimates',       icon: FileText,   label: 'Estimate History', plan: 'basic', module: 'estimates' },
+      { to: '/app/invoices',        icon: FileText,   label: 'Invoices',         module: 'invoices' },
     ],
   },
   {
@@ -59,17 +60,17 @@ const NAV_GROUPS = [
   {
     heading: 'Documents',
     items: [
-      { to: '/app/documents', icon: Library, label: 'Document Library' },
+      { to: '/app/documents', icon: Library, label: 'Document Library', module: 'documents' },
     ],
   },
   {
     heading: 'Execution',
     items: [
-      { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker', plan: 'premium' },
-      { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders',    plan: 'premium' },
-      { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports',     plan: 'premium' },
-      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker',  plan: 'premium', clientHidden: true },
-      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics',        plan: 'premium', clientHidden: true },
+      { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker', plan: 'premium', module: 'progress' },
+      { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders',    plan: 'premium', module: 'change-orders' },
+      { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports',     plan: 'premium', module: 'site-reports' },
+      { to: '/app/expenses',       icon: Receipt,        label: 'Expense Tracker',  plan: 'premium', module: 'expenses', clientHidden: true },
+      { to: '/app/analytics',      icon: BarChart2,      label: 'Analytics',        plan: 'premium', module: 'analytics', clientHidden: true },
     ],
   },
   {
@@ -103,6 +104,7 @@ const linkCls = (isActive) =>
 export default function Sidebar({ onClose }) {
   const { user, logout }             = useAuth();
   const { dark, toggle: toggleDark } = useTheme();
+  const { activeModules }            = useModules();
   const navigate                     = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/login'); onClose?.(); };
@@ -129,6 +131,7 @@ export default function Sidebar({ onClose }) {
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && user?.role !== 'admin') return false;
             if (item.clientHidden && isClient) return false;
+            if (item.module && !activeModules.includes(item.module)) return false;
             return true;
           });
           if (visibleItems.length === 0) return null;

@@ -6,10 +6,33 @@ import {
   Trash2,
   Save,
   CheckCircle,
+  LayoutGrid,
 } from 'lucide-react';
 import api from '../services/api';
+import { useModules, ALL_MODULES } from '../context/ModulesContext';
+import { useAuth } from '../context/AuthContext';
 
 const EMPTY_BANK = { bankName: '', accountName: '', accountNumber: '', sortCode: '' };
+
+const MODULE_META = [
+  { key: 'projects',          label: 'Projects',           desc: 'Manage construction projects' },
+  { key: 'contacts',          label: 'Contacts',           desc: 'Client and supplier directory' },
+  { key: 'boq',               label: 'BOQ Builder',        desc: 'Build bills of quantities' },
+  { key: 'estimator',         label: 'Project Estimator',  desc: 'Cost estimation tool' },
+  { key: 'invoices',          label: 'Invoices',           desc: 'Create and send invoices' },
+  { key: 'documents',         label: 'Document Library',   desc: 'Store and share documents' },
+  { key: 'qs-prices',         label: 'QS Prices',          desc: 'Rate library (Basic+)' },
+  { key: 'qs-comparison',     label: 'QS Comparison',      desc: 'Compare rate sources (Basic+)' },
+  { key: 'artisan-prices',    label: 'Artisan Rates',      desc: 'Labour rate library (Basic+)' },
+  { key: 'materials',         label: 'Materials',          desc: 'Material price library (Basic+)' },
+  { key: 'estimates',         label: 'Estimate History',   desc: 'Saved estimates (Basic+)' },
+  { key: 'price-intelligence',label: 'Price Intelligence', desc: 'AI price insights (Premium)' },
+  { key: 'progress',          label: 'Progress Tracker',   desc: 'Track site progress (Premium)' },
+  { key: 'change-orders',     label: 'Change Orders',      desc: 'Manage variations (Premium)' },
+  { key: 'site-reports',      label: 'Site Reports',       desc: 'Daily site reports (Premium)' },
+  { key: 'expenses',          label: 'Expense Tracker',    desc: 'Track project costs (Premium)' },
+  { key: 'analytics',         label: 'Analytics',          desc: 'Business analytics (Premium)' },
+];
 
 const inputCls =
   'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 focus:border-transparent';
@@ -65,6 +88,30 @@ function UploadCard({ label, fieldKey, value, onUpload, uploading }) {
 }
 
 export default function CompanySettings() {
+  const { user } = useAuth();
+  const { activeModules, reload: reloadModules } = useModules();
+  const [localModules, setLocalModules] = useState(null);
+  const [savingModules, setSavingModules] = useState(false);
+
+  useEffect(() => { setLocalModules(activeModules); }, [activeModules]);
+
+  const toggleModule = (key) => {
+    setLocalModules((prev) =>
+      prev.includes(key) ? prev.filter((m) => m !== key) : [...prev, key]
+    );
+  };
+
+  const saveModules = async () => {
+    setSavingModules(true);
+    try {
+      await api.patch('/company/modules', { activeModules: localModules });
+      reloadModules();
+      showToast('Modules updated');
+    } catch {
+      setError('Failed to save modules');
+    } finally { setSavingModules(false); }
+  };
+
   const [form, setForm] = useState({
     companyName: '',
     address: '',
@@ -322,6 +369,48 @@ export default function CompanySettings() {
             placeholder="Enter payment terms and instructions that will appear on invoices…"
           />
         </div>
+
+        {/* Modules */}
+        {user?.role === 'admin' && localModules && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <LayoutGrid size={18} className="text-primary-900" />
+                <h3 className="font-semibold text-gray-800 text-sm">Active Modules</h3>
+              </div>
+              <button
+                type="button"
+                onClick={saveModules}
+                disabled={savingModules}
+                className="flex items-center gap-1.5 text-xs bg-primary-900 text-white px-3 py-1.5 rounded-lg hover:bg-primary-800 disabled:opacity-60 transition-colors font-medium"
+              >
+                {savingModules ? 'Saving…' : 'Save Modules'}
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar for all team members. Plan gating still applies.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {MODULE_META.map(({ key, label, desc }) => (
+                <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                  <div className="relative shrink-0">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={localModules.includes(key)}
+                      onChange={() => toggleModule(key)}
+                    />
+                    <div className={`w-9 h-5 rounded-full transition-colors ${localModules.includes(key) ? 'bg-primary-900' : 'bg-gray-200'}`}>
+                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${localModules.includes(key) ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800">{label}</p>
+                    <p className="text-xs text-gray-400">{desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Save */}
         <div className="flex justify-end">

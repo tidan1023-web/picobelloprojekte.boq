@@ -48,4 +48,31 @@ const uploadAsset = async (req, res) => {
   res.json({ message: `${type} uploaded successfully`, url: req.file.path, company });
 };
 
-module.exports = { getCompany, upsertCompany, uploadAsset };
+const ALL_MODULES = [
+  'projects', 'contacts', 'qs-prices', 'qs-comparison', 'artisan-prices',
+  'materials', 'price-intelligence', 'boq', 'estimator', 'estimates',
+  'invoices', 'documents', 'progress', 'change-orders', 'site-reports',
+  'expenses', 'analytics',
+];
+
+const getModules = async (req, res) => {
+  const company = await Company.findById(req.user.companyId).select('activeModules');
+  const active = company?.activeModules ?? ALL_MODULES;
+  res.json({ activeModules: active });
+};
+
+const updateModules = async (req, res) => {
+  const { activeModules } = req.body;
+  if (!Array.isArray(activeModules)) {
+    return res.status(400).json({ message: 'activeModules must be an array' });
+  }
+  const valid = activeModules.filter((m) => ALL_MODULES.includes(m));
+  const company = await Company.findByIdAndUpdate(
+    req.user.companyId,
+    { activeModules: valid, updatedBy: req.user._id, updatedAt: Date.now() },
+    { new: true }
+  );
+  res.json({ activeModules: company.activeModules });
+};
+
+module.exports = { getCompany, upsertCompany, uploadAsset, getModules, updateModules };

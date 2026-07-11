@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
+import { ModulesProvider } from './context/ModulesContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PlanGate from './components/PlanGate';
@@ -75,6 +76,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <ModulesProvider>
         <ToastProvider>
         <Routes>
           <Route path="/"                        element={<Landing />} />
@@ -141,6 +143,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </ToastProvider>
+        </ModulesProvider>
       </AuthProvider>
     </ThemeProvider>
   );
