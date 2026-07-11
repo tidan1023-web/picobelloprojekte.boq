@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import OnboardingModal from '../OnboardingModal';
 import BookCallGate from '../BookCallGate';
-import { TrialBanner } from '../PlanGate';
+import { TrialBanner, TrialExpiredGate } from '../PlanGate';
 import { useAuth } from '../../context/AuthContext';
 
 const CALL_SKIP_KEY = 'pb_call_skipped';
@@ -30,6 +30,18 @@ const TITLES = {
   '/app/settings':            'Company Settings',
   '/app/documents':           'Document Library',
 };
+
+const FREE_ROUTES = [
+  '/app/dashboard', '/app/projects', '/app/contacts',
+  '/app/boq', '/app/estimator', '/app/invoices',
+  '/app/documents', '/app/profile', '/app/settings',
+  '/app/client-portal', '/app/client-boq', '/app/client-invoices', '/app/client-comments',
+  '/app/owner',
+];
+
+function isFreeRoute(pathname) {
+  return FREE_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'));
+}
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -67,8 +79,11 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
         <TrialBanner />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-gray-50">
-          <Outlet />
+        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-gray-50 flex flex-col">
+          {isFreeRoute(pathname)
+            ? <Outlet />
+            : <TrialExpiredGate><Outlet /></TrialExpiredGate>
+          }
         </main>
       </div>
 

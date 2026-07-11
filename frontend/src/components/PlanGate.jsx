@@ -140,6 +140,41 @@ export default function PlanGate({ required = 'basic', children }) {
   );
 }
 
+export function TrialExpiredGate({ children }) {
+  const { user } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+
+  if (user?.email === DEV_EMAIL) return children;
+  if ((PLAN_RANK[user?.plan || 'free']) > 0) return children;
+  const daysLeft = getTrialDaysLeft(user);
+  if (daysLeft > 0) return children;
+
+  return (
+    <>
+      {showModal && <BookCallModal plan="basic" onClose={() => setShowModal(false)} />}
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
+        <div className="max-w-lg w-full text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Lock size={28} className="text-amber-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your free trial has ended</h2>
+          <p className="text-gray-500 text-sm leading-relaxed mb-6">
+            Your 7-day trial has expired. Upgrade to continue using advanced features.
+            You can still use Projects, Contacts, BOQ Builder, Estimator, Invoices, and Documents for free.
+          </p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-primary-900 text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-800 transition-colors mx-auto text-sm mb-4"
+          >
+            Book an Upgrade Call <ArrowRight size={15} />
+          </button>
+          <p className="text-xs text-gray-400">Basic plan unlocks rate libraries and estimate history. Premium unlocks analytics, change orders, site reports and more.</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function TrialBanner() {
   const { user } = useAuth();
   const [showModal, setShowModal] = useState(false);
