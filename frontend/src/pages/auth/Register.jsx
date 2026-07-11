@@ -114,7 +114,7 @@ export default function Register() {
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-xs text-green-700 mb-1">
-              🎉 <strong>7-day free trial included</strong> — get full access to all features for 7 days, no card required.
+              <strong>7-day free trial included</strong> — get full access to all features for 7 days, no card required.
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-700">

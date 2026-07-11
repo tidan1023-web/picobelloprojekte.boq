@@ -267,7 +267,7 @@ export default function BookCallGate({ onSkip }) {
             {selectedDay && selectedTime && (
               <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 mb-5">
                 <p className="text-sm text-primary-900 font-medium">
-                  📅 {fmt(selectedDay)} at {selectedTime}
+                  {fmt(selectedDay)} at {selectedTime}
                 </p>
                 <p className="text-xs text-primary-700 mt-0.5">30-minute onboarding call · Video or phone</p>
               </div>

@@ -35,7 +35,7 @@ const sendWelcome = (user) => {
 
           <!-- Free features -->
           <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:20px">
-            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">✅ Available on your free account</p>
+            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">Available on your free account</p>
             <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
               <li><strong>Project Estimator</strong> — generate cost estimates for any project</li>
               <li><strong>BOQ Builder</strong> — build and manage Bills of Quantities</li>
@@ -47,7 +47,7 @@ const sendWelcome = (user) => {
 
           <!-- Paid features -->
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin-bottom:20px">
-            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">🔒 Unlock more with a paid plan</p>
+            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">Unlock more with a paid plan</p>
             <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
               <li><strong>Basic</strong> — QS & Artisan Rate Libraries, Material Prices, Estimate History</li>
               <li><strong>Premium</strong> — Analytics, Change Orders, Site Reports, Progress Tracker, Expense Tracker, Price Intelligence</li>
@@ -145,7 +145,7 @@ const sendBookingConfirmation = (user, slot) => {
           <p style="color:#374151;margin-top:0">Hi ${user.name},</p>
           <p style="color:#374151">Your onboarding call with the Pico Bello team is confirmed for:</p>
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 18px;margin:16px 0">
-            <p style="margin:0;color:#1e3a8a;font-weight:700;font-size:15px">📅 ${slot}</p>
+            <p style="margin:0;color:#1e3a8a;font-weight:700;font-size:15px">${slot}</p>
             <p style="margin:4px 0 0;color:#3b82f6;font-size:13px">30-minute call · Video or phone · West Africa Time (UTC+1)</p>
           </div>
           ${calButton}

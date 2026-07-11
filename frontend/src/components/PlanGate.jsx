@@ -156,7 +156,7 @@ export function TrialBanner() {
       {showModal && <BookCallModal plan="basic" onClose={() => setShowModal(false)} />}
       <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-4">
         <p className="text-amber-800 text-xs font-medium">
-          ⏳ Your free trial ends in <strong>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> — upgrade to keep access to all features.
+          Your free trial ends in <strong>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> — upgrade to keep access to all features.
         </p>
         <button onClick={() => setShowModal(true)}
           className="shrink-0 text-xs font-semibold bg-amber-800 text-white px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors">

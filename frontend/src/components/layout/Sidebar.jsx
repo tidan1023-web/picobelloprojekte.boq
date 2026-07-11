@@ -179,7 +179,7 @@ export default function Sidebar({ onClose }) {
         const urgent = daysLeft <= 3;
         return (
           <div className={`mx-2 mb-2 px-3 py-2 rounded-lg text-xs ${urgent ? 'bg-amber-500/20 text-amber-300' : 'bg-primary-800 text-blue-300'}`}>
-            <p className="font-semibold">⏳ Free Trial</p>
+            <p className="font-semibold">Free Trial</p>
             <p>{daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining</p>
           </div>
         );

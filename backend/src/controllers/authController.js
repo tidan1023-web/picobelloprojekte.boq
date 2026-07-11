@@ -201,7 +201,7 @@ const inviteMember = async (req, res) => {
 
   if (phone) {
     const msg =
-      `Hello ${name}! 👋\n\n` +
+      `Hello ${name},\n\n` +
       `You have been added to *Pico Bello Projekte BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
       `Click the link below to set your password and sign in:\n${inviteUrl}\n\n` +
       `The link expires in 48 hours.`;
