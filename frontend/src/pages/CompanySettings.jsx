@@ -90,37 +90,23 @@ function UploadCard({ label, fieldKey, value, onUpload, uploading }) {
 export default function CompanySettings() {
   const { user } = useAuth();
   const { activeModules, reload: reloadModules, set: setContextModules } = useModules();
-  const [localModules, setLocalModules] = useState(null);
-  const [savingModules, setSavingModules] = useState(false);
   const [modulesError, setModulesError] = useState('');
-  const modulesInitialised = React.useRef(false);
+  const savingRef = React.useRef(false);
 
-  useEffect(() => {
-    if (!modulesInitialised.current && activeModules.length > 0) {
-      setLocalModules(activeModules);
-      modulesInitialised.current = true;
-    }
-  }, [activeModules]);
-
-  const toggleModule = (key) => {
-    setLocalModules((prev) => {
-      const next = prev.includes(key) ? prev.filter((m) => m !== key) : [...prev, key];
-      setContextModules(next);
-      return next;
-    });
-  };
-
-  const saveModules = async () => {
-    setSavingModules(true);
+  const toggleModule = async (key) => {
+    const next = activeModules.includes(key)
+      ? activeModules.filter((m) => m !== key)
+      : [...activeModules, key];
+    setContextModules(next);
+    if (savingRef.current) return;
+    savingRef.current = true;
     setModulesError('');
     try {
-      const { data } = await api.patch('/company/modules', { activeModules: localModules });
-      setLocalModules(data.activeModules);
-      await reloadModules();
-      showToast('Modules updated');
+      await api.patch('/company/modules', { activeModules: next });
     } catch (err) {
-      setModulesError(err.response?.data?.message || `Failed to save modules (${err.response?.status || 'network error'})`);
-    } finally { setSavingModules(false); }
+      setModulesError(err.response?.data?.message || `Failed to save (${err.response?.status || 'network error'})`);
+      await reloadModules();
+    } finally { savingRef.current = false; }
   };
 
   const [form, setForm] = useState({
@@ -382,24 +368,14 @@ export default function CompanySettings() {
         </div>
 
         {/* Modules */}
-        {user?.role === 'admin' && localModules && (
+        {user?.role === 'admin' && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <LayoutGrid size={18} className="text-primary-900" />
-                <h3 className="font-semibold text-gray-800 text-sm">Active Modules</h3>
-              </div>
-              <button
-                type="button"
-                onClick={saveModules}
-                disabled={savingModules}
-                className="flex items-center gap-1.5 text-xs bg-primary-900 text-white px-3 py-1.5 rounded-lg hover:bg-primary-800 disabled:opacity-60 transition-colors font-medium"
-              >
-                {savingModules ? 'Saving…' : 'Save Modules'}
-              </button>
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+              <LayoutGrid size={18} className="text-primary-900" />
+              <h3 className="font-semibold text-gray-800 text-sm">Active Modules</h3>
             </div>
             {modulesError && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-2">{modulesError}</div>}
-            <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar for all team members. Plan gating still applies.</p>
+            <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar. Changes save instantly for all team members.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {MODULE_META.map(({ key, label, desc }) => (
                 <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
@@ -407,11 +383,11 @@ export default function CompanySettings() {
                     <input
                       type="checkbox"
                       className="sr-only"
-                      checked={localModules.includes(key)}
+                      checked={activeModules.includes(key)}
                       onChange={() => toggleModule(key)}
                     />
-                    <div className={`w-9 h-5 rounded-full transition-colors ${localModules.includes(key) ? 'bg-primary-900' : 'bg-gray-200'}`}>
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${localModules.includes(key) ? 'translate-x-4' : 'translate-x-0'}`} />
+                    <div className={`w-9 h-5 rounded-full transition-colors ${activeModules.includes(key) ? 'bg-primary-900' : 'bg-gray-200'}`}>
+                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${activeModules.includes(key) ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
                   </div>
                   <div className="min-w-0">
