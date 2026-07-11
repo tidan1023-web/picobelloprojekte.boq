@@ -136,7 +136,7 @@ const sendBookingConfirmation = (user, slot) => {
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
         <div style="background:#1e3a8a;padding:24px 28px">
-          <img src="${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/logo.png"
+          <img src="${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/logo.png"
                alt="Pico Bello Projekte" height="40"
                style="display:block;margin-bottom:12px;object-fit:contain" />
           <h2 style="color:#fff;margin:0;font-size:18px">You're on the calendar!</h2>
@@ -214,7 +214,7 @@ const sendOnboardingRequest = ({ name, email, phone, plan }) =>
           <tr><td style="padding:8px;color:#666">Plan</td><td style="padding:8px;font-weight:600">${plan}</td></tr>
         </table>
         <p>Send them an invite from the Team page, or reply to this email to schedule their onboarding call.</p>
-        <a href="${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/settings/team"
+        <a href="${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/settings/team"
            style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1e3a5f;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
           Open Team Settings
         </a>

@@ -115,7 +115,7 @@ const forgotPassword = async (req, res) => {
   user.resetPasswordExpires = Date.now() + 3600000;
   await user.save();
 
-  const resetUrl = `${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/reset-password/${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/reset-password/${token}`;
   sendPasswordReset(user, resetUrl).catch((e) =>
     logger.warn('Password reset email failed', { error: e.message, userId: user._id }),
   );
@@ -192,7 +192,7 @@ const inviteMember = async (req, res) => {
   });
   logger.info('Team member invited', { invitedBy: req.user._id, newUserId: user._id, role });
 
-  const appUrl = process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com';
+  const appUrl = process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com';
   const inviteUrl = `${appUrl}/accept-invite/${inviteToken}`;
 
   sendTeamInvite(user, inviteUrl).catch((e) =>
