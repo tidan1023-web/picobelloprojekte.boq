@@ -89,7 +89,7 @@ function UploadCard({ label, fieldKey, value, onUpload, uploading }) {
 
 export default function CompanySettings() {
   const { user } = useAuth();
-  const { activeModules, reload: reloadModules } = useModules();
+  const { activeModules, reload: reloadModules, set: setContextModules } = useModules();
   const [localModules, setLocalModules] = useState(null);
   const [savingModules, setSavingModules] = useState(false);
   const [modulesError, setModulesError] = useState('');
@@ -103,9 +103,11 @@ export default function CompanySettings() {
   }, [activeModules]);
 
   const toggleModule = (key) => {
-    setLocalModules((prev) =>
-      prev.includes(key) ? prev.filter((m) => m !== key) : [...prev, key]
-    );
+    setLocalModules((prev) => {
+      const next = prev.includes(key) ? prev.filter((m) => m !== key) : [...prev, key];
+      setContextModules(next);
+      return next;
+    });
   };
 
   const saveModules = async () => {

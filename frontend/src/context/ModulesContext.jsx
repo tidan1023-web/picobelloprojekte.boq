@@ -27,8 +27,10 @@ export function ModulesProvider({ children }) {
       .then(({ data }) => setActiveModules(data.activeModules ?? ALL_MODULES))
       .catch(() => {});
 
+  const set = (modules) => setActiveModules(modules);
+
   return (
-    <ModulesContext.Provider value={{ activeModules, reload }}>
+    <ModulesContext.Provider value={{ activeModules, reload, set }}>
       {children}
     </ModulesContext.Provider>
   );
