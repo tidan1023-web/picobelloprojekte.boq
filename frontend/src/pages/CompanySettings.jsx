@@ -368,37 +368,35 @@ export default function CompanySettings() {
         </div>
 
         {/* Modules */}
-        {user?.role === 'admin' && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
-              <LayoutGrid size={18} className="text-primary-900" />
-              <h3 className="font-semibold text-gray-800 text-sm">Active Modules</h3>
-            </div>
-            {modulesError && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-2">{modulesError}</div>}
-            <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar. Changes save instantly for all team members.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {MODULE_META.map(({ key, label, desc }) => (
-                <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                  <div className="relative shrink-0">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={activeModules.includes(key)}
-                      onChange={() => toggleModule(key)}
-                    />
-                    <div className={`w-9 h-5 rounded-full transition-colors ${activeModules.includes(key) ? 'bg-primary-900' : 'bg-gray-200'}`}>
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${activeModules.includes(key) ? 'translate-x-4' : 'translate-x-0'}`} />
-                    </div>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800">{label}</p>
-                    <p className="text-xs text-gray-400">{desc}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+            <LayoutGrid size={18} className="text-primary-900" />
+            <h3 className="font-semibold text-gray-800 text-sm">Active Modules</h3>
           </div>
-        )}
+          {modulesError && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-2">{modulesError}</div>}
+          <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar. Changes save instantly for all team members.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {MODULE_META.map(({ key, label, desc }) => (
+              <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="relative shrink-0">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={activeModules.includes(key)}
+                    onChange={() => toggleModule(key)}
+                  />
+                  <div className={`w-9 h-5 rounded-full transition-colors ${activeModules.includes(key) ? 'bg-primary-900' : 'bg-gray-200'}`}>
+                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${activeModules.includes(key) ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-800">{label}</p>
+                  <p className="text-xs text-gray-400">{desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
 
         {/* Save */}
         <div className="flex justify-end">
