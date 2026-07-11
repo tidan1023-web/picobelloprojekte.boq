@@ -64,6 +64,7 @@ import ClientComments     from './pages/ClientComments';
 import CompanySettings    from './pages/CompanySettings';
 import TeamManagement     from './pages/TeamManagement';
 import Profile            from './pages/Profile';
+import OwnerDashboard     from './pages/OwnerDashboard';
 
 function AppHome() {
   const { user } = useAuth();
@@ -134,6 +135,7 @@ export default function App() {
             <Route path="settings"               element={<CompanySettings />} />
             <Route path="team"                   element={<TeamManagement />} />
             <Route path="profile"                element={<Profile />} />
+            <Route path="owner"                  element={<OwnerDashboard />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

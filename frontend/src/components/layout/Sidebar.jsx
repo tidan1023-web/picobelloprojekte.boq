@@ -9,8 +9,10 @@ import {
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
-  Lock,
+  Lock, LayoutGrid,
 } from 'lucide-react';
+
+const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
 import Logo from '../Logo';
 
 const PLAN_RANK = { free: 0, basic: 1, premium: 2 };
@@ -169,6 +171,17 @@ export default function Sidebar({ onClose }) {
           );
         })}
       </nav>
+
+      {/* Owner Dashboard link — super users only */}
+      {SUPER_EMAILS.includes(user?.email) && (
+        <div className="px-2 pb-1 shrink-0">
+          <NavLink to="/app/owner" onClick={onClose}
+            className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-blue-600 text-white' : 'text-blue-200 hover:bg-primary-800 hover:text-white'}`}>
+            <LayoutGrid size={15} className="shrink-0" />
+            Owner Dashboard
+          </NavLink>
+        </div>
+      )}
 
       {/* Trial countdown */}
       {user?.email !== 'tidan1023@gmail.com' && (PLAN_RANK[user?.plan || 'free'] === 0) && (() => {

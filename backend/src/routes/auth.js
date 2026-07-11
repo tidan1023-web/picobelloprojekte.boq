@@ -7,6 +7,7 @@ const {
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
   acceptInvite, requestOnboarding, updateMemberPlan, adminResetPassword,
+  ownerDashboard, ownerSetPlan,
 } = require('../controllers/authController');
 const { multerMemoryConfig } = require('../utils/s3Upload');
 const upload = multerMemoryConfig();
@@ -57,5 +58,8 @@ router.patch('/me/onboarded',           authenticate, markOnboarded);
 router.patch('/me/book-call',           authenticate, bookCall);
 router.patch('/team/:id/complete-call', completeCall);
 router.delete('/me', authenticate, deleteAccount);
+
+router.get('/owner/dashboard',        authenticate, ownerDashboard);
+router.patch('/owner/users/:id/plan', authenticate, ownerSetPlan);
 
 module.exports = router;

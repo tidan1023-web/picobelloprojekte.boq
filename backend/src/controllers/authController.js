@@ -353,8 +353,47 @@ const adminResetPassword = async (req, res) => {
   res.json({ message: 'Password reset successfully.' });
 };
 
-// ── updateMemberPlan ──────────────────────────────────────────────────────────
+// ── shared super-admin list ───────────────────────────────────────────────────
 const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
+
+// ── ownerDashboard ────────────────────────────────────────────────────────────
+const ownerDashboard = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  const companies = await Company.find().lean();
+  const users = await User.find().select('name email role plan createdAt companyId isActive').lean();
+
+  const usersByCompany = {};
+  users.forEach((u) => {
+    const cid = u.companyId?.toString();
+    if (!usersByCompany[cid]) usersByCompany[cid] = [];
+    usersByCompany[cid].push(u);
+  });
+
+  const result = companies.map((c) => ({
+    ...c,
+    members: usersByCompany[c._id.toString()] || [],
+  }));
+
+  res.json({ companies: result });
+};
+
+// ── ownerSetPlan ──────────────────────────────────────────────────────────────
+const ownerSetPlan = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  const { plan } = req.body;
+  if (!['free', 'basic', 'premium'].includes(plan)) {
+    return res.status(400).json({ message: 'Invalid plan' });
+  }
+  const user = await User.findByIdAndUpdate(req.params.id, { plan }, { new: true });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json({ user });
+};
+
+// ── updateMemberPlan ──────────────────────────────────────────────────────────
 
 const updateMemberPlan = async (req, res) => {
   if (!SUPER_EMAILS.includes(req.user.email)) {
@@ -392,4 +431,5 @@ module.exports = {
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
   acceptInvite, requestOnboarding, updateMemberPlan, adminResetPassword,
+  ownerDashboard, ownerSetPlan,
 };
