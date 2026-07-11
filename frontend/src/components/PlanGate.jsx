@@ -44,9 +44,10 @@ function BookCallModal({ plan, onClose }) {
               We received your upgrade request for the <strong>{plan}</strong> plan.
               We'll reach out within 24 hours to schedule your call.
             </p>
-            <button onClick={onClose} className="mt-6 bg-primary-900 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-primary-800 transition-colors">
-              Done
+            <button onClick={onClose} className="mt-6 w-full bg-primary-900 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-primary-800 transition-colors">
+              Continue Using the App
             </button>
+            <p className="text-xs text-gray-400 mt-3">You'll keep access to your free features while you wait.</p>
           </div>
         ) : (
           <>
@@ -164,11 +165,14 @@ export function TrialExpiredGate({ children }) {
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-primary-900 text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-800 transition-colors mx-auto text-sm mb-4"
+            className="flex items-center gap-2 bg-primary-900 text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-800 transition-colors mx-auto text-sm mb-3"
           >
             Book an Upgrade Call <ArrowRight size={15} />
           </button>
-          <p className="text-xs text-gray-400">Basic plan unlocks rate libraries and estimate history. Premium unlocks analytics, change orders, site reports and more.</p>
+          <p className="text-xs text-gray-400 mb-4">Basic plan unlocks rate libraries and estimate history. Premium unlocks analytics, change orders, site reports and more.</p>
+          <a href="/app/dashboard" className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors">
+            Continue with free features
+          </a>
         </div>
       </div>
     </>
