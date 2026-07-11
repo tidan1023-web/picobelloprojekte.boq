@@ -92,8 +92,14 @@ export default function CompanySettings() {
   const { activeModules, reload: reloadModules } = useModules();
   const [localModules, setLocalModules] = useState(null);
   const [savingModules, setSavingModules] = useState(false);
+  const modulesInitialised = React.useRef(false);
 
-  useEffect(() => { setLocalModules(activeModules); }, [activeModules]);
+  useEffect(() => {
+    if (!modulesInitialised.current && activeModules.length > 0) {
+      setLocalModules(activeModules);
+      modulesInitialised.current = true;
+    }
+  }, [activeModules]);
 
   const toggleModule = (key) => {
     setLocalModules((prev) =>
@@ -104,11 +110,12 @@ export default function CompanySettings() {
   const saveModules = async () => {
     setSavingModules(true);
     try {
-      await api.patch('/company/modules', { activeModules: localModules });
+      const { data } = await api.patch('/company/modules', { activeModules: localModules });
+      setLocalModules(data.activeModules);
       await reloadModules();
       showToast('Modules updated');
-    } catch {
-      setError('Failed to save modules');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save modules');
     } finally { setSavingModules(false); }
   };
 
