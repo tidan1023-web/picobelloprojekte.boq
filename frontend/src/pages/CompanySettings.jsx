@@ -92,6 +92,7 @@ export default function CompanySettings() {
   const { activeModules, reload: reloadModules } = useModules();
   const [localModules, setLocalModules] = useState(null);
   const [savingModules, setSavingModules] = useState(false);
+  const [modulesError, setModulesError] = useState('');
   const modulesInitialised = React.useRef(false);
 
   useEffect(() => {
@@ -109,13 +110,14 @@ export default function CompanySettings() {
 
   const saveModules = async () => {
     setSavingModules(true);
+    setModulesError('');
     try {
       const { data } = await api.patch('/company/modules', { activeModules: localModules });
       setLocalModules(data.activeModules);
       await reloadModules();
       showToast('Modules updated');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save modules');
+      setModulesError(err.response?.data?.message || `Failed to save modules (${err.response?.status || 'network error'})`);
     } finally { setSavingModules(false); }
   };
 
@@ -394,6 +396,7 @@ export default function CompanySettings() {
                 {savingModules ? 'Saving…' : 'Save Modules'}
               </button>
             </div>
+            {modulesError && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-2">{modulesError}</div>}
             <p className="text-xs text-gray-400 mb-4">Toggle which features appear in the sidebar for all team members. Plan gating still applies.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {MODULE_META.map(({ key, label, desc }) => (

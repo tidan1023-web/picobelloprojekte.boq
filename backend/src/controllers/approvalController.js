@@ -101,7 +101,7 @@ const submitVersionDecision = async (req, res) => {
 
 // Admin/QS: get pending approvals across all versions
 const getPendingApprovals = async (req, res) => {
-  const approvals = await Approval.find({ status: 'pending' })
+  const approvals = await Approval.find({ status: 'pending', companyId: req.user.companyId })
     .populate('boqVersionId', 'name')
     .populate('boqItemId', 'item')
     .populate('clientId', 'name email')

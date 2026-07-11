@@ -13,14 +13,14 @@ function fmt(n) {
 }
 
 function recalcTotals(invoice) {
-  const subtotal = (invoice.items || []).reduce((s, i) => s + (i.amount || 0), 0);
+  const subtotal = (invoice.lineItems || []).reduce((s, i) => s + (i.amount || 0), 0);
   const vatAmount = subtotal * (invoice.vatRate || 0) / 100;
   invoice.subtotal   = subtotal;
   invoice.vatAmount  = vatAmount;
   invoice.total      = subtotal + vatAmount;
   invoice.amountPaid = (invoice.payments || []).reduce((s, p) => s + (p.amount || 0), 0);
   invoice.balance    = invoice.total - invoice.amountPaid;
-  if (invoice.balance <= 0) invoice.status = 'paid';
+  if (invoice.balance <= 0 && invoice.total > 0) invoice.status = 'paid';
 }
 
 // ── CRUD ────────────────────────────────────────────────────────────────────────────
@@ -65,8 +65,14 @@ exports.createInvoice = async (req, res) => {
 
   const invoice = await Invoice.create({
     companyId: req.user.companyId,
-    invoiceNumber, projectId, clientId,
-    items: mappedItems,
+    invoiceNumber,
+    projectName: req.body.projectName || '',
+    clientName:  req.body.clientName  || '',
+    clientEmail: req.body.clientEmail || '',
+    clientPhone: req.body.clientPhone || '',
+    clientAddress: req.body.clientAddress || '',
+    projectId, clientId,
+    lineItems: mappedItems,
     subtotal, vatRate, vatAmount, total,
     currency, dueDate, notes, bankDetails,
     balance: total,
@@ -81,7 +87,7 @@ exports.updateInvoice = async (req, res) => {
 
   const { items, vatRate, ...rest } = req.body;
   Object.assign(invoice, rest);
-  if (items)  invoice.items   = items.map((i) => ({ ...i, amount: Number(i.qty || 0) * Number(i.unitPrice || 0) }));
+  if (items)  invoice.lineItems = items.map((i) => ({ ...i, amount: Number(i.qty || 0) * Number(i.unitPrice || 0) }));
   if (vatRate !== undefined) invoice.vatRate = vatRate;
   recalcTotals(invoice);
   await invoice.save();

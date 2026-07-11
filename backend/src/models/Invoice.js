@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema({
   paymentDate: { type: Date, default: Date.now },
   method: {
     type: String,
-    enum: ['bank_transfer', 'cash', 'cheque', 'card', 'other'],
+    enum: ['bank_transfer', 'cash', 'cheque', 'card', 'paystack', 'other'],
     default: 'bank_transfer',
   },
   reference: { type: String, trim: true },
