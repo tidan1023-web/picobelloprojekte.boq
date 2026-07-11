@@ -336,6 +336,9 @@ const updateProfile = async (req, res) => {
 
 // ── adminResetPassword ────────────────────────────────────────────────────────
 const adminResetPassword = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised to reset passwords' });
+  }
   const { password } = req.body;
   if (!password || password.length < 6) {
     return res.status(400).json({ message: 'Password must be at least 6 characters.' });
@@ -351,7 +354,12 @@ const adminResetPassword = async (req, res) => {
 };
 
 // ── updateMemberPlan ──────────────────────────────────────────────────────────
+const SUPER_EMAILS = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'];
+
 const updateMemberPlan = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised to change plans' });
+  }
   const { plan } = req.body;
   if (!['free', 'basic', 'premium'].includes(plan)) {
     return res.status(400).json({ message: 'Invalid plan' });

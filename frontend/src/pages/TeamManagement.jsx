@@ -417,6 +417,9 @@ export default function TeamManagement() {
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 capitalize ${PLAN_COLORS[m.plan || 'free']}`}>
                   {m.plan || 'free'}
                 </span>
+                {(() => {
+                  const isSuperUser = ['tidan1023@gmail.com', 'sadiajahleel@gmail.com'].includes(user?.email);
+                  return (
                 <div className="flex items-center gap-1 shrink-0">
                   {m._id !== user._id && (
                     <button onClick={() => setEditMember(m)}
@@ -424,11 +427,13 @@ export default function TeamManagement() {
                       <Edit2 size={14} />
                     </button>
                   )}
-                  <button onClick={() => setEditPlanMember(m)}
-                    className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg" title="Change plan">
-                    <CreditCard size={14} />
-                  </button>
-                  {m._id !== user._id && (
+                  {isSuperUser && (
+                    <button onClick={() => setEditPlanMember(m)}
+                      className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg" title="Change plan">
+                      <CreditCard size={14} />
+                    </button>
+                  )}
+                  {isSuperUser && m._id !== user._id && (
                     <button onClick={() => setResetPwMember(m)}
                       className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg" title="Reset password">
                       <KeyRound size={14} />
@@ -441,6 +446,8 @@ export default function TeamManagement() {
                     </button>
                   )}
                 </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
