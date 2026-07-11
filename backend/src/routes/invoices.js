@@ -3,14 +3,15 @@ const { authenticate, authorize } = require('../middleware/auth');
 const { zodValidate, schemas }    = require('../middleware/zodValidate');
 const {
   getInvoices, getInvoice, createInvoice, updateInvoice, deleteInvoice,
-  addPayment, deletePayment, generatePDF, markAsPaid,
+  addPayment, deletePayment, generatePDF, markAsPaid, getPaymentLink,
 } = require('../controllers/invoiceController');
 
 router.use(authenticate);
 
 router.get('/',        getInvoices);
 router.get('/:id',     getInvoice);
-router.get('/:id/pdf', generatePDF);
+router.get('/:id/pdf',          generatePDF);
+router.get('/:id/payment-link', getPaymentLink);
 
 router.post('/',   authorize('admin', 'qs', 'project_manager'), zodValidate(schemas.invoice), createInvoice);
 router.put('/:id', authorize('admin', 'qs', 'project_manager'), zodValidate(schemas.invoice), updateInvoice);

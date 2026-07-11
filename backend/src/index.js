@@ -34,6 +34,7 @@ const commentRoutes       = require('./routes/comments');
 const notificationRoutes  = require('./routes/notifications');
 const expenseRoutes        = require('./routes/expenses');
 const documentRoutes       = require('./routes/documents');
+const paystackRoutes       = require('./routes/paystack');
 
 const app = express();
 app.set('trust proxy', 1); // Render sits behind a reverse proxy
@@ -111,6 +112,7 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Da
   app.use(`${prefix}/notifications`,       notificationRoutes);
   app.use(`${prefix}/expenses`,            expenseRoutes);
   app.use(`${prefix}/documents`,           documentRoutes);
+  app.use(`${prefix}/paystack`,            paystackRoutes);
 });
 
 // ── 404 + error handler ───────────────────────────────────────────────────────────────────

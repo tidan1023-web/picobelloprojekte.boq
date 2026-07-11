@@ -10,7 +10,7 @@ import {
   TrendingUp, GitPullRequest, ClipboardList, BarChart2,
   Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
-  Lock, LayoutGrid,
+  Lock, LayoutGrid, CreditCard,
 } from 'lucide-react';
 
 const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
@@ -76,8 +76,9 @@ const NAV_GROUPS = [
   {
     heading: 'Admin',
     items: [
-      { to: '/app/team',     icon: UserCog,  label: 'Team Management', adminOnly: true },
-      { to: '/app/settings', icon: Settings, label: 'Company Settings' },
+      { to: '/app/team',     icon: UserCog,    label: 'Team Management', adminOnly: true },
+      { to: '/app/payments', icon: CreditCard, label: 'Payments',         adminOnly: true },
+      { to: '/app/settings', icon: Settings,   label: 'Company Settings' },
     ],
   },
 ];

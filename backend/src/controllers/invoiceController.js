@@ -297,6 +297,35 @@ exports.generatePDF = async (req, res) => {
   doc.end();
 };
 
+// ── Paystack: generate payment link for invoice ───────────────────────────────────────
+exports.getPaymentLink = async (req, res) => {
+  const invoice = await Invoice.findOne({ _id: req.params.id, companyId: req.user.companyId });
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  if (invoice.balance <= 0) return res.status(400).json({ message: 'Invoice is already paid' });
+
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return res.status(503).json({ message: 'Paystack not configured. Add PAYSTACK_SECRET_KEY to environment variables.' });
+
+  const amountKobo = Math.round(invoice.balance * 100);
+  const reference  = `inv_${invoice._id}_${Date.now()}`;
+
+  const response = await fetch('https://api.paystack.co/transaction/initialize', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email    : invoice.clientEmail || 'client@picobelloprojekte.com',
+      amount   : amountKobo,
+      reference,
+      metadata : { invoiceId: invoice._id.toString(), invoiceNumber: invoice.invoiceNumber },
+      callback_url: `${process.env.CLIENT_URL || 'https://picobelloprojekte-boq.onrender.com'}/app/invoices/${invoice._id}?paid=1`,
+    }),
+  });
+  const json = await response.json();
+  if (!json.status) return res.status(502).json({ message: json.message || 'Paystack error' });
+
+  res.json({ url: json.data.authorization_url, reference: json.data.reference });
+};
+
 // ── Paystack webhook ───────────────────────────────────────────────────────────────────
 exports.paystackWebhook = async (req, res) => {
   const crypto = require('crypto');
@@ -310,7 +339,8 @@ exports.paystackWebhook = async (req, res) => {
   const event = JSON.parse(req.body.toString());
   if (event.event === 'charge.success') {
     const ref = event.data?.reference || '';
-    const invoiceId = ref.split('_')[1];
+    const meta = event.data?.metadata || {};
+    const invoiceId = meta.invoiceId || ref.split('_')[1];
     if (invoiceId) {
       const invoice = await Invoice.findById(invoiceId);
       if (invoice && invoice.balance > 0) {

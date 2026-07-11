@@ -25,6 +25,13 @@ const userSchema = new mongoose.Schema({
   callBooked:    { type: Boolean, default: false },
   callCompleted: { type: Boolean, default: false },
   callBookedSlot: { type: String, default: '' },
+  bankAccount: {
+    bankName:      { type: String, default: '' },
+    bankCode:      { type: String, default: '' },
+    accountNumber: { type: String, default: '' },
+    accountName:   { type: String, default: '' },
+    recipientCode: { type: String, default: '' },
+  },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
   inviteToken: { type: String },

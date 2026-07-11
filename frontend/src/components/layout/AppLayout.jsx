@@ -36,7 +36,7 @@ const FREE_ROUTES = [
   '/app/boq', '/app/estimator', '/app/invoices',
   '/app/documents', '/app/profile', '/app/settings',
   '/app/client-portal', '/app/client-boq', '/app/client-invoices', '/app/client-comments',
-  '/app/owner',
+  '/app/payments', '/app/owner',
 ];
 
 function isFreeRoute(pathname) {
