@@ -158,7 +158,7 @@ function GanttChart({ programme, onChange }) {
   const updateActivity = (phaseIdx, actId, updates) => {
     const phases = programme.phases.map((ph, pi) => {
       if (pi !== phaseIdx) return ph;
-      return { ...ph, activities: ph.activities.map((a) => a._id === actId ? { ...a, ...updates } : a) };
+      return { ...ph, activities: ph.activities.map((a) => a._id?.toString() === actId?.toString() ? { ...a, ...updates } : a) };
     });
     onChange({ ...programme, phases });
   };
@@ -166,7 +166,7 @@ function GanttChart({ programme, onChange }) {
   const deleteActivity = (phaseIdx, actId) => {
     const phases = programme.phases.map((ph, pi) => {
       if (pi !== phaseIdx) return ph;
-      return { ...ph, activities: ph.activities.filter((a) => a._id !== actId) };
+      return { ...ph, activities: ph.activities.filter((a) => a._id?.toString() !== actId?.toString()) };
     });
     onChange({ ...programme, phases });
     setEditing(null);
@@ -534,9 +534,15 @@ export default function ProgrammeBuilder() {
       ]);
       setProgrammes(pd.programmes || []);
       setProjects(proj.projects || []);
-      if (pd.programmes?.length && !selected) {
-        const { data } = await api.get(`/programmes/${pd.programmes[0]._id}`);
-        setSelected(data.programme);
+      if (pd.programmes?.length) {
+        setSelected((prev) => {
+          if (prev) return prev;
+          return null;
+        });
+        if (!selected) {
+          const { data } = await api.get(`/programmes/${pd.programmes[0]._id}`);
+          setSelected(data.programme);
+        }
       }
     } catch (e) {
       console.error(e);

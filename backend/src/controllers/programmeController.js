@@ -108,9 +108,14 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
+  const { name, startDate, phases } = req.body;
+  const update = {};
+  if (name      !== undefined) update.name      = name;
+  if (startDate !== undefined) update.startDate = startDate;
+  if (phases    !== undefined) update.phases    = phases;
   const prog = await Programme.findOneAndUpdate(
     { _id: req.params.id, companyId: req.user.companyId },
-    { $set: req.body },
+    { $set: update },
     { new: true }
   );
   if (!prog) return res.status(404).json({ message: 'Programme not found' });
