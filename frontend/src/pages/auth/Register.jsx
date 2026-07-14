@@ -34,7 +34,7 @@ export default function Register() {
           <div className="inline-flex items-center justify-center mb-4">
             <Logo size={64} />
           </div>
-          <h1 className="text-2xl font-bold text-white">Pico Bello Projekte</h1>
+          <h1 className="text-2xl font-bold text-white">SquareMetre</h1>
           <p className="text-blue-300 mt-1 text-sm">BOQ Management System</p>
         </div>
 

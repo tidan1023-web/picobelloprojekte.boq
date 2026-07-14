@@ -174,7 +174,7 @@ function ChangeOrderDocument({ order, onClose }) {
         <div className="overflow-y-auto flex-1 p-6">
           <div ref={printRef}>
             <h1>CHANGE ORDER</h1>
-            <p className="subtitle">Pico Bello Projekte · BOQ Management System</p>
+            <p className="subtitle">SquareMetre · BOQ Management System</p>
 
             <div className="section">
               <div className="section-title">Change Order Details</div>
@@ -253,7 +253,7 @@ function ChangeOrderDocument({ order, onClose }) {
 
             <div className="footer">
               This change order is subject to the terms and conditions of the original contract.
-              Pico Bello Projekte · Generated {dateStr}
+              SquareMetre · Generated {dateStr}
             </div>
           </div>
         </div>

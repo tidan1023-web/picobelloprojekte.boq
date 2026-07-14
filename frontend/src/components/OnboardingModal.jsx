@@ -273,7 +273,7 @@ export default function OnboardingModal() {
         {/* Header */}
         <div className="bg-primary-900 px-6 py-5 text-white">
           <p className="text-xs font-medium text-blue-200 uppercase tracking-wide mb-1">
-            Welcome to Pico Bello
+            Welcome to SquareMetre
           </p>
           <h2 className="text-lg font-bold">
             {isLast ? "You're all set!" : `Getting started as ${ROLE_LABEL[user.role] || user.role}`}

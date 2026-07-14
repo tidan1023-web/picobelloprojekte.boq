@@ -11,7 +11,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'pico-bello-boq',
+    folder: 'squaremetre-boq',
     allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'svg', 'webp'],
     transformation: [{ width: 1200, crop: 'limit' }],
   },

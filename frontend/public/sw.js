@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
 
 // ── Push notifications ────────────────────────────────────────────────────────
 self.addEventListener('push', (event) => {
-  let data = { title: 'Pico Bello BOQ', message: 'You have a new notification.' };
+  let data = { title: 'SquareMetre', message: 'You have a new notification.' };
   try { data = event.data.json(); } catch (_) {}
 
   event.waitUntil(

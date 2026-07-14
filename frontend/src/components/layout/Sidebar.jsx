@@ -108,7 +108,7 @@ export default function Sidebar({ onClose }) {
         <div className="flex items-center gap-2.5">
           <Logo size={36} />
           <div className="leading-tight">
-            <p className="text-sm font-bold leading-tight">Pico Bello Projekte</p>
+            <p className="text-sm font-bold leading-tight">SquareMetre</p>
             <p className="text-xs text-blue-300">Construction Management</p>
           </div>
         </div>

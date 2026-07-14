@@ -76,7 +76,7 @@ app.use(hpp());
 app.use('/api/', apiLimiter);
 
 // ── Health / root ──────────────────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => res.json({ status: 'ok', service: 'Pico Bello Estimator API', version: '2.0.0' }));
+app.get('/', (_req, res) => res.json({ status: 'ok', service: 'SquareMetre API', version: '2.0.0' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // ── Routes ──────────────────────────────────────────────────────────────────────
@@ -117,4 +117,4 @@ app.use((_req, res) => res.status(404).json({ message: 'Not found' }));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Pico Bello Estimator API running on port ${PORT}`));
+app.listen(PORT, () => console.log(`SquareMetre API running on port ${PORT}`));

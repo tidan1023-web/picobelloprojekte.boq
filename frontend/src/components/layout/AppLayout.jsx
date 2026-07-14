@@ -50,7 +50,7 @@ export default function AppLayout() {
   const title = TITLES[pathname]
     ?? (pathname.startsWith('/app/estimates/') ? 'Estimate Detail'
       : pathname.startsWith('/app/invoices/')  ? 'Invoice Detail'
-      : 'Pico Bello');
+      : 'SquareMetre');
 
   return (
     <div className="flex h-screen overflow-hidden relative">

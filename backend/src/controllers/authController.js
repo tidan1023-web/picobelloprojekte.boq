@@ -115,7 +115,7 @@ const forgotPassword = async (req, res) => {
   user.resetPasswordExpires = Date.now() + 3600000;
   await user.save();
 
-  const resetUrl = `${process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com'}/reset-password/${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://squaremetre.onrender.com'}/reset-password/${token}`;
   await sendPasswordReset(user, resetUrl);
 
   logger.info('Password reset requested', { userId: user._id, ip: getIp(req) });
@@ -190,7 +190,7 @@ const inviteMember = async (req, res) => {
   });
   logger.info('Team member invited', { invitedBy: req.user._id, newUserId: user._id, role });
 
-  const appUrl = process.env.FRONTEND_URL || 'https://pico-bello-boq.onrender.com';
+  const appUrl = process.env.FRONTEND_URL || 'https://squaremetre.onrender.com';
   const inviteUrl = `${appUrl}/accept-invite/${inviteToken}`;
 
   sendTeamInvite(user, inviteUrl).catch((e) =>
@@ -200,7 +200,7 @@ const inviteMember = async (req, res) => {
   if (phone) {
     const msg =
       `Hello ${name}! 👋\n\n` +
-      `You have been added to *Pico Bello Projekte BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
+      `You have been added to *SquareMetre BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
       `Click the link below to set your password and sign in:\n${inviteUrl}\n\n` +
       `The link expires in 48 hours.`;
     sendWhatsApp(phone, msg).catch((e) =>

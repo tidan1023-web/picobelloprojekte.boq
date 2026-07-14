@@ -117,7 +117,7 @@ export default function PayInvoice() {
         <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
           <Logo size={36} />
           <div>
-            <p className="font-bold text-sm leading-tight">{company?.companyName || 'Pico Bello Projekte'}</p>
+            <p className="font-bold text-sm leading-tight">{company?.companyName || 'SquareMetre'}</p>
             <p className="text-blue-300 text-xs">Secure Invoice Payment</p>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function PayInvoice() {
         )}
 
         <p className="text-center text-xs text-gray-400 pb-4">
-          Powered by Pico Bello Projekte BOQ System
+          Powered by SquareMetre BOQ System
         </p>
       </div>
     </div>

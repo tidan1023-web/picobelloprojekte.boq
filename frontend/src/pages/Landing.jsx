@@ -26,7 +26,7 @@ function BookCallModal({ plan, onClose }) {
       await axios.post('/api/auth/request-onboarding', { name, email, phone, plan });
       setDone(true);
     } catch {
-      setError('Something went wrong. Please email us directly at hello@picobelloprojekte.com');
+      setError('Something went wrong. Please email us directly at hello@squaremetre.app');
     } finally { setSub(false); }
   };
 
@@ -239,7 +239,7 @@ export default function Landing() {
               <Building2 size={16} className="text-white" />
             </div>
             <div className="leading-tight">
-              <p className="text-sm font-bold text-primary-900 leading-tight">Pico Bello Projekte</p>
+              <p className="text-sm font-bold text-primary-900 leading-tight">SquareMetre</p>
               <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
             </div>
           </div>
@@ -266,7 +266,7 @@ export default function Landing() {
           </h1>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-7 sm:mb-10 leading-relaxed">
             From your first ballpark estimate and 8-phase Gantt programme to final invoice and Paystack payment —
-            Pico Bello is the complete platform built around your rate libraries and project history.
+            SquareMetre is the complete platform built around your rate libraries and project history.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
@@ -573,9 +573,9 @@ export default function Landing() {
             <div className="w-7 h-7 bg-primary-900 rounded-lg flex items-center justify-center">
               <Building2 size={14} className="text-white" />
             </div>
-            <span className="text-sm font-semibold text-gray-700">Pico Bello Projekte Limited</span>
+            <span className="text-sm font-semibold text-gray-700">SquareMetre Limited</span>
           </div>
-          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Pico Bello Projekte. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} SquareMetre. All rights reserved.</p>
         </div>
       </footer>
     </div>

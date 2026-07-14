@@ -174,7 +174,7 @@ exports.generatePDF = async (req, res) => {
 
   // Company info (right side of header)
   const companyInfo = [
-    co.companyName  || 'Pico Bello Projekte',
+    co.companyName  || 'SquareMetre',
     co.address      || '',
     co.phone        || '',
     co.email        || '',
