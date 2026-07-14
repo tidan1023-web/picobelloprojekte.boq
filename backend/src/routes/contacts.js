@@ -19,6 +19,13 @@ router.get('/', async (req, res) => {
   res.json({ contacts });
 });
 
+router.get('/:id', async (req, res) => {
+  const contact = await Contact.findOne({ _id: req.params.id, companyId: req.user.companyId })
+    .populate('projectIds', 'name');
+  if (!contact) return res.status(404).json({ message: 'Contact not found' });
+  res.json({ contact });
+});
+
 router.post('/', async (req, res) => {
   const contact = await Contact.create({
     ...req.body,

@@ -224,13 +224,8 @@ export default function InvoiceDetail() {
     setPdfLoading(true);
     try {
       await handleSave();
-      const base  = (import.meta.env.VITE_API_URL || '/api').replace(/\/api\/?$/, '');
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-      const res   = await fetch(`${base}/api/invoices/${id}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('PDF failed');
-      const blob = await res.blob();
+      const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const blob = res.data;
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href = url; a.download = `invoice-${invoice?.invoiceNumber}.pdf`; a.click();

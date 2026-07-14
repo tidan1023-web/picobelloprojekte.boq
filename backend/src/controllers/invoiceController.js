@@ -1,6 +1,7 @@
 const crypto   = require('crypto');
 const Invoice  = require('../models/Invoice');
 const Company  = require('../models/Company');
+const Estimate = require('../models/Estimate');
 const PDFDocument = require('pdfkit');
 
 // ── helpers ────────────────────────────────────────────────────────────────────────
@@ -46,8 +47,21 @@ exports.getInvoice = async (req, res) => {
 };
 
 exports.createInvoice = async (req, res) => {
-  const { projectId, clientId, items = [], vatRate = 0, currency = 'NGN',
-          dueDate, notes, bankDetails, status } = req.body;
+  let { projectId, clientId, items = [], vatRate = 0, currency = 'NGN',
+        dueDate, notes, bankDetails, status, estimateId } = req.body;
+
+  // Pre-populate from estimate if provided
+  if (estimateId) {
+    const est = await Estimate.findOne({ _id: estimateId, companyId: req.user.companyId });
+    if (est) {
+      if (!items.length && est.lineItems?.length) items = est.lineItems;
+      if (!projectId && est.projectId) projectId = est.projectId;
+      if (!clientId  && est.clientId)  clientId  = est.clientId;
+      if (!vatRate   && est.vatRate)   vatRate   = est.vatRate;
+      if (!currency  && est.currency)  currency  = est.currency;
+      if (!notes     && est.notes)     notes     = est.notes;
+    }
+  }
 
   const subtotal  = items.reduce((s, i) => s + (Number(i.qty || 0) * Number(i.unitPrice || 0)), 0);
   const vatAmount = subtotal * vatRate / 100;
@@ -247,7 +261,7 @@ exports.generatePDF = async (req, res) => {
   y += 22;
 
   // Items rows
-  (invoice.items || []).forEach((item, idx) => {
+  (invoice.lineItems || []).forEach((item, idx) => {
     const rowH = 20;
     if (idx % 2 === 0) doc.rect(M, y, W - M * 2, rowH).fill(LIGHT_GRAY);
     doc.font('Helvetica').fontSize(9).fillColor('#111827');

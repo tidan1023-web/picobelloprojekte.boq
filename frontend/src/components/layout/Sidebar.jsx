@@ -13,7 +13,7 @@ import {
   Lock, LayoutGrid, CreditCard, History, Sliders,
 } from 'lucide-react';
 
-const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
+import { SUPER_EMAILS, DEV_EMAIL } from '../../constants';
 import Logo from '../Logo';
 
 const PLAN_RANK = { free: 0, basic: 1, premium: 2 };
@@ -152,7 +152,7 @@ export default function Sidebar({ onClose }) {
                     ? Math.max(0, Math.ceil((new Date(user.createdAt).getTime() + 7 * 86400000 - Date.now()) / 86400000))
                     : 0;
                   const isLocked = requiredPlan &&
-                    user?.email !== 'tidan1023@gmail.com' &&
+                    user?.email !== DEV_EMAIL &&
                     trialDaysLeft === 0 &&
                     (PLAN_RANK[user?.plan || 'free'] < PLAN_RANK[requiredPlan]);
                   if (isLocked) {
@@ -191,7 +191,7 @@ export default function Sidebar({ onClose }) {
       )}
 
       {/* Trial countdown */}
-      {user?.email !== 'tidan1023@gmail.com' && (PLAN_RANK[user?.plan || 'free'] === 0) && (() => {
+      {user?.email !== DEV_EMAIL && (PLAN_RANK[user?.plan || 'free'] === 0) && (() => {
         const daysLeft = user?.createdAt
           ? Math.max(0, Math.ceil((new Date(user.createdAt).getTime() + 7 * 86400000 - Date.now()) / 86400000))
           : 0;

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Building2, Users, CreditCard, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-
-const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
+import { SUPER_EMAILS } from '../constants';
 const PLAN_COLORS = {
   free:    'bg-gray-100 text-gray-600',
   basic:   'bg-blue-100 text-blue-700',
@@ -68,6 +68,7 @@ function EditPlanModal({ user, onClose, onSaved }) {
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState(null);
@@ -91,12 +92,9 @@ export default function OwnerDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  if (!SUPER_EMAILS.includes(user?.email)) {
-    return (
-      <div className="text-center py-20 text-gray-400">
-        <p className="font-medium">Access denied</p>
-      </div>
-    );
+  if (user && !SUPER_EMAILS.includes(user.email)) {
+    navigate('/app/dashboard', { replace: true });
+    return null;
   }
 
   const filtered = companies.filter((c) => {
