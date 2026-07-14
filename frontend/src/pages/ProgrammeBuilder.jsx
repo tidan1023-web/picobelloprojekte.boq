@@ -525,6 +525,9 @@ export default function ProgrammeBuilder() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
+  const selectedRef = useRef(selected);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+
   const loadList = useCallback(async () => {
     setLoading(true);
     try {
@@ -534,15 +537,9 @@ export default function ProgrammeBuilder() {
       ]);
       setProgrammes(pd.programmes || []);
       setProjects(proj.projects || []);
-      if (pd.programmes?.length) {
-        setSelected((prev) => {
-          if (prev) return prev;
-          return null;
-        });
-        if (!selected) {
-          const { data } = await api.get(`/programmes/${pd.programmes[0]._id}`);
-          setSelected(data.programme);
-        }
+      if (pd.programmes?.length && !selectedRef.current) {
+        const { data } = await api.get(`/programmes/${pd.programmes[0]._id}`);
+        setSelected(data.programme);
       }
     } catch (e) {
       console.error(e);

@@ -73,6 +73,24 @@ export default function OwnerDashboard() {
   const [editUser, setEditUser] = useState(null);
   const [search, setSearch] = useState('');
 
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/auth/owner/dashboard');
+      // Backend returns { users } — group by companyId into companies array
+      const users = data.users || [];
+      const map = {};
+      users.forEach((u) => {
+        const key = u.companyId?.toString() || u._id.toString();
+        if (!map[key]) map[key] = { _id: key, companyName: u.companyName || u.email, members: [] };
+        map[key].members.push(u);
+      });
+      setCompanies(Object.values(map));
+    } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
   if (!SUPER_EMAILS.includes(user?.email)) {
     return (
       <div className="text-center py-20 text-gray-400">
@@ -80,16 +98,6 @@ export default function OwnerDashboard() {
       </div>
     );
   }
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('/auth/owner/dashboard');
-      setCompanies(data.companies || []);
-    } finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   const filtered = companies.filter((c) => {
     const q = search.toLowerCase();

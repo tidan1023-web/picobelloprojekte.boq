@@ -368,8 +368,15 @@ const ownerDashboard = async (req, res) => {
   if (!SUPER_EMAILS.includes(req.user.email)) {
     return res.status(403).json({ message: 'Not authorised.' });
   }
-  const users = await User.find({}).select('-password').sort({ createdAt: -1 });
-  res.json({ users });
+  const users = await User.find({}).select('-password').sort({ createdAt: -1 }).lean();
+  const companyIds = [...new Set(users.map((u) => u.companyId?.toString()).filter(Boolean))];
+  const companies = companyIds.length ? await Company.find({ _id: { $in: companyIds } }).select('name').lean() : [];
+  const companyMap = Object.fromEntries(companies.map((c) => [c._id.toString(), c.name]));
+  const usersWithCompany = users.map((u) => ({
+    ...u,
+    companyName: companyMap[u.companyId?.toString()] || u.email,
+  }));
+  res.json({ users: usersWithCompany });
 };
 
 // ── ownerSetPlan ──────────────────────────────────────────────────────────────
