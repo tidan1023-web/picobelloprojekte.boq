@@ -4,39 +4,36 @@ import {
   Building2, Calculator, Database, FileText, ArrowRight,
   CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
   Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
-  Package, Zap, FolderOpen, X, Phone,
+  Package, Zap, FolderOpen, X, Phone, GanttChart,
+  CreditCard, Banknote, BookOpen, Layers,
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import axios from 'axios';
 
 function BookCallModal({ plan, onClose }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState('');
+  const [name, setName]         = useState('');
+  const [email, setEmail]       = useState('');
+  const [phone, setPhone]       = useState('');
+  const [submitting, setSub]    = useState(false);
+  const [done, setDone]         = useState(false);
+  const [error, setError]       = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
+    setSub(true);
     setError('');
     try {
       await axios.post('/api/auth/request-onboarding', { name, email, phone, plan });
       setDone(true);
     } catch {
-      setError('Something went wrong. Please email us directly at hello@picobelloprojekte.com');
-    } finally {
-      setSubmitting(false);
-    }
+      setError('Something went wrong. Please email us directly at hello@squaremetre.app');
+    } finally { setSub(false); }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7 relative" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
-          <X size={20} />
-        </button>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><X size={20} /></button>
         {done ? (
           <div className="text-center py-4">
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -47,9 +44,7 @@ function BookCallModal({ plan, onClose }) {
               We've received your request for the <strong>{plan}</strong> plan.
               We'll be in touch within 24 hours to schedule your onboarding call.
             </p>
-            <button onClick={onClose} className="mt-6 bg-primary-900 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-primary-800 transition-colors">
-              Done
-            </button>
+            <button onClick={onClose} className="mt-6 bg-primary-900 text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-primary-800 transition-colors">Done</button>
           </div>
         ) : (
           <>
@@ -68,41 +63,22 @@ function BookCallModal({ plan, onClose }) {
             <form onSubmit={submit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Your Name</label>
-                <input
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Tunde Adeyemi"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
-                />
+                <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Tunde Adeyemi"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email Address</label>
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tunde@yourfirm.com"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
-                />
+                <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tunde@yourfirm.com"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Phone / WhatsApp</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+234 800 000 0000"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900"
-                />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+234 800 000 0000"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-900" />
               </div>
               {error && <p className="text-red-500 text-xs">{error}</p>}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-primary-900 text-white font-semibold py-3 rounded-xl hover:bg-primary-800 transition-colors text-sm disabled:opacity-60"
-              >
+              <button type="submit" disabled={submitting}
+                className="w-full bg-primary-900 text-white font-semibold py-3 rounded-xl hover:bg-primary-800 transition-colors text-sm disabled:opacity-60">
                 {submitting ? 'Sending…' : 'Request Onboarding Call'}
               </button>
             </form>
@@ -121,18 +97,18 @@ const HOW_IT_WORKS = [
   },
   {
     n: '02',
-    title: 'Run a Ballpark Estimate',
-    desc: 'Input project size in m², current condition, and finish tier. The engine prices all three tiers instantly using your own rate data and historical projects.',
+    title: 'Estimate & Build Your BOQ',
+    desc: 'Input project size, condition, and finish tier for a ballpark estimate in seconds. Then build the full Bill of Quantities — item by item — and send it to the client for approval.',
   },
   {
     n: '03',
-    title: 'Manage the Full Project',
-    desc: 'Create the project, track progress by phase, file site reports, log expenses, raise change orders, and issue invoices — all in one place.',
+    title: 'Programme & Manage the Work',
+    desc: 'Create a Gantt programme across 8 standard phases. Track progress weekly, file site reports, log expenses, raise change orders, and pay your team — all from one place.',
   },
   {
     n: '04',
-    title: 'Review, Report & Share',
-    desc: 'Download PDF estimates and invoices on company letterhead. Run analytics on revenue, costs, and profitability. Keep clients updated with live progress reports.',
+    title: 'Invoice, Report & Get Paid',
+    desc: 'Issue invoices linked to projects. Share a payment link so clients pay online via Paystack. Run analytics on revenue, costs, and profitability. Download PDFs on your letterhead.',
   },
 ];
 
@@ -144,8 +120,8 @@ const CONDITIONS = [
 ];
 
 const TIERS = [
-  { label: 'Basic',     color: 'bg-gray-100 text-gray-700',    desc: 'Functional and clean' },
-  { label: 'Mid-Range', color: 'bg-blue-100 text-blue-700',    desc: 'Smart and polished' },
+  { label: 'Basic',     color: 'bg-gray-100 text-gray-700',     desc: 'Functional and clean' },
+  { label: 'Mid-Range', color: 'bg-blue-100 text-blue-700',     desc: 'Smart and polished' },
   { label: 'Premium',   color: 'bg-purple-100 text-purple-700', desc: 'High-end and bespoke' },
 ];
 
@@ -157,8 +133,20 @@ const FEATURES = [
     desc: 'Generate detailed cost estimates in minutes. Select project type, condition, size, and build tier — the engine prices every element from your rate libraries.',
   },
   {
-    icon: Database,
+    icon: Layers,
     color: 'bg-indigo-50 text-indigo-600',
+    title: 'BOQ Builder',
+    desc: 'Build a full Bill of Quantities item by item, with options and tiers. Send it to the client for digital approval — they approve or reject each line from their portal.',
+  },
+  {
+    icon: GanttChart,
+    color: 'bg-cyan-50 text-cyan-600',
+    title: 'Programme of Works',
+    desc: 'Auto-draw an 8-phase Gantt chart. Set one start date and every activity date shifts instantly. Track weekly variance with planned vs actual progress reports.',
+  },
+  {
+    icon: Database,
+    color: 'bg-teal-50 text-teal-600',
     title: 'QS & Rate Libraries',
     desc: 'Maintain master rate books for unit rates, artisan day-rates, and material prices. Every estimate and BOQ references live rates — update once, reflect everywhere.',
   },
@@ -172,7 +160,7 @@ const FEATURES = [
     icon: TrendingUp,
     color: 'bg-green-50 text-green-600',
     title: 'Progress Tracker',
-    desc: 'Log construction progress by phase — substructure, superstructure, finishes, M&E, and more. Clients see live updates without needing to call.',
+    desc: 'Log construction progress by phase — substructure, superstructure, finishes, MEP, and more. Clients see live updates without needing to call.',
   },
   {
     icon: GitPullRequest,
@@ -190,13 +178,19 @@ const FEATURES = [
     icon: Receipt,
     color: 'bg-red-50 text-red-600',
     title: 'Invoices & Expenses',
-    desc: 'Create and track invoices linked to projects. Log every project expense — materials, labour, site costs — and compare actual spend against budget.',
+    desc: 'Create and track invoices linked to projects. Share a Paystack payment link so clients pay online instantly. Log every project expense and compare against budget.',
+  },
+  {
+    icon: Banknote,
+    color: 'bg-emerald-50 text-emerald-600',
+    title: 'Team Payments',
+    desc: 'Pay site managers, QS, and contractors directly from the app. Add bank account details once, then initiate NGN transfers via Paystack with one click.',
   },
   {
     icon: BarChart2,
     color: 'bg-teal-50 text-teal-600',
     title: 'Analytics',
-    desc: 'Company-wide performance charts: revenue trends, project profitability, cost breakdowns by trade. Export to PDF or CSV.',
+    desc: 'Company-wide performance charts: revenue trends, project profitability, outstanding balances, and cost breakdowns by trade.',
   },
   {
     icon: FolderOpen,
@@ -208,7 +202,7 @@ const FEATURES = [
     icon: FileText,
     color: 'bg-amber-50 text-amber-600',
     title: 'PDF on Letterhead',
-    desc: 'Download professional estimates and invoices on your company letterhead with your logo, signature, and payment terms.',
+    desc: 'Download professional estimates and invoices on your company letterhead with your logo, signature, stamp, and payment terms.',
   },
   {
     icon: Clock,
@@ -220,7 +214,13 @@ const FEATURES = [
     icon: Users,
     color: 'bg-violet-50 text-violet-600',
     title: 'Team & Role Management',
-    desc: 'Invite QS, Project Managers, and Clients. Each role sees only what\'s relevant to them — clients get progress and invoices, PMs get site tools.',
+    desc: 'Invite QS, Project Managers, and Clients. Each role sees only what\'s relevant — clients get progress updates, BOQ approvals, and invoices; PMs get site tools.',
+  },
+  {
+    icon: Shield,
+    color: 'bg-gray-50 text-gray-600',
+    title: 'Modular — Use What You Need',
+    desc: 'Toggle individual modules on or off from Company Settings. Start lean and activate features as your team grows — no bloat, no noise.',
   },
 ];
 
@@ -239,18 +239,13 @@ export default function Landing() {
               <Building2 size={16} className="text-white" />
             </div>
             <div className="leading-tight">
-              <p className="text-sm font-bold text-primary-900 leading-tight">Pico Bello Projekte</p>
+              <p className="text-sm font-bold text-primary-900 leading-tight">SquareMetre</p>
               <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-900 transition-colors px-2 py-1">
-              Sign In
-            </Link>
-            <Link to="/register"
-              className="bg-primary-900 text-white text-sm font-medium px-3 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors">
-              Get Started
-            </Link>
+            <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-900 transition-colors px-2 py-1">Sign In</Link>
+            <Link to="/register" className="bg-primary-900 text-white text-sm font-medium px-3 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors">Get Started</Link>
           </div>
         </div>
       </nav>
@@ -263,20 +258,20 @@ export default function Landing() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative">
           <span className="inline-block bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full mb-5 tracking-widest uppercase">
-            Residential Construction · Abuja, Nigeria
+            Built for Nigerian Construction Firms
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 sm:mb-6">
-            Estimate, Manage & Deliver<br />
-            <span className="text-blue-300">Every Construction Project</span>
+            Estimate, Programme, Manage<br />
+            <span className="text-blue-300">and Get Paid — One Platform</span>
           </h1>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-7 sm:mb-10 leading-relaxed">
-            From your first ballpark estimate to final invoice — Pico Bello is the complete platform for Nigerian construction firms.
-            Built around your rate libraries and project history so every number is yours, not an industry average.
+            From your first ballpark estimate and 8-phase Gantt programme to final invoice and Paystack payment —
+            SquareMetre is the complete platform built around your rate libraries and project history.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
               className="flex items-center justify-center gap-2 bg-white text-primary-900 font-semibold px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg">
-              Start for Free <ArrowRight size={17} />
+              Start Free — 7 Days <ArrowRight size={17} />
             </Link>
             <Link to="/login"
               className="flex items-center justify-center gap-2 border border-blue-400/40 text-white font-medium px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl hover:bg-primary-800 transition-colors">
@@ -284,7 +279,7 @@ export default function Landing() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-3 sm:gap-6 justify-center mt-8 sm:mt-12 text-blue-300 text-xs sm:text-sm">
-            {['Experience-based estimates', 'Full project management', 'PDF on letterhead', 'Team & client access'].map(t => (
+            {['Gantt programme in minutes', 'Paystack online payments', 'PDF on letterhead', 'Client approval portal', '7-day free trial'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle size={13} className="text-blue-400" /> {t}
               </span>
@@ -298,7 +293,7 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">How It Works</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">From rate libraries to final invoice — one connected workflow.</p>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">From rate libraries to final payment — one connected workflow.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map(({ n, title, desc }) => (
@@ -320,8 +315,7 @@ export default function Landing() {
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Four Conditions, Three Tiers</h2>
             <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
-              Select where the property starts and the quality of finish the client wants.
-              The engine handles the rest.
+              Select where the property starts and the quality of finish the client wants. The engine handles the rest.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
@@ -387,12 +381,12 @@ export default function Landing() {
               <p className="text-xs text-blue-300 font-semibold uppercase tracking-wide mb-3">Breakdown</p>
               <div className="space-y-2">
                 {[
-                  ['Historical projects used',          '8 of 11 (3 outliers removed)'],
-                  ['Base rate (carcass, basic, 150m²)', '₦96,200 /m²'],
-                  ['Condition (semi-finished)',          '× 0.55'],
-                  ['Tier (mid-range)',                  '× 1.45'],
-                  ['Size adjustment (250m²)',           '× 0.930'],
-                  ['Final rate per m²',                '₦113,700 /m²'],
+                  ['Historical projects used',           '8 of 11 (3 outliers removed)'],
+                  ['Base rate (carcass, basic, 150m²)',  '₦96,200 /m²'],
+                  ['Condition (semi-finished)',           '× 0.55'],
+                  ['Tier (mid-range)',                   '× 1.45'],
+                  ['Size adjustment (250m²)',            '× 0.930'],
+                  ['Final rate per m²',                  '₦113,700 /m²'],
                 ].map(([l, v]) => (
                   <div key={l} className="flex items-start justify-between gap-2 text-blue-200">
                     <span className="text-xs">{l}</span>
@@ -410,7 +404,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Everything Built In</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">Estimating, project management, invoicing, reporting — one platform, no spreadsheets.</p>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">Estimating, programming, project management, invoicing, payments, reporting — one platform, no spreadsheets.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {FEATURES.map(({ icon: Icon, color, title, desc }) => (
@@ -431,23 +425,21 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Simple, Transparent Pricing</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
-              One tool for your whole team. No hidden fees, no per-seat charges.
-            </p>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">One tool for your whole team. No hidden fees, no per-seat charges.</p>
           </div>
 
-          {/* Free tier banner */}
+          {/* Free tier */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Free</span>
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Always free</span>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">7-day trial</span>
               </div>
-              <p className="text-sm text-gray-600">Create an account and access the Project Estimator, BOQ tools, and basic invoicing — no card required.</p>
+              <p className="text-sm text-gray-600">Create an account and access the full platform free for 7 days — no card required. Estimator, BOQ, invoices, programme, and more.</p>
             </div>
             <Link to="/register"
               className="shrink-0 flex items-center gap-2 border border-primary-900 text-primary-900 font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-50 transition-colors text-sm">
-              Get Started Free <ArrowRight size={14} />
+              Start Free Trial <ArrowRight size={14} />
             </Link>
           </div>
 
@@ -461,41 +453,42 @@ export default function Landing() {
                   <span className="text-4xl font-black text-gray-900">₦50,000</span>
                   <span className="text-gray-400 text-sm mb-1">/month</span>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">For teams getting started with digital estimating.</p>
+                <p className="text-sm text-gray-500 mt-2">For teams getting started with digital estimating and project management.</p>
               </div>
-
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Project Estimator',
-                  'Estimate History (last 12 months)',
-                  'Up to 3 team members',
-                  'QS & Material Price Libraries',
-                  'Invoices',
+                  'Project Estimator + Cost Simulator',
+                  'BOQ Builder with client approval',
+                  'Programme of Works (Gantt)',
+                  'Estimate & programme history',
+                  'Up to 5 team members',
+                  'QS, Artisan & Material rate libraries',
+                  'Historical project database',
+                  'Invoices + Paystack payment links',
                   'Document Library',
-                  'PDF downloads',
+                  'Client portal (view & approve)',
+                  'PDF downloads on letterhead',
                   'Email support',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <CheckCircle size={15} className="text-green-500 mt-0.5 shrink-0" />
-                    {f}
+                    <CheckCircle size={15} className="text-green-500 mt-0.5 shrink-0" />{f}
                   </li>
                 ))}
                 {[
                   'Analytics & Reporting',
-                  'Price Intelligence',
-                  'Scenario Simulator',
+                  'Price Intelligence (AI)',
                   'Unlimited team members',
                   'Change Orders & Site Reports',
                   'Expense Tracker',
+                  'Progress Tracker',
+                  'Team Paystack payments',
                   'Priority support',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-gray-400 line-through decoration-gray-300">
-                    <div className="w-3.5 h-3.5 mt-0.5 shrink-0 rounded-full border border-gray-200" />
-                    {f}
+                    <div className="w-3.5 h-3.5 mt-0.5 shrink-0 rounded-full border border-gray-200" />{f}
                   </li>
                 ))}
               </ul>
-
               <button onClick={() => setBookPlan('Basic')}
                 className="w-full flex items-center justify-center gap-2 border border-primary-900 text-primary-900 font-semibold py-3 rounded-xl hover:bg-primary-50 transition-colors text-sm">
                 Book a Call <ArrowRight size={15} />
@@ -506,7 +499,6 @@ export default function Landing() {
             <div className="bg-primary-900 rounded-2xl shadow-xl p-7 flex flex-col relative overflow-hidden">
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-blue-500/20 pointer-events-none" />
               <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-blue-400/10 pointer-events-none" />
-
               <div className="mb-5 relative">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold text-blue-300 uppercase tracking-widest">Premium</span>
@@ -521,35 +513,31 @@ export default function Landing() {
                   <span className="block mt-1 text-blue-400 text-xs">~₦25,000/month — save 50% vs Basic annual</span>
                 </p>
               </div>
-
               <ul className="space-y-3 mb-8 flex-1 relative">
                 {[
                   'Everything in Basic',
                   'Unlimited team members',
                   'Full Analytics & Reporting',
                   'Price Intelligence (AI benchmarking)',
-                  'Scenario Simulator',
                   'Change Orders & Approvals',
                   'Site Reports with photos',
                   'Expense Tracker',
                   'Progress Tracker',
+                  'Team payments via Paystack',
                   'Contacts & CRM',
                   'Unlimited estimate history',
                   'Priority onboarding & support',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-blue-100">
-                    <CheckCircle size={15} className="text-blue-400 mt-0.5 shrink-0" />
-                    {f}
+                    <CheckCircle size={15} className="text-blue-400 mt-0.5 shrink-0" />{f}
                   </li>
                 ))}
               </ul>
-
               <button onClick={() => setBookPlan('Premium')}
                 className="w-full flex items-center justify-center gap-2 bg-white text-primary-900 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm relative shadow-md">
                 Book a Call <ArrowRight size={15} />
               </button>
             </div>
-
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
@@ -563,15 +551,15 @@ export default function Landing() {
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Run Your First Estimate?</h2>
           <p className="text-gray-500 mb-7 leading-relaxed text-sm sm:text-base">
-            Create a free account, set up your rate libraries, and have a credible ballpark estimate in your client's inbox within minutes.
+            Create a free account, set up your rate libraries, and have a credible ballpark estimate with a full Gantt programme in your client's hands within minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
               className="flex items-center justify-center gap-2 bg-primary-900 text-white font-semibold px-7 py-3 rounded-xl hover:bg-primary-800 transition-colors shadow-md">
-              Create Free Account <ArrowRight size={17} />
+              Start 7-Day Free Trial <ArrowRight size={17} />
             </Link>
             <Link to="/login"
-              className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-medium px-7 py-3 rounded-xl hover:bg-white transition-colors">
+              className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-medium px-7 py-3 rounded-xl hover:bg-gray-50 transition-colors">
               Sign In
             </Link>
           </div>
@@ -585,9 +573,9 @@ export default function Landing() {
             <div className="w-7 h-7 bg-primary-900 rounded-lg flex items-center justify-center">
               <Building2 size={14} className="text-white" />
             </div>
-            <span className="text-sm font-semibold text-gray-700">Pico Bello Projekte Limited</span>
+            <span className="text-sm font-semibold text-gray-700">SquareMetre Limited</span>
           </div>
-          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Pico Bello Projekte. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} SquareMetre. All rights reserved.</p>
         </div>
       </footer>
     </div>

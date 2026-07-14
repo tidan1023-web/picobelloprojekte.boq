@@ -1,89 +1,46 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: Number(process.env.EMAIL_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-const FROM = 'Pico Bello Projekte <onboarding@resend.dev>';
-
-const OWNER = process.env.OWNER_EMAIL || 'sadiajahleel@gmail.com';
+const FROM = process.env.EMAIL_FROM || 'SquareMetre <noreply@squaremetre.app>';
 
 const sendEmail = async ({ to, subject, html }) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping send to', to);
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn('Email not configured — skipping send to', to);
     return;
   }
-  const recipients = [to];
-  if (to !== OWNER) recipients.push(OWNER);
-  await resend.emails.send({ from: FROM, to: recipients, subject, html });
+  await transporter.sendMail({ from: FROM, to, subject, html });
 };
 
-const sendWelcome = (user) => {
-  const appUrl = process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com';
-  return sendEmail({
+const sendWelcome = (user) =>
+  sendEmail({
     to: user.email,
-    subject: 'Welcome to Pico Bello Projekte — here\'s how to get started',
+    subject: 'Welcome to SquareMetre',
     html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
-        <!-- Header -->
-        <div style="background:#1e3a8a;padding:28px">
-          <h1 style="color:#fff;margin:0;font-size:20px">Welcome to Pico Bello Projekte, ${user.name}!</h1>
-          <p style="color:#93c5fd;margin:8px 0 0;font-size:14px">Your 7-day free trial has started — full access, no card needed.</p>
-        </div>
-
-        <!-- Body -->
-        <div style="padding:28px">
-          <p style="color:#374151;margin-top:0">Here's a quick overview of what you can do and how to get the most out of the platform.</p>
-
-          <!-- Free features -->
-          <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:20px">
-            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">Available on your free account</p>
-            <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
-              <li><strong>Project Estimator</strong> — generate cost estimates for any project</li>
-              <li><strong>BOQ Builder</strong> — build and manage Bills of Quantities</li>
-              <li><strong>Invoices</strong> — create and send professional invoices</li>
-              <li><strong>Projects & Contacts</strong> — organise your clients and jobs</li>
-              <li><strong>Document Library</strong> — store and share project documents</li>
-            </ul>
-          </div>
-
-          <!-- Paid features -->
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin-bottom:20px">
-            <p style="margin:0 0 10px;font-weight:700;color:#1e3a8a;font-size:14px">Unlock more with a paid plan</p>
-            <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:1.8">
-              <li><strong>Basic</strong> — QS & Artisan Rate Libraries, Material Prices, Estimate History</li>
-              <li><strong>Premium</strong> — Analytics, Change Orders, Site Reports, Progress Tracker, Expense Tracker, Price Intelligence</li>
-            </ul>
-          </div>
-
-          <!-- CTA -->
-          <p style="color:#374151;font-size:14px">Ready to unlock the full platform? Book a quick call with us — we'll walk you through everything and get you set up on the right plan.</p>
-
-          <a href="${appUrl}/app/settings"
-             style="display:inline-block;margin-top:4px;padding:12px 24px;background:#1e3a8a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-            Book an Upgrade Call
-          </a>
-
-          <p style="color:#374151;font-size:14px;margin-top:24px">Or just log in and start exploring your free features:</p>
-          <a href="${appUrl}/app"
-             style="display:inline-block;padding:12px 24px;background:#f3f4f6;color:#1e3a8a;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;border:1px solid #e5e7eb">
-            Go to Dashboard
-          </a>
-
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:28px 0" />
-          <p style="color:#6b7280;font-size:13px;margin:0">
-            <strong>Pico Bello Projekte</strong><br />
-            Garki, Abuja, Nigeria<br />
-            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
-          </p>
-        </div>
+      <div style="font-family:sans-serif;max-width:520px;margin:auto">
+        <h2 style="color:#1e3a5f">Welcome, ${user.name}!</h2>
+        <p>Your account has been created. You can now log in and start managing your BOQ projects.</p>
+        <a href="${process.env.FRONTEND_URL || 'https://squaremetre.onrender.com'}/login"
+           style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1e3a5f;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+          Go to Dashboard
+        </a>
+        <p style="margin-top:24px;color:#666;font-size:13px">SquareMetre BOQ System</p>
       </div>
     `,
   });
-};
 
 const sendPasswordReset = (user, resetUrl) =>
   sendEmail({
     to: user.email,
-    subject: 'Reset your Pico Bello password',
+    subject: 'Reset your SquareMetre password',
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:auto">
         <h2 style="color:#1e3a5f">Password Reset</h2>
@@ -111,9 +68,9 @@ function buildCalendarLink(slot) {
 
     const params = new URLSearchParams({
       action: 'TEMPLATE',
-      text: 'Pico Bello Projekte — Onboarding Call',
+      text: 'SquareMetre — Onboarding Call',
       dates: `${fmt(start)}/${fmt(end)}`,
-      details: 'Your onboarding call with the Pico Bello Projekte team. We will walk you through the platform so you can hit the ground running.',
+      details: 'Your onboarding call with the SquareMetre team. We will walk you through the platform so you can hit the ground running.',
       location: 'Garki, Abuja, Nigeria (Video / Phone)',
     });
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -132,20 +89,20 @@ const sendBookingConfirmation = (user, slot) => {
 
   return sendEmail({
     to: user.email,
-    subject: 'Your Pico Bello onboarding call is confirmed',
+    subject: 'Your SquareMetre onboarding call is confirmed',
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
         <div style="background:#1e3a8a;padding:24px 28px">
-          <img src="${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/logo.png"
-               alt="Pico Bello Projekte" height="40"
+          <img src="${process.env.FRONTEND_URL || 'https://squaremetre.onrender.com'}/logo.png"
+               alt="SquareMetre" height="40"
                style="display:block;margin-bottom:12px;object-fit:contain" />
           <h2 style="color:#fff;margin:0;font-size:18px">You're on the calendar!</h2>
         </div>
         <div style="padding:28px">
           <p style="color:#374151;margin-top:0">Hi ${user.name},</p>
-          <p style="color:#374151">Your onboarding call with the Pico Bello team is confirmed for:</p>
+          <p style="color:#374151">Your onboarding call with the SquareMetre team is confirmed for:</p>
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 18px;margin:16px 0">
-            <p style="margin:0;color:#1e3a8a;font-weight:700;font-size:15px">${slot}</p>
+            <p style="margin:0;color:#1e3a8a;font-weight:700;font-size:15px">📅 ${slot}</p>
             <p style="margin:4px 0 0;color:#3b82f6;font-size:13px">30-minute call · Video or phone · West Africa Time (UTC+1)</p>
           </div>
           ${calButton}
@@ -155,9 +112,9 @@ const sendBookingConfirmation = (user, slot) => {
           </p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" />
           <p style="color:#6b7280;font-size:13px;margin:0">
-            <strong>Pico Bello Projekte</strong><br />
+            <strong>SquareMetre</strong><br />
             Garki, Abuja, Nigeria<br />
-            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
+            <a href="mailto:hello@squaremetre.app" style="color:#1e3a8a">hello@squaremetre.app</a>
           </p>
         </div>
       </div>
@@ -168,7 +125,7 @@ const sendBookingConfirmation = (user, slot) => {
 const sendTeamInvite = async (user, inviteUrl) => {
   return sendEmail({
     to: user.email,
-    subject: "You've been invited to Pico Bello Projekte BOQ",
+    subject: "You've been invited to SquareMetre BOQ",
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
         <div style="background:#1e3a8a;padding:24px 28px">
@@ -177,7 +134,7 @@ const sendTeamInvite = async (user, inviteUrl) => {
         <div style="padding:28px">
           <p style="color:#374151;margin-top:0">Hi ${user.name},</p>
           <p style="color:#374151">
-            You've been added to <strong>Pico Bello Projekte BOQ</strong> as
+            You've been added to <strong>SquareMetre BOQ</strong> as
             <strong>${user.role.replace(/_/g, ' ')}</strong>.
           </p>
           <p style="color:#374151">Click the button below to set your password and sign in:</p>
@@ -190,8 +147,8 @@ const sendTeamInvite = async (user, inviteUrl) => {
           </p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" />
           <p style="color:#6b7280;font-size:13px;margin:0">
-            <strong>Pico Bello Projekte</strong><br />
-            <a href="mailto:hello@picobelloprojekte.com" style="color:#1e3a8a">hello@picobelloprojekte.com</a>
+            <strong>SquareMetre</strong><br />
+            <a href="mailto:hello@squaremetre.app" style="color:#1e3a8a">hello@squaremetre.app</a>
           </p>
         </div>
       </div>
@@ -199,26 +156,25 @@ const sendTeamInvite = async (user, inviteUrl) => {
   });
 };
 
-const sendOnboardingRequest = ({ name, email, phone, plan }) =>
+const sendOnboardingRequest = ({ name, email, plan }) =>
   sendEmail({
     to: process.env.OWNER_EMAIL || 'tidan1023@gmail.com',
     subject: `New onboarding request — ${plan} plan`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:auto">
         <h2 style="color:#1e3a5f">New Onboarding Request</h2>
-        <p>Someone wants to join Pico Bello Projekte.</p>
+        <p>Someone wants to join SquareMetre.</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0">
           <tr><td style="padding:8px;color:#666;width:100px">Name</td><td style="padding:8px;font-weight:600">${name}</td></tr>
           <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px;font-weight:600">${email}</td></tr>
-          <tr><td style="padding:8px;color:#666">Phone</td><td style="padding:8px;font-weight:600">${phone || '—'}</td></tr>
           <tr><td style="padding:8px;color:#666">Plan</td><td style="padding:8px;font-weight:600">${plan}</td></tr>
         </table>
         <p>Send them an invite from the Team page, or reply to this email to schedule their onboarding call.</p>
-        <a href="${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/settings/team"
+        <a href="${process.env.FRONTEND_URL || 'https://squaremetre.onrender.com'}/settings/team"
            style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1e3a5f;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
           Open Team Settings
         </a>
-        <p style="margin-top:24px;color:#666;font-size:13px">Pico Bello Projekte BOQ System</p>
+        <p style="margin-top:24px;color:#666;font-size:13px">SquareMetre BOQ System</p>
       </div>
     `,
   });

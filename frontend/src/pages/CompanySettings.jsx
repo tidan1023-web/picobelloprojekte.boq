@@ -259,7 +259,7 @@ export default function CompanySettings() {
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
                 Company Name <span className="text-red-500">*</span>
               </label>
-              <input type="text" required value={form.companyName} onChange={set('companyName')} className={inputCls} placeholder="Pico Bello Projekte Ltd" />
+              <input type="text" required value={form.companyName} onChange={set('companyName')} className={inputCls} placeholder="SquareMetre Ltd" />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-700 mb-1.5">Address</label>
@@ -334,7 +334,7 @@ export default function CompanySettings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       { label: 'Bank Name', key: 'bankName', placeholder: 'First Bank' },
-                      { label: 'Account Name', key: 'accountName', placeholder: 'Pico Bello Ltd' },
+                      { label: 'Account Name', key: 'accountName', placeholder: 'SquareMetre Ltd' },
                       { label: 'Account Number', key: 'accountNumber', placeholder: '0123456789' },
                       { label: 'Sort Code', key: 'sortCode', placeholder: '011' },
                     ].map(({ label, key, placeholder }) => (

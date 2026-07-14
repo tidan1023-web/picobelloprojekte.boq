@@ -34,7 +34,7 @@ function VideoBlock() {
       <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-200 aspect-video">
         <iframe
           src={VIDEO_EMBED_URL}
-          title="Pico Bello Onboarding"
+          title="SquareMetre Onboarding"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="w-full h-full"
@@ -112,7 +112,7 @@ export default function BookCallGate({ onSkip }) {
             </div>
             <div className="flex items-center gap-2.5 text-sm text-gray-600">
               <Mail size={14} className="text-primary-900 shrink-0" />
-              <a href="mailto:hello@picobelloprojekte.com" className="hover:text-primary-900 transition-colors">hello@picobelloprojekte.com</a>
+              <a href="mailto:hello@squaremetre.app" className="hover:text-primary-900 transition-colors">hello@squaremetre.app</a>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ export default function BookCallGate({ onSkip }) {
 
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
             <Building2 size={13} />
-            <span>Pico Bello Projekte</span>
+            <span>SquareMetre</span>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function BookCallGate({ onSkip }) {
             <div className="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center shrink-0">
               <Building2 size={18} />
             </div>
-            <span className="font-bold">Pico Bello Projekte</span>
+            <span className="font-bold">SquareMetre</span>
           </div>
           <h1 className="text-xl font-bold mb-1">Welcome, {user?.name?.split(' ')[0]}!</h1>
           <p className="text-sm text-blue-200">
@@ -188,8 +188,8 @@ export default function BookCallGate({ onSkip }) {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-800">Email</p>
-                  <a href="mailto:hello@picobelloprojekte.com" className="text-sm text-gray-500 hover:text-primary-900 transition-colors">
-                    hello@picobelloprojekte.com
+                  <a href="mailto:hello@squaremetre.app" className="text-sm text-gray-500 hover:text-primary-900 transition-colors">
+                    hello@squaremetre.app
                   </a>
                 </div>
               </div>

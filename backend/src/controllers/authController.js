@@ -115,10 +115,8 @@ const forgotPassword = async (req, res) => {
   user.resetPasswordExpires = Date.now() + 3600000;
   await user.save();
 
-  const resetUrl = `${process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com'}/reset-password/${token}`;
-  sendPasswordReset(user, resetUrl).catch((e) =>
-    logger.warn('Password reset email failed', { error: e.message, userId: user._id }),
-  );
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://squaremetre.onrender.com'}/reset-password/${token}`;
+  await sendPasswordReset(user, resetUrl);
 
   logger.info('Password reset requested', { userId: user._id, ip: getIp(req) });
   res.json({ message: 'If that email is registered, a reset link has been sent.' });
@@ -167,7 +165,7 @@ const deleteAccount = async (req, res) => {
 
 const listTeam = async (req, res) => {
   const members = await User.find({ companyId: req.user.companyId, isActive: true })
-    .select('name email role plan createdAt')
+    .select('name email role createdAt')
     .sort({ createdAt: 1 })
     .lean();
   res.json({ members });
@@ -192,7 +190,7 @@ const inviteMember = async (req, res) => {
   });
   logger.info('Team member invited', { invitedBy: req.user._id, newUserId: user._id, role });
 
-  const appUrl = process.env.FRONTEND_URL || 'https://picobelloprojekte-boq.onrender.com';
+  const appUrl = process.env.FRONTEND_URL || 'https://squaremetre.onrender.com';
   const inviteUrl = `${appUrl}/accept-invite/${inviteToken}`;
 
   sendTeamInvite(user, inviteUrl).catch((e) =>
@@ -201,8 +199,8 @@ const inviteMember = async (req, res) => {
 
   if (phone) {
     const msg =
-      `Hello ${name},\n\n` +
-      `You have been added to *Pico Bello Projekte BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
+      `Hello ${name}! 👋\n\n` +
+      `You have been added to *SquareMetre BOQ* as *${role.replace(/_/g, ' ')}*.\n\n` +
       `Click the link below to set your password and sign in:\n${inviteUrl}\n\n` +
       `The link expires in 48 hours.`;
     sendWhatsApp(phone, msg).catch((e) =>
@@ -334,91 +332,13 @@ const updateProfile = async (req, res) => {
   res.json({ user });
 };
 
-// ── adminResetPassword ────────────────────────────────────────────────────────
-const adminResetPassword = async (req, res) => {
-  if (!SUPER_EMAILS.includes(req.user.email)) {
-    return res.status(403).json({ message: 'Not authorised to reset passwords' });
-  }
-  const { password } = req.body;
-  if (!password || password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters.' });
-  }
-  const member = await User.findOne({ _id: req.params.id, companyId: req.user.companyId });
-  if (!member) return res.status(404).json({ message: 'Member not found' });
-  member.password = password;
-  member.resetPasswordToken = undefined;
-  member.resetPasswordExpires = undefined;
-  await member.save();
-  logger.info('Admin reset member password', { adminId: req.user._id, memberId: member._id });
-  res.json({ message: 'Password reset successfully.' });
-};
-
-// ── shared super-admin list ───────────────────────────────────────────────────
-const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
-
-// ── ownerDashboard ────────────────────────────────────────────────────────────
-const ownerDashboard = async (req, res) => {
-  if (!SUPER_EMAILS.includes(req.user.email)) {
-    return res.status(403).json({ message: 'Forbidden' });
-  }
-  const companies = await Company.find().lean();
-  const users = await User.find().select('name email role plan createdAt companyId isActive').lean();
-
-  const usersByCompany = {};
-  users.forEach((u) => {
-    const cid = u.companyId?.toString();
-    if (!usersByCompany[cid]) usersByCompany[cid] = [];
-    usersByCompany[cid].push(u);
-  });
-
-  const result = companies.map((c) => ({
-    ...c,
-    members: usersByCompany[c._id.toString()] || [],
-  }));
-
-  res.json({ companies: result });
-};
-
-// ── ownerSetPlan ──────────────────────────────────────────────────────────────
-const ownerSetPlan = async (req, res) => {
-  if (!SUPER_EMAILS.includes(req.user.email)) {
-    return res.status(403).json({ message: 'Forbidden' });
-  }
-  const { plan } = req.body;
-  if (!['free', 'basic', 'premium'].includes(plan)) {
-    return res.status(400).json({ message: 'Invalid plan' });
-  }
-  const user = await User.findByIdAndUpdate(req.params.id, { plan }, { new: true });
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  res.json({ user });
-};
-
-// ── updateMemberPlan ──────────────────────────────────────────────────────────
-
-const updateMemberPlan = async (req, res) => {
-  if (!SUPER_EMAILS.includes(req.user.email)) {
-    return res.status(403).json({ message: 'Not authorised to change plans' });
-  }
-  const { plan } = req.body;
-  if (!['free', 'basic', 'premium'].includes(plan)) {
-    return res.status(400).json({ message: 'Invalid plan' });
-  }
-  const user = await User.findOneAndUpdate(
-    { _id: req.params.id, companyId: req.user.companyId },
-    { plan },
-    { new: true },
-  );
-  if (!user) return res.status(404).json({ message: 'Member not found' });
-  res.json({ user });
-};
-
 // ── requestOnboarding ─────────────────────────────────────────────────────────
 const requestOnboarding = async (req, res) => {
-  const { name, email, phone, plan } = req.body;
+  const { name, email, plan } = req.body;
   if (!name || !email || !plan) {
     return res.status(400).json({ message: 'name, email, and plan are required' });
   }
-  sendOnboardingRequest({ name, email, phone, plan }).catch((e) =>
+  sendOnboardingRequest({ name, email, plan }).catch((e) =>
     logger.warn('Onboarding request email failed', { error: e.message }),
   );
   res.json({ message: 'Request received' });
@@ -430,6 +350,5 @@ module.exports = {
   listTeam, inviteMember, updateMemberRole, removeMember,
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
-  acceptInvite, requestOnboarding, updateMemberPlan, adminResetPassword,
-  ownerDashboard, ownerSetPlan,
+  acceptInvite, requestOnboarding,
 };

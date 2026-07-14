@@ -123,7 +123,7 @@ exports.generatePdf = async (req, res, next) => {
     }
 
     doc.fontSize(18).font('Helvetica-Bold').fillColor('#0f2d5a')
-      .text(company?.companyName || 'Pico Bello Projekte', 135, headerY);
+      .text(company?.companyName || 'SquareMetre', 135, headerY);
     headerY += 22;
     if (company?.address) {
       doc.fontSize(8.5).font('Helvetica').fillColor('#6b7280').text(company.address, 135, headerY);

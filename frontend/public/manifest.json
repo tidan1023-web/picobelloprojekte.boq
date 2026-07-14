@@ -1,6 +1,6 @@
 {
-  "name": "Pico Bello Projekte BOQ System",
-  "short_name": "PicoBOQ",
+  "name": "SquareMetre BOQ System",
+  "short_name": "SquareMetre",
   "description": "Construction BOQ management — pricing libraries, invoices, and project tracking.",
   "start_url": "/app/dashboard",
   "scope": "/",
