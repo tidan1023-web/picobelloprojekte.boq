@@ -68,6 +68,7 @@ import TeamManagement     from './pages/TeamManagement';
 import Profile            from './pages/Profile';
 import OwnerDashboard     from './pages/OwnerDashboard';
 import Payments           from './pages/Payments';
+import PayInvoice         from './pages/PayInvoice';
 
 function AppHome() {
   const { user } = useAuth();
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/forgot-password"         element={<ForgotPassword />} />
           <Route path="/reset-password/:token"   element={<ResetPassword />} />
           <Route path="/accept-invite/:token"    element={<AcceptInvite />} />
+          <Route path="/invoice/pay/:token"      element={<PayInvoice />} />
 
           <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index                          element={<AppHome />} />

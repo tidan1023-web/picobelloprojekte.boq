@@ -1,3 +1,4 @@
+const crypto   = require('crypto');
 const Invoice  = require('../models/Invoice');
 const Company  = require('../models/Company');
 const PDFDocument = require('pdfkit');
@@ -76,6 +77,7 @@ exports.createInvoice = async (req, res) => {
     subtotal, vatRate, vatAmount, total,
     currency, dueDate, notes, bankDetails,
     balance: total,
+    publicToken: crypto.randomBytes(20).toString('hex'),
     status: status || 'draft',
   });
   res.status(201).json({ invoice });
@@ -338,9 +340,43 @@ exports.getPaymentLink = async (req, res) => {
   res.json({ url: json.data.authorization_url, reference: json.data.reference });
 };
 
+// ── Public invoice view (no auth, by publicToken) ──────────────────────────────────────
+exports.getPublicInvoice = async (req, res) => {
+  const invoice = await Invoice.findOne({ publicToken: req.params.token })
+    .select('-payments.note -companyId');
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  res.json({ invoice });
+};
+
+// ── Public: initiate Paystack payment for invoice ──────────────────────────────────────
+exports.initPublicPayment = async (req, res) => {
+  const invoice = await Invoice.findOne({ publicToken: req.params.token });
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+  if (invoice.balance <= 0) return res.status(400).json({ message: 'Invoice already paid' });
+
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return res.status(503).json({ message: 'Online payments not configured' });
+
+  const amountKobo = Math.round(invoice.balance * 100);
+  const reference  = `inv_${invoice._id}_${Date.now()}`;
+  const response   = await fetch('https://api.paystack.co/transaction/initialize', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email       : invoice.clientEmail || 'client@picobelloprojekte.com',
+      amount      : amountKobo,
+      reference,
+      metadata    : { invoiceId: invoice._id.toString(), invoiceNumber: invoice.invoiceNumber },
+      callback_url: `${process.env.CLIENT_URL || ''}/invoice/pay/${req.params.token}?paid=1`,
+    }),
+  });
+  const json = await response.json();
+  if (!json.status) return res.status(502).json({ message: json.message || 'Paystack error' });
+  res.json({ url: json.data.authorization_url, reference: json.data.reference });
+};
+
 // ── Paystack webhook ───────────────────────────────────────────────────────────────────
 exports.paystackWebhook = async (req, res) => {
-  const crypto = require('crypto');
   const secret = process.env.PAYSTACK_SECRET_KEY;
   if (!secret) return res.sendStatus(200);
 

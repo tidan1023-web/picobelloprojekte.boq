@@ -10,7 +10,7 @@ import {
   TrendingUp, GitPullRequest, ClipboardList, BarChart2, GanttChartSquare,
   Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
-  Lock, LayoutGrid, CreditCard,
+  Lock, LayoutGrid, CreditCard, History, Sliders,
 } from 'lucide-react';
 
 const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
@@ -41,10 +41,12 @@ const NAV_GROUPS = [
     heading: 'BOQ & Invoices',
     clientHidden: true,
     items: [
-      { to: '/app/boq',             icon: Layers,     label: 'BOQ Builder',      module: 'boq' },
-      { to: '/app/estimator',       icon: Calculator, label: 'Project Estimator',module: 'estimator' },
-      { to: '/app/estimates',       icon: FileText,   label: 'Estimate History', plan: 'basic', module: 'estimates' },
-      { to: '/app/invoices',        icon: FileText,   label: 'Invoices',         module: 'invoices' },
+      { to: '/app/boq',                  icon: Layers,     label: 'BOQ Builder',         module: 'boq' },
+      { to: '/app/estimator',            icon: Calculator, label: 'Project Estimator',   module: 'estimator' },
+      { to: '/app/estimates',            icon: FileText,   label: 'Estimate History',    plan: 'basic',    module: 'estimates' },
+      { to: '/app/historical-projects',  icon: History,    label: 'Historical Projects', plan: 'basic',    module: 'estimates' },
+      { to: '/app/simulator',            icon: Sliders,    label: 'Cost Simulator',      plan: 'premium',  module: 'estimator' },
+      { to: '/app/invoices',             icon: FileText,   label: 'Invoices',            module: 'invoices' },
     ],
   },
   {
