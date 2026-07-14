@@ -261,12 +261,11 @@ export default function Landing() {
             Built for Nigerian Construction Firms
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 sm:mb-6">
-            Estimate, Manage<br />
-            <span className="text-blue-300">and Get Paid — One Platform</span>
+            Estimate, Manage & Deliver<br />
+            <span className="text-blue-300">Every Construction Project</span>
           </h1>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-7 sm:mb-10 leading-relaxed">
-            From your first ballpark estimate to final invoice and Paystack payment —
-            SquareMetre is the complete platform built around your rate libraries and project history.
+            From your first ballpark estimate to final invoice — SquareMetre is the complete platform for Nigerian construction firms.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/register"
