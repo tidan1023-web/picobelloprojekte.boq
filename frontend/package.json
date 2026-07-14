@@ -1,12 +1,13 @@
 {
-  "name": "pico-bello-boq-frontend",
+  "name": "squaremetre-frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "vite preview --port 10000 --host"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.1",

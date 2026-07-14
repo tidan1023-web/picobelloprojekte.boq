@@ -56,19 +56,18 @@ services:
       - key: BOOTSTRAP_ADMIN_EMPLOYEE_ID
         sync: false
 
-  - type: web
-    name: picobelloprojekte-boq-frontend
-    env: node
+  - type: static
+    name: squaremetre-frontend
     region: oregon
     plan: starter
     rootDir: frontend
     buildCommand: npm install && npm run build
-    startCommand: npm start
-    healthCheckPath: /
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_APP_NAME
-        value: Pico Bello BOQ Estimator
+    staticPublishPath: ./dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
