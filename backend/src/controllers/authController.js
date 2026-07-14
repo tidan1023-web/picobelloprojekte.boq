@@ -332,6 +332,60 @@ const updateProfile = async (req, res) => {
   res.json({ user });
 };
 
+// ── updateMemberPlan ──────────────────────────────────────────────────────────
+const SUPER_EMAILS = ['sadiajahleel@gmail.com'];
+const updateMemberPlan = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised.' });
+  }
+  const { plan } = req.body;
+  if (!['free', 'basic', 'premium'].includes(plan)) {
+    return res.status(400).json({ message: 'Invalid plan.' });
+  }
+  const user = await User.findByIdAndUpdate(req.params.id, { plan }, { new: true }).select('-password');
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+  res.json({ user });
+};
+
+// ── adminResetPassword ────────────────────────────────────────────────────────
+const adminResetPassword = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised.' });
+  }
+  const { password } = req.body;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+  }
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+  user.password = password;
+  await user.save();
+  res.json({ message: 'Password reset successfully.' });
+};
+
+// ── ownerDashboard ────────────────────────────────────────────────────────────
+const ownerDashboard = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised.' });
+  }
+  const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+  res.json({ users });
+};
+
+// ── ownerSetPlan ──────────────────────────────────────────────────────────────
+const ownerSetPlan = async (req, res) => {
+  if (!SUPER_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ message: 'Not authorised.' });
+  }
+  const { plan } = req.body;
+  if (!['free', 'basic', 'premium'].includes(plan)) {
+    return res.status(400).json({ message: 'Invalid plan.' });
+  }
+  const user = await User.findByIdAndUpdate(req.params.id, { plan }, { new: true }).select('-password');
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+  res.json({ user });
+};
+
 // ── requestOnboarding ─────────────────────────────────────────────────────────
 const requestOnboarding = async (req, res) => {
   const { name, email, plan } = req.body;
@@ -351,4 +405,6 @@ module.exports = {
   markOnboarded, bookCall, completeCall,
   updateProfile, changePassword,
   acceptInvite, requestOnboarding,
+  updateMemberPlan, adminResetPassword,
+  ownerDashboard, ownerSetPlan,
 };
