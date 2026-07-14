@@ -4,7 +4,6 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import OnboardingModal from '../OnboardingModal';
 import BookCallGate from '../BookCallGate';
-import Layla from '../Layla';
 import { TrialBanner, TrialExpiredGate } from '../PlanGate';
 import { useAuth } from '../../context/AuthContext';
 
@@ -89,7 +88,6 @@ export default function AppLayout() {
       </div>
 
       <OnboardingModal />
-      <Layla />
     </div>
   );
 }

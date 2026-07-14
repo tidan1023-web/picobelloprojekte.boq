@@ -17,6 +17,8 @@ import ForgotPassword     from './pages/auth/ForgotPassword';
 import ResetPassword      from './pages/auth/ResetPassword';
 import AcceptInvite       from './pages/auth/AcceptInvite';
 
+import Layla              from './components/Layla';
+
 // Dashboard
 import Dashboard          from './pages/Dashboard';
 
@@ -81,6 +83,7 @@ export default function App() {
       <AuthProvider>
         <ModulesProvider>
         <ToastProvider>
+        <Layla />
         <Routes>
           <Route path="/"                        element={<Landing />} />
           <Route path="/login"                   element={<Login />} />
