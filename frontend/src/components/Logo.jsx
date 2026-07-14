@@ -7,7 +7,7 @@ export default function Logo({ size = 32, className = '' }) {
       style={{ width: size, height: size, fontSize }}
       className={`rounded-xl bg-blue-600 flex items-center justify-center text-white font-black shrink-0 select-none ${className}`}
     >
-      PB
+      SM
     </div>
   );
 }

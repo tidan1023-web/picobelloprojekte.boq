@@ -44,7 +44,7 @@ async function uploadImageToS3(buffer, mimetype, s3Key) {
     ServerSideEncryption: 'AES256',
     Metadata: {
       uploadedAt: new Date().toISOString(),
-      service: 'warehouse-inventory-hq',
+      service: 'squaremetre',
     },
   });
 

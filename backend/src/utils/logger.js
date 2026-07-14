@@ -6,7 +6,7 @@ const { combine, timestamp, json, colorize, simple } = winston.format;
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: combine(timestamp(), json()),
-  defaultMeta: { service: 'warehouse-inventory-hq' },
+  defaultMeta: { service: 'squaremetre' },
   transports: [
     new winston.transports.Console({
       format:
