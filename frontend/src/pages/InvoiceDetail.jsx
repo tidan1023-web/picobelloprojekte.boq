@@ -92,20 +92,14 @@ function PaymentModal({ invoiceId, currency, onClose, onSaved }) {
   );
 }
 
-function PaymentLinkModal({ invoiceId, onClose }) {
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(true);
+function PaymentLinkModal({ invoice, onClose }) {
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.get(`/invoices/${invoiceId}/payment-link`)
-      .then(({ data }) => setUrl(data.url))
-      .catch((err) => setError(err.response?.data?.message || 'Failed to generate link'))
-      .finally(() => setLoading(false));
-  }, [invoiceId]);
+  const url = invoice?.publicToken
+    ? `${window.location.origin}/invoice/pay/${invoice.publicToken}`
+    : null;
 
   const copy = () => {
+    if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -120,10 +114,8 @@ function PaymentLinkModal({ invoiceId, onClose }) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
         <div className="p-5 space-y-4">
-          {loading ? (
-            <p className="text-sm text-gray-400 text-center">Generating link…</p>
-          ) : error ? (
-            <p className="text-sm text-red-600">{error}</p>
+          {!url ? (
+            <p className="text-sm text-red-600">This invoice has no payment link. Re-save it to generate one.</p>
           ) : (
             <>
               <p className="text-sm text-gray-500">Share this link with your client. They can view the invoice and pay online without logging in.</p>
@@ -137,7 +129,7 @@ function PaymentLinkModal({ invoiceId, onClose }) {
                 {copied ? <><CheckCircle size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
               </button>
               <p className="text-xs text-gray-400 text-center">
-                The link stays active &mdash; same URL every time you open this.
+                Permanent link — share via WhatsApp, email, or SMS.
               </p>
             </>
           )}
@@ -560,7 +552,7 @@ export default function InvoiceDetail() {
       )}
       {showPaymentLink && (
         <PaymentLinkModal
-          invoiceId={id}
+          invoice={invoice}
           onClose={() => setShowPaymentLink(false)}
         />
       )}
