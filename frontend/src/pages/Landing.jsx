@@ -102,8 +102,8 @@ const HOW_IT_WORKS = [
   },
   {
     n: '03',
-    title: 'Programme & Manage the Work',
-    desc: 'Create a Gantt programme across 8 standard phases. Track progress weekly, file site reports, log expenses, raise change orders, and pay your team — all from one place.',
+    title: 'Manage the Work',
+    desc: 'Track progress weekly, file site reports, log expenses, raise change orders, and pay your team — all from one place.',
   },
   {
     n: '04',
@@ -261,11 +261,11 @@ export default function Landing() {
             Built for Nigerian Construction Firms
           </span>
           <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 sm:mb-6">
-            Estimate, Programme, Manage<br />
+            Estimate, Manage<br />
             <span className="text-blue-300">and Get Paid — One Platform</span>
           </h1>
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-7 sm:mb-10 leading-relaxed">
-            From your first ballpark estimate and 8-phase Gantt programme to final invoice and Paystack payment —
+            From your first ballpark estimate to final invoice and Paystack payment —
             SquareMetre is the complete platform built around your rate libraries and project history.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -279,7 +279,7 @@ export default function Landing() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-3 sm:gap-6 justify-center mt-8 sm:mt-12 text-blue-300 text-xs sm:text-sm">
-            {['Gantt programme in minutes', 'Paystack online payments', 'PDF on letterhead', 'Client approval portal', '7-day free trial'].map(t => (
+            {['Paystack online payments', 'PDF on letterhead', 'Client approval portal', '7-day free trial'].map(t => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle size={13} className="text-blue-400" /> {t}
               </span>
