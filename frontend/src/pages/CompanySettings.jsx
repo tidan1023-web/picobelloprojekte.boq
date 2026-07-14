@@ -27,6 +27,7 @@ const MODULE_META = [
   { key: 'materials',         label: 'Materials',          desc: 'Material price library (Basic+)' },
   { key: 'estimates',         label: 'Estimate History',   desc: 'Saved estimates (Basic+)' },
   { key: 'price-intelligence',label: 'Price Intelligence', desc: 'AI price insights (Premium)' },
+  { key: 'programme',         label: 'Programme of Works', desc: 'Gantt chart + weekly reports (Basic+)' },
   { key: 'progress',          label: 'Progress Tracker',   desc: 'Track site progress (Premium)' },
   { key: 'change-orders',     label: 'Change Orders',      desc: 'Manage variations (Premium)' },
   { key: 'site-reports',      label: 'Site Reports',       desc: 'Daily site reports (Premium)' },

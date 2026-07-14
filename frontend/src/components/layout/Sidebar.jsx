@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FolderOpen, Users,
   BookOpen, GitCompare, HardHat, Package, Zap,
   FileText, Calculator,
-  TrendingUp, GitPullRequest, ClipboardList, BarChart2,
+  TrendingUp, GitPullRequest, ClipboardList, BarChart2, GanttChartSquare,
   Settings, LogOut, Moon, Sun, ShieldCheck,
   Receipt, UserCog, Library, Layers, CheckSquare, MessageSquare,
   Lock, LayoutGrid, CreditCard,
@@ -66,6 +66,7 @@ const NAV_GROUPS = [
   {
     heading: 'Execution',
     items: [
+      { to: '/app/programme',      icon: GanttChartSquare, label: 'Programme of Works', plan: 'basic', module: 'programme' },
       { to: '/app/progress',       icon: TrendingUp,     label: 'Progress Tracker', plan: 'premium', module: 'progress' },
       { to: '/app/change-orders',  icon: GitPullRequest, label: 'Change Orders',    plan: 'premium', module: 'change-orders' },
       { to: '/app/site-reports',   icon: ClipboardList,  label: 'Site Reports',     plan: 'premium', module: 'site-reports' },

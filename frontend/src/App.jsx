@@ -37,6 +37,7 @@ import InvoiceDetail      from './pages/InvoiceDetail';
 
 // Execution
 import ProgressTracker    from './pages/ProgressTracker';
+import ProgrammeBuilder   from './pages/ProgrammeBuilder';
 import ChangeOrders       from './pages/ChangeOrders';
 import SiteReports        from './pages/SiteReports';
 import Analytics          from './pages/Analytics';
@@ -110,6 +111,7 @@ export default function App() {
 
             {/* Execution — premium */}
             <Route path="progress"               element={<PlanGate required="premium"><ProgressTracker /></PlanGate>} />
+            <Route path="programme"              element={<PlanGate required="basic"><ProgrammeBuilder /></PlanGate>} />
             <Route path="change-orders"          element={<PlanGate required="premium"><ChangeOrders /></PlanGate>} />
             <Route path="site-reports"           element={<PlanGate required="premium"><SiteReports /></PlanGate>} />
             <Route path="analytics"              element={<PlanGate required="premium"><Analytics /></PlanGate>} />

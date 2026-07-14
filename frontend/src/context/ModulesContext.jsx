@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 const ALL_MODULES = [
   'projects', 'contacts', 'qs-prices', 'qs-comparison', 'artisan-prices',
   'materials', 'price-intelligence', 'boq', 'estimator', 'estimates',
-  'invoices', 'documents', 'progress', 'change-orders', 'site-reports',
+  'invoices', 'documents', 'programme', 'progress', 'change-orders', 'site-reports',
   'expenses', 'analytics',
 ];
 
