@@ -240,7 +240,7 @@ export default function Landing() {
             </div>
             <div className="leading-tight">
               <p className="text-sm font-bold text-primary-900 leading-tight">SquareMetre</p>
-              <p className="text-xs text-gray-400 hidden sm:block">Construction Management</p>
+              <p className="text-xs text-gray-400 hidden sm:block">BOQ and Project Management</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

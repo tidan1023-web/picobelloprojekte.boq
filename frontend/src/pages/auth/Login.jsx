@@ -36,7 +36,7 @@ export default function Login() {
             <Logo size={64} />
           </div>
           <h1 className="text-2xl font-bold text-white">SquareMetre</h1>
-          <p className="text-blue-300 mt-1 text-sm">BOQ Management System</p>
+          <p className="text-blue-300 mt-1 text-sm">BOQ and Project Management System</p>
         </div>
 
         {/* Card */}

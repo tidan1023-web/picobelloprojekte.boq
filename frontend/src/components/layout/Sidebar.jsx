@@ -121,7 +121,7 @@ export default function Sidebar({ onClose }) {
           <Logo size={36} />
           <div className="leading-tight">
             <p className="text-sm font-bold leading-tight">SquareMetre</p>
-            <p className="text-xs text-blue-300">Construction Management</p>
+            <p className="text-xs text-blue-300">BOQ and Project Management</p>
           </div>
         </div>
       </div>

@@ -174,7 +174,7 @@ function ChangeOrderDocument({ order, onClose }) {
         <div className="overflow-y-auto flex-1 p-6">
           <div ref={printRef}>
             <h1>CHANGE ORDER</h1>
-            <p className="subtitle">SquareMetre · BOQ Management System</p>
+            <p className="subtitle">SquareMetre · BOQ and Project Management System</p>
 
             <div className="section">
               <div className="section-title">Change Order Details</div>
