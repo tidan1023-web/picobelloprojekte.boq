@@ -25,8 +25,11 @@ function tierKey(tier) {
 const calculate = async (req, res, next) => {
   try {
     const { sizeM2, condition, tier } = req.body;
-    const projects = await HistoricalProject.find({ companyId: req.user.companyId }).lean();
-    const result = runEngine(projects, { sizeM2: Number(sizeM2), condition, tier });
+    const [projects, company] = await Promise.all([
+      HistoricalProject.find({ companyId: req.user.companyId }).lean(),
+      Company.findOne({ _id: req.user.companyId }).select('manualBaseRate').lean(),
+    ]);
+    const result = runEngine(projects, { sizeM2: Number(sizeM2), condition, tier }, { manualBaseRate: company?.manualBaseRate });
     res.json({ result });
   } catch (err) { next(err); }
 };
@@ -36,8 +39,11 @@ exports.calculate = calculate;
 exports.create = async (req, res, next) => {
   try {
     const { sizeM2, condition, tier } = req.body;
-    const projects = await HistoricalProject.find({ companyId: req.user.companyId }).lean();
-    const engineResult = runEngine(projects, { sizeM2: Number(sizeM2), condition, tier });
+    const [projects, company] = await Promise.all([
+      HistoricalProject.find({ companyId: req.user.companyId }).lean(),
+      Company.findOne({ _id: req.user.companyId }).select('manualBaseRate').lean(),
+    ]);
+    const engineResult = runEngine(projects, { sizeM2: Number(sizeM2), condition, tier }, { manualBaseRate: company?.manualBaseRate });
     const sel = engineResult[tierKey(tier)] || engineResult.basicEstimate;
 
     const estimate = await Estimate.create({

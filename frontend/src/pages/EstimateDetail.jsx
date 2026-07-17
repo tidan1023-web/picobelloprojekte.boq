@@ -202,7 +202,12 @@ export default function EstimateDetail() {
 
         {isAdmin && (
           <div className="mb-3">
-            {r.dataSource === 'fallback' ? (
+            {r.dataSource === 'manual' ? (
+              <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 text-sm text-blue-700">
+                <ShieldAlert size={15} className="shrink-0 mt-0.5" />
+                <span><strong>[Admin only]</strong> Manual base rate override applied (₦{Number(r.baseRate).toLocaleString()}/m²). Change in Company Settings.</span>
+              </div>
+            ) : r.dataSource === 'fallback' ? (
               <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-700">
                 <ShieldAlert size={15} className="shrink-0 mt-0.5" />
                 <span><strong>[Admin only]</strong> No historical projects found — industry fallback rate applied. Add past projects to improve accuracy.</span>

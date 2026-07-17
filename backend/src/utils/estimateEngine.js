@@ -70,7 +70,16 @@ function buildResult(baseRate, { sizeM2, condition, tier }, meta) {
   };
 }
 
-function runEngine(projects, params) {
+function runEngine(projects, params, options = {}) {
+  if (options.manualBaseRate && options.manualBaseRate > 0) {
+    return buildResult(options.manualBaseRate, params, {
+      projectsTotal:   (projects || []).length,
+      projectsUsed:    0,
+      outliersRemoved: 0,
+      dataSource:      'manual',
+    });
+  }
+
   if (!projects || projects.length === 0) {
     return buildResult(FALLBACK_BASE_RATE, params, {
       projectsTotal:   0,

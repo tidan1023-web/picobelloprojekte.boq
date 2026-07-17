@@ -28,6 +28,7 @@ const TITLES = {
   '/app/estimates':           'Estimate History',
   '/app/historical-projects': 'Historical Projects',
   '/app/settings':            'Company Settings',
+  '/app/master-import':       'Master Import',
   '/app/documents':           'Document Library',
 };
 
@@ -36,7 +37,7 @@ const FREE_ROUTES = [
   '/app/boq', '/app/estimator', '/app/invoices',
   '/app/documents', '/app/profile', '/app/settings',
   '/app/client-portal', '/app/client-boq', '/app/client-invoices', '/app/client-comments',
-  '/app/payments', '/app/owner',
+  '/app/payments', '/app/owner', '/app/master-import',
 ];
 
 function isFreeRoute(pathname) {

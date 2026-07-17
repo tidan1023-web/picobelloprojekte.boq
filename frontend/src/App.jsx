@@ -71,6 +71,7 @@ import Profile            from './pages/Profile';
 import OwnerDashboard     from './pages/OwnerDashboard';
 import Payments           from './pages/Payments';
 import PayInvoice         from './pages/PayInvoice';
+import MasterImport       from './pages/MasterImport';
 
 function AppHome() {
   const { user } = useAuth();
@@ -147,6 +148,7 @@ export default function App() {
             <Route path="team"                   element={<TeamManagement />} />
             <Route path="profile"                element={<Profile />} />
             <Route path="owner"                  element={<OwnerDashboard />} />
+            <Route path="master-import"          element={<MasterImport />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

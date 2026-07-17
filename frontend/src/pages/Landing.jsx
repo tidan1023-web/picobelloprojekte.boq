@@ -5,7 +5,7 @@ import {
   CheckCircle, TrendingUp, Shield, Clock, ChevronRight,
   Users, Receipt, BarChart2, GitPullRequest, ClipboardList,
   Package, Zap, FolderOpen, X, Phone, GanttChart,
-  CreditCard, Banknote, BookOpen, Layers,
+  CreditCard, Banknote, BookOpen, Layers, ChevronDown,
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import axios from 'axios';
@@ -223,6 +223,77 @@ const FEATURES = [
     desc: 'Toggle individual modules on or off from Company Settings. Start lean and activate features as your team grows — no bloat, no noise.',
   },
 ];
+
+const FAQS = [
+  {
+    q: 'How does SquareMetre calculate the base rate for estimates?',
+    a: 'The base rate is the cost per m² for a carcass, basic-finish, 150m² project at today\'s prices. If you have historical projects logged, the engine reverse-engineers each project\'s cost to that standard baseline, removes statistical outliers, and averages the remainder — so your estimates are calibrated to your own real data. If you have no historical projects yet, it falls back to a ₦90,000/m² industry rate. You can also set your own base rate manually in Company Settings → Estimator Settings.',
+  },
+  {
+    q: 'Can I import all my data from Excel at once?',
+    a: 'Yes. Use Master Import (in the Admin section of the sidebar) to upload a single Excel file with one sheet per module — QS Prices, Artisan Rates, Materials, Contacts, and Historical Projects. The app reads each sheet and saves the data to the right module automatically. Download the pre-formatted template first to fill in your data.',
+  },
+  {
+    q: 'What is the difference between the Free, Basic, and Premium plans?',
+    a: 'Free gives you 7 days of core tools: estimates, BOQ builder, invoices, contacts, projects, and documents. Basic adds rate libraries (QS, artisan, materials), estimate history, historical projects, and the programme of works Gantt chart. Premium unlocks analytics, change orders, site reports, expense tracking, the scenario simulator, and price intelligence.',
+  },
+  {
+    q: 'Can clients see and approve BOQs online?',
+    a: 'Yes. Every client you invite gets their own secure portal where they can view the BOQ, approve or flag individual line items, see invoices, and leave comments — all without needing a full admin account.',
+  },
+  {
+    q: 'How does invoice payment work?',
+    a: 'Create an invoice and share the Paystack payment link directly with your client. They pay online by card or bank transfer. Payment status updates in real time on your Invoices page — no manual chasing needed.',
+  },
+  {
+    q: 'How do I build a programme of works?',
+    a: 'Go to Programme of Works in the sidebar. Select a project, set a start date, and the 8-phase Gantt chart auto-populates with standard construction phases. All activity dates shift automatically when you change the start date. You can also file weekly progress reports with planned vs actual tracking from the same page.',
+  },
+  {
+    q: 'Can I manage multiple projects and teams?',
+    a: 'Yes. Each project has its own BOQ, invoices, programme, site reports, expenses, and change orders. You can invite team members — QS, Project Managers, and Clients — with role-based access so each person only sees what is relevant to them.',
+  },
+  {
+    q: 'What happens when my 7-day trial ends?',
+    a: 'You keep access to the free tier features (estimates, BOQ, invoices, contacts, projects, documents) indefinitely. Features that require a Basic or Premium plan are gated until you upgrade. Upgrades are activated after a short onboarding call — we set you up personally.',
+  },
+  {
+    q: 'Can I generate PDF estimates and invoices?',
+    a: 'Yes. From any estimate or invoice detail page, click the Download PDF button. The PDF is professionally formatted with your company logo, details, line items, and totals — ready to send directly to your client.',
+  },
+  {
+    q: 'Is my data secure?',
+    a: 'All data is stored on MongoDB Atlas with encryption at rest and in transit. Each company\'s data is fully isolated — no user from one firm can ever access another\'s data.',
+  },
+];
+
+function FaqItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4"
+      >
+        <span className="font-medium text-gray-800 text-sm leading-snug">{q}</span>
+        <ChevronDown size={16} className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+          {a}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FaqList() {
+  return (
+    <div className="space-y-3">
+      {FAQS.map(({ q, a }) => <FaqItem key={q} q={q} a={a} />)}
+    </div>
+  );
+}
 
 export default function Landing() {
   const [bookPlan, setBookPlan] = useState(null);
@@ -542,6 +613,14 @@ export default function Landing() {
           <p className="text-center text-xs text-gray-400 mt-6">
             Prices in Nigerian Naira. Paid plans are activated after an onboarding call — we set you up personally.
           </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-14 sm:py-20 px-4 sm:px-8 bg-gray-50">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h2>
+          <FaqList />
         </div>
       </section>
 

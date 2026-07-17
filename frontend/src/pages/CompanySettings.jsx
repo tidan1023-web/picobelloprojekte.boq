@@ -7,6 +7,7 @@ import {
   Save,
   CheckCircle,
   LayoutGrid,
+  Calculator,
 } from 'lucide-react';
 import api from '../services/api';
 import { useModules, ALL_MODULES } from '../context/ModulesContext';
@@ -122,6 +123,7 @@ export default function CompanySettings() {
     vat: '',
     paymentInstructions: '',
     bankDetails: [],
+    manualBaseRate: '',
   });
   const [assets, setAssets] = useState({ logo: '', signature: '', stamp: '' });
   const [loading, setLoading] = useState(true);
@@ -147,6 +149,7 @@ export default function CompanySettings() {
           vat: c.vat ?? '',
           paymentInstructions: c.paymentInstructions ?? '',
           bankDetails: c.bankDetails ?? [],
+          manualBaseRate: c.manualBaseRate ? String(c.manualBaseRate) : '',
         });
         setAssets({
           logo: c.logo ?? '',
@@ -172,6 +175,7 @@ export default function CompanySettings() {
       await api.put('/company', {
         ...form,
         bankDetails: JSON.stringify(form.bankDetails),
+        manualBaseRate: form.manualBaseRate ? Number(form.manualBaseRate) : null,
       });
       showToast('Company settings saved successfully');
     } catch (err) {
@@ -396,6 +400,30 @@ export default function CompanySettings() {
                 </div>
               </label>
             ))}
+          </div>
+        </div>
+
+        {/* Estimator Settings */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+          <SectionTitle icon={Calculator} title="Estimator Settings" />
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Manual Base Rate (₦/m²)
+            </label>
+            <div className="relative max-w-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">₦</span>
+              <input
+                type="number"
+                min="0"
+                value={form.manualBaseRate}
+                onChange={set('manualBaseRate')}
+                className={inputCls + ' pl-7'}
+                placeholder="Leave blank to use historical data"
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+              Overrides the auto-calculated base rate for all estimates. Leave blank to let the engine derive it from your historical projects (or use the ₦90,000/m² industry fallback if none exist).
+            </p>
           </div>
         </div>
 
