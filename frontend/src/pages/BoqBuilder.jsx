@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, X, Pencil, Trash2, ChevronLeft, FileSpreadsheet, CheckCircle } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, ChevronLeft, FileSpreadsheet, CheckCircle, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
@@ -221,6 +221,8 @@ export default function BoqBuilder() {
   const [activeVersion, setActiveVersion] = useState(null);
   const [items, setItems] = useState([]);
   const [itemsLoading, setItemsLoading] = useState(false);
+  const [missingItems, setMissingItems] = useState([]);
+  const [reviewerOpen, setReviewerOpen] = useState(true);
   const [versionModal, setVersionModal] = useState(false);
   const [editingVersion, setEditingVersion] = useState(null);
   const [itemModal, setItemModal] = useState(false);
@@ -245,6 +247,7 @@ export default function BoqBuilder() {
       const { data } = await api.get(`/boq/${v._id}`);
       setActiveVersion(data.version);
       setItems(data.items);
+      setMissingItems(data.missingItems || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -257,6 +260,7 @@ export default function BoqBuilder() {
     const { data } = await api.get(`/boq/${activeVersion._id}`);
     setActiveVersion(data.version);
     setItems(data.items);
+    setMissingItems(data.missingItems || []);
   };
 
   const handleDeleteVersion = async (id) => {
@@ -366,6 +370,37 @@ export default function BoqBuilder() {
         )}
       </div>
 
+      {!itemsLoading && missingItems.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl mb-4 overflow-hidden">
+          <button onClick={() => setReviewerOpen(o => !o)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left">
+            <span className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+              <ClipboardCheck size={16} /> BOQ Reviewer — {missingItems.reduce((s, t) => s + t.missingItems.length, 0)} commonly-missing item{missingItems.reduce((s, t) => s + t.missingItems.length, 0) !== 1 ? 's' : ''} found
+            </span>
+            <span className="text-xs text-amber-600">{reviewerOpen ? 'Hide' : 'Show'}</span>
+          </button>
+          {reviewerOpen && (
+            <div className="px-4 pb-4 space-y-3">
+              {missingItems.map(({ trade, missingItems: list }) => (
+                <div key={trade}>
+                  <p className="text-xs font-semibold text-amber-800 mb-1">{trade}</p>
+                  <ul className="text-xs text-amber-700 space-y-0.5">
+                    {list.map(label => (
+                      <li key={label} className="flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0" /> {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <p className="text-[11px] text-amber-500 pt-1 border-t border-amber-100">
+                Based on items commonly paired with the trades already in this BOQ — review and add if applicable, or ignore if intentionally excluded.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {itemsLoading ? (
         <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-900" /></div>
       ) : items.length === 0 ? (
@@ -394,7 +429,15 @@ export default function BoqBuilder() {
                     </td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{item.unit}</td>
                     <td className="px-4 py-3 text-gray-700">{item.quantity}</td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{fmt(item.baseCost)}</td>
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        {fmt(item.baseCost)}
+                        {item.rateAlert && (
+                          <AlertTriangle size={14} className="text-amber-500 shrink-0"
+                            title={`${item.rateAlert.belowPct}% below your QS library rate for "${item.rateAlert.libraryItem}" (${fmt(item.rateAlert.libraryRate)})`} />
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-gray-500">{item.overheadPercent}%</td>
                     <td className="px-4 py-3 text-gray-500">{item.profitPercent}%</td>
                     <td className="px-4 py-3 font-medium text-gray-700 whitespace-nowrap">{fmt(item.finalUnitPrice)}</td>

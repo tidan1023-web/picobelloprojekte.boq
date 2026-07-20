@@ -1,5 +1,8 @@
 const BoqVersion = require('../models/BoqVersion');
 const BoqItem = require('../models/BoqItem');
+const QsPrice = require('../models/QsPrice');
+const { checkRate } = require('../utils/rateAlerter');
+const { reviewBoq } = require('../utils/boqReviewer');
 
 async function recalculateVersionTotal(versionId) {
   const items = await BoqItem.find({ versionId });
@@ -29,8 +32,13 @@ const getVersion = async (req, res) => {
     .populate('createdBy', 'name');
   if (!version) return res.status(404).json({ message: 'BOQ version not found' });
 
-  const items = await BoqItem.find({ versionId: req.params.id }).sort({ createdAt: 1 });
-  res.json({ version, items });
+  const items = await BoqItem.find({ versionId: req.params.id }).sort({ createdAt: 1 }).lean();
+  const qsPrices = await QsPrice.find({ companyId: req.user.companyId }).select('item price').lean();
+
+  const itemsWithAlerts = items.map(item => ({ ...item, rateAlert: checkRate(item, qsPrices) }));
+  const missingItems = reviewBoq(items);
+
+  res.json({ version, items: itemsWithAlerts, missingItems });
 };
 
 const createVersion = async (req, res) => {

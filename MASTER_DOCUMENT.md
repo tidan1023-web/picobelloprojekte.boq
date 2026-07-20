@@ -822,6 +822,12 @@ This section records every major build decision and change made during developme
 - Estimator wizard gained an optional **Smart Suggest** field — free-text project description is parsed client-side (`frontend/src/utils/smartSuggest.js`, rule-based, no external AI call) to pre-fill condition, tier, size, and includes, and to draft scope assumptions/exclusions text
 - Estimate detail page and PDF now show the confidence badge, price range, and comparable projects list
 
+### Phase 6 — BOQ Reviewer & Rate Alerter
+- `backend/src/utils/rateAlerter.js` — fuzzy (Jaccard token-overlap) match of a BOQ line item's text against the company's QS Pricing Library; flags the item when its entered rate is more than 15% below the matched library rate. No FK link between `BoqItem` and `QsPrice` exists, so matching is text-based by design
+- `backend/src/utils/boqReviewer.js` — rule-based checklist of 10 trades (Preliminaries, Concrete Works, Masonry, Roofing, Tiling, Painting, Doors & Windows, Plumbing, Electrical, External Works); for each trade already represented in the BOQ, flags commonly-paired items (e.g. plumbing present but no "testing & commissioning" line) that appear to be missing
+- `GET /boq/:id` (`boqController.getVersion`) now returns each item with a computed `rateAlert` and a top-level `missingItems` list — both computed live, nothing persisted, so results stay current as the QS library or item list changes
+- BOQ Builder UI: a warning icon + tooltip on any line item priced below the library rate, and a collapsible "BOQ Reviewer" panel above the item table listing missing items grouped by trade
+
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |
 |-----|-------|-----|
