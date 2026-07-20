@@ -56,7 +56,7 @@ router.patch('/me/profile', authenticate, upload.single('avatar'), updateProfile
 router.patch('/me/password', authenticate, changePassword);
 router.patch('/me/onboarded',           authenticate, markOnboarded);
 router.patch('/me/book-call',           authenticate, bookCall);
-router.patch('/team/:id/complete-call', completeCall);
+router.patch('/team/:id/complete-call', authenticate, authorize('admin'), completeCall);
 router.delete('/me', authenticate, deleteAccount);
 
 router.get('/owner/dashboard',        authenticate, ownerDashboard);

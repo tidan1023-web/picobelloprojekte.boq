@@ -1,6 +1,5 @@
 const router = require('express').Router();
-const { authenticate } = require('../middleware/auth');
-const { authorize } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const {
   getProfitReport, getCostVariance, getOutstandingInvoices,
   getSupplierPriceHistory, sendPaymentReminders,
