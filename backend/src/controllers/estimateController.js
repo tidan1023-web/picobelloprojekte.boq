@@ -213,17 +213,25 @@ exports.generatePdf = async (req, res, next) => {
       ['Premium',   r.premiumEstimate,   estimate.tier === 'premium'],
     ];
 
+    const hasRange = tiers.some(([, est]) => est?.totalLow != null);
+    const tierRowH = hasRange ? 32 : 24;
+
     tiers.forEach(([label, est, selected]) => {
-      doc.rect(50, y, 495, 24).fillColor(selected ? '#dbeafe' : '#f9fafb').fill();
-      doc.rect(50, y, 495, 24).strokeColor('#e5e7eb').lineWidth(0.3).stroke();
-      if (selected) doc.rect(50, y, 4, 24).fillColor('#0f2d5a').fill();
+      doc.rect(50, y, 495, tierRowH).fillColor(selected ? '#dbeafe' : '#f9fafb').fill();
+      doc.rect(50, y, 495, tierRowH).strokeColor('#e5e7eb').lineWidth(0.3).stroke();
+      if (selected) doc.rect(50, y, 4, tierRowH).fillColor('#0f2d5a').fill();
 
       doc.fontSize(9).font(selected ? 'Helvetica-Bold' : 'Helvetica')
         .fillColor(selected ? '#1e40af' : '#374151')
         .text(label + (selected ? '  ✓ Selected' : ''), 60, y + 8)
         .text(`₦${fmt(est?.rate)} /m²`, 250, y + 8)
         .text(`₦${fmt(est?.total)}`, 390, y + 8);
-      y += 24;
+
+      if (est?.totalLow != null) {
+        doc.fontSize(7.5).font('Helvetica').fillColor('#6b7280')
+          .text(`Range ₦${fmt(est.totalLow)} – ₦${fmt(est.totalHigh)}`, 390, y + 20);
+      }
+      y += tierRowH;
     });
 
     y += 18;
@@ -234,9 +242,13 @@ exports.generatePdf = async (req, res, next) => {
     doc.fontSize(11).font('Helvetica-Bold').fillColor('#0f2d5a').text('HOW THIS WAS CALCULATED', leftX, y);
     y += 18;
 
-    const dataNote = r.dataSource === 'fallback'
+    const CONFIDENCE_TEXT = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence', manual: 'Manually set rate' };
+    const dataNote = (r.dataSource === 'fallback'
       ? 'No historical projects found — industry fallback rate applied'
-      : `${r.projectsUsed} of ${r.projectsTotal} projects used (${r.outliersRemoved} outliers removed)`;
+      : r.dataSource === 'manual'
+      ? 'Manual base rate override applied'
+      : `${r.projectsUsed} of ${r.projectsTotal} projects used (${r.outliersRemoved} outliers removed)`
+    ) + (r.confidence ? ` · ${CONFIDENCE_TEXT[r.confidence] || ''}` : '');
 
     const breakdownRows = [
       ['Base rate (carcass, basic, 150m², today)', `₦${fmt(r.baseRate)} /m²`],
@@ -245,6 +257,7 @@ exports.generatePdf = async (req, res, next) => {
       [`Size adjustment (${estimate.sizeM2}m²)`,                        `× ${(r.sizeMultiplier || 0).toFixed(3)}`],
       ['Final rate per m²',                  `₦${fmt(r.finalRate)} /m²`],
       ['Estimated total',                    `₦${fmt(r.totalCost)}`],
+      ...(r.spread ? [[`Price range (±${Math.round(r.spread * 100)}%)`, `₦${fmt(r.totalCost * (1 - r.spread))} – ₦${fmt(r.totalCost * (1 + r.spread))}`]] : []),
     ];
 
     breakdownRows.forEach(([label, value]) => {

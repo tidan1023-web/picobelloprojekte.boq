@@ -3,6 +3,22 @@ const mongoose = require('mongoose');
 const tierEstimateSchema = new mongoose.Schema({
   rate: Number,
   total: Number,
+  rateLow: Number,
+  rateHigh: Number,
+  totalLow: Number,
+  totalHigh: Number,
+}, { _id: false });
+
+const comparableProjectSchema = new mongoose.Schema({
+  id: mongoose.Schema.Types.ObjectId,
+  name: String,
+  location: String,
+  sizeM2: Number,
+  condition: String,
+  tier: String,
+  totalCost: Number,
+  completedYear: Number,
+  rateDeltaPct: Number,
 }, { _id: false });
 
 const engineResultSchema = new mongoose.Schema({
@@ -18,7 +34,10 @@ const engineResultSchema = new mongoose.Schema({
   basicEstimate: tierEstimateSchema,
   midRangeEstimate: tierEstimateSchema,
   premiumEstimate: tierEstimateSchema,
-  dataSource: { type: String, enum: ['historical', 'fallback'], default: 'historical' },
+  dataSource: { type: String, enum: ['historical', 'fallback', 'manual'], default: 'historical' },
+  confidence: { type: String, enum: ['high', 'medium', 'low', 'manual'], default: 'low' },
+  spread: Number,
+  comparableProjects: [comparableProjectSchema],
 }, { _id: false });
 
 const schema = new mongoose.Schema({

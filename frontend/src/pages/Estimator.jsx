@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, ArrowRight, ArrowLeft, Loader2, Home, Layers, Paintbrush, Wrench } from 'lucide-react';
+import { CheckCircle, ArrowRight, ArrowLeft, Loader2, Home, Layers, Paintbrush, Wrench, Sparkles } from 'lucide-react';
 import api from '../services/api';
+import { suggestFromDescription, buildScopeAssumptions, buildExclusions } from '../utils/smartSuggest';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const CONDITIONS = [
@@ -100,10 +101,15 @@ function StepIndicator({ step }) {
 
 const inputCls = 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/30';
 
+const CONDITION_LABELS = { carcass: 'Carcass', advanced_carcass: 'Advanced Carcass', semi_finished: 'Semi-Finished', finished: 'Finished (Facelift)' };
+const TIER_LABELS = { basic: 'Basic', mid_range: 'Mid-Range', premium: 'Premium' };
+
 export default function Estimator() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [description, setDescription] = useState('');
+  const [suggestion, setSuggestion] = useState(null);
   const [form, setForm] = useState({
     projectName:     '',
     clientName:      '',
@@ -122,6 +128,34 @@ export default function Estimator() {
   });
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const applySmartSuggest = () => {
+    const s = suggestFromDescription(description);
+    if (!s || (!s.condition && !s.tier && !s.sizeM2 && !Object.values(s.includes).some(Boolean))) {
+      setSuggestion({ empty: true });
+      return;
+    }
+    setForm(f => {
+      const next = {
+        ...f,
+        ...(s.sizeM2 ? { sizeM2: String(s.sizeM2) } : {}),
+        ...(s.condition ? { condition: s.condition } : {}),
+        ...(s.tier ? { tier: s.tier } : {}),
+        includesFurniture: f.includesFurniture || s.includes.includesFurniture,
+        includesKitchen:   f.includesKitchen   || s.includes.includesKitchen,
+        includesWardrobes: f.includesWardrobes || s.includes.includesWardrobes,
+      };
+      const effCondition = next.condition, effTier = next.tier;
+      if (effCondition && effTier && !next.scopeAssumptions.trim()) {
+        next.scopeAssumptions = buildScopeAssumptions(effCondition, effTier, next);
+      }
+      if (effCondition && !next.exclusions.trim()) {
+        next.exclusions = buildExclusions(effCondition, next);
+      }
+      return next;
+    });
+    setSuggestion(s);
+  };
 
   const canNext0 = form.projectName.trim() && form.sizeM2 > 0;
   const canNext1 = !!form.condition;
@@ -184,6 +218,30 @@ export default function Estimator() {
                   className={inputCls + ' pr-10'} placeholder="e.g. 250" />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">m²</span>
               </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-4">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Sparkles size={14} className="text-primary-900" />
+              <p className="text-xs font-semibold text-gray-700">Smart Suggest (optional)</p>
+            </div>
+            <p className="text-xs text-gray-500 mb-2">Describe the project in your own words and Layla will pre-fill the condition, tier, and scope for you.</p>
+            <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)}
+              className={inputCls + ' resize-none'} placeholder="e.g. 250sqm bare shell, want a premium finish with fitted kitchen and wardrobes" />
+            <div className="flex items-center gap-3 mt-2">
+              <button type="button" onClick={applySmartSuggest} disabled={!description.trim()}
+                className="flex items-center gap-1.5 border border-primary-200 text-primary-900 bg-primary-50 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-primary-100 disabled:opacity-50 transition-colors">
+                <Sparkles size={13} /> Smart Suggest
+              </button>
+              {suggestion && !suggestion.empty && (
+                <p className="text-xs text-green-700">
+                  Detected{suggestion.condition ? ` ${CONDITION_LABELS[suggestion.condition]}` : ''}{suggestion.tier ? ` · ${TIER_LABELS[suggestion.tier]}` : ''}{suggestion.sizeM2 ? ` · ${suggestion.sizeM2}m²` : ''} — applied below.
+                </p>
+              )}
+              {suggestion?.empty && (
+                <p className="text-xs text-gray-400">Couldn't detect anything specific — try mentioning condition, finish level, or size.</p>
+              )}
             </div>
           </div>
 

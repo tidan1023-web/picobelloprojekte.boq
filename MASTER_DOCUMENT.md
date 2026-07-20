@@ -814,6 +814,14 @@ This section records every major build decision and change made during developme
 - Added Paystack webhook endpoint (`paystackWebhook` export in invoiceController)
 - Fixed critical deploy crash: `paystackWebhook` was imported in `index.js` but not exported from controller
 
+### Phase 5 — Smart Estimator
+- Estimator engine (`estimateEngine.js`) now computes a coefficient-of-variation from historical rates and derives a **confidence rating** (high/medium/low/manual) and a **low–likely–high price range** (spread) for every tier
+- Each tier estimate carries `rateLow/rateHigh/totalLow/totalHigh` in addition to the point estimate
+- Engine returns the top 3 **comparable historical projects** (ranked by matching condition, tier, and closeness in size) with their rate deviation vs. the calculated base rate
+- `Estimate` model extended (`comparableProjectSchema`, range fields) so this data persists with each saved estimate
+- Estimator wizard gained an optional **Smart Suggest** field — free-text project description is parsed client-side (`frontend/src/utils/smartSuggest.js`, rule-based, no external AI call) to pre-fill condition, tier, size, and includes, and to draft scope assumptions/exclusions text
+- Estimate detail page and PDF now show the confidence badge, price range, and comparable projects list
+
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |
 |-----|-------|-----|

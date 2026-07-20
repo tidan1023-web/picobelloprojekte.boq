@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, Download, Save, ArrowLeft, Loader2, Info, Trash2, FileText, ShieldAlert } from 'lucide-react';
+import { CheckCircle, XCircle, Download, Save, ArrowLeft, Loader2, Info, Trash2, FileText, ShieldAlert, Gauge, Building2 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,6 +22,13 @@ const TIER_HIGHLIGHT = {
   basic:     'border-gray-300 bg-gray-50',
   mid_range: 'border-blue-300 bg-blue-50',
   premium:   'border-purple-300 bg-purple-50',
+};
+const CONFIDENCE_LABELS = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence', manual: 'Manually set' };
+const CONFIDENCE_COLORS = {
+  high:   'bg-green-100 text-green-700',
+  medium: 'bg-amber-100 text-amber-700',
+  low:    'bg-red-100 text-red-600',
+  manual: 'bg-blue-100 text-blue-700',
 };
 
 function fmt(n) {
@@ -174,6 +181,16 @@ export default function EstimateDetail() {
         </div>
       </div>
 
+      {/* Confidence badge */}
+      {r.confidence && (
+        <div className="flex items-center gap-2">
+          <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${CONFIDENCE_COLORS[r.confidence] || CONFIDENCE_COLORS.low}`}>
+            <Gauge size={12} /> {CONFIDENCE_LABELS[r.confidence] || 'Low confidence'}
+          </span>
+          <span className="text-xs text-gray-400">Based on how closely your historical projects agree with each other.</span>
+        </div>
+      )}
+
       {/* 3-tier estimate cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {(['basic', 'mid_range', 'premium']).map(t => {
@@ -188,10 +205,41 @@ export default function EstimateDetail() {
               </div>
               <p className="text-2xl font-bold text-gray-900">₦{fmt(data.total)}</p>
               <p className="text-xs text-gray-500 mt-1">₦{fmt(data.rate)} / m²</p>
+              {data.totalLow != null && data.totalHigh != null && (
+                <p className="text-xs text-gray-400 mt-1.5 pt-1.5 border-t border-gray-100">
+                  Range ₦{fmt(data.totalLow)} – ₦{fmt(data.totalHigh)}
+                </p>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* Comparable historical projects */}
+      {Array.isArray(r.comparableProjects) && r.comparableProjects.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 size={16} className="text-primary-900" />
+            <h2 className="font-semibold text-gray-800">Comparable Projects</h2>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">Past projects most similar in condition, tier, and size — used to calibrate this estimate.</p>
+          <div className="divide-y divide-gray-50">
+            {r.comparableProjects.map((c, i) => (
+              <div key={c.id || i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-800 truncate">{c.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {c.location ? `${c.location} · ` : ''}{c.sizeM2}m² · {CONDITION_LABELS[c.condition]} · {TIER_LABELS[c.tier]} · {c.completedYear}
+                  </p>
+                </div>
+                <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${c.rateDeltaPct > 0 ? 'bg-red-50 text-red-600' : c.rateDeltaPct < 0 ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {c.rateDeltaPct > 0 ? '+' : ''}{c.rateDeltaPct}% vs base rate
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Breakdown */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -230,6 +278,7 @@ export default function EstimateDetail() {
               [`Size adjustment (${estimate.sizeM2}m² vs 150m²)`, `× ${(r.sizeMultiplier || 0).toFixed(3)}`],
               ['Final rate per m²', `₦${fmt(r.finalRate)} /m²`],
               ['Estimated total', `₦${fmt(r.totalCost)}`],
+              ...(r.spread ? [['Price range (±' + Math.round(r.spread * 100) + '%)', `₦${fmt(r.totalCost * (1 - r.spread))} – ₦${fmt(r.totalCost * (1 + r.spread))}`]] : []),
             ].map(([label, value]) => (
               <tr key={label}>
                 <td className="py-2 text-gray-500">{label}</td>
