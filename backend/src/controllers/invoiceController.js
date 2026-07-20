@@ -381,12 +381,43 @@ exports.initPublicPayment = async (req, res) => {
       amount      : amountKobo,
       reference,
       metadata    : { invoiceId: invoice._id.toString(), invoiceNumber: invoice.invoiceNumber },
-      callback_url: `${process.env.CLIENT_URL || ''}/invoice/pay/${req.params.token}?paid=1`,
+      callback_url: `${process.env.CLIENT_URL || ''}/invoice/pay/${req.params.token}?ref=${reference}`,
     }),
   });
   const json = await response.json();
   if (!json.status) return res.status(502).json({ message: json.message || 'Paystack error' });
   res.json({ url: json.data.authorization_url, reference: json.data.reference });
+};
+
+// ── Verify public payment (called on return from Paystack) ────────────────────────────
+exports.verifyPublicPayment = async (req, res) => {
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) return res.status(503).json({ message: 'Payments not configured' });
+
+  const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(req.params.ref)}`, {
+    headers: { Authorization: `Bearer ${secret}` },
+  });
+  const json = await response.json();
+  if (!json.status || json.data?.status !== 'success') {
+    return res.json({ paid: false, message: 'Payment not confirmed yet.' });
+  }
+
+  const meta      = json.data.metadata || {};
+  const invoiceId = meta.invoiceId || json.data.reference?.split('_')[1];
+  if (!invoiceId) return res.json({ paid: false, message: 'Invoice reference missing.' });
+
+  const invoice = await Invoice.findById(invoiceId);
+  if (!invoice) return res.json({ paid: false, message: 'Invoice not found.' });
+
+  const amountPaid = json.data.amount / 100;
+  invoice.amountPaid = (invoice.amountPaid || 0) + amountPaid;
+  invoice.balance    = Math.max(0, invoice.total - invoice.amountPaid);
+  invoice.status     = invoice.balance <= 0 ? 'paid' : 'partially_paid';
+  invoice.payments   = invoice.payments || [];
+  invoice.payments.push({ amount: amountPaid, date: new Date(), reference: req.params.ref, method: 'paystack' });
+  await invoice.save();
+
+  res.json({ paid: true, invoice });
 };
 
 // ── Paystack webhook ───────────────────────────────────────────────────────────────────

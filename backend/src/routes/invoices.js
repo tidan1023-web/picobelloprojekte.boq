@@ -4,12 +4,13 @@ const { zodValidate, schemas }    = require('../middleware/zodValidate');
 const {
   getInvoices, getInvoice, createInvoice, updateInvoice, deleteInvoice,
   addPayment, deletePayment, generatePDF, markAsPaid, getPaymentLink,
-  getPublicInvoice, initPublicPayment,
+  getPublicInvoice, initPublicPayment, verifyPublicPayment,
 } = require('../controllers/invoiceController');
 
 // Public routes (no auth)
 router.get('/public/:token',      getPublicInvoice);
 router.post('/public/:token/pay', initPublicPayment);
+router.get('/verify/:ref',        verifyPublicPayment);
 
 router.use(authenticate);
 

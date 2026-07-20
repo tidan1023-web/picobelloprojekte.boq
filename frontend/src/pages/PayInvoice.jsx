@@ -77,7 +77,7 @@ export default function PayInvoice() {
       const r = await fetch(`${API}/invoices/public/${token}/pay`, { method: 'POST' });
       const d = await r.json();
       if (!r.ok) { setError(d.message || 'Payment failed.'); return; }
-      window.location.href = d.authorizationUrl;
+      window.location.href = d.url;
     } catch {
       setError('Could not connect to payment gateway.');
     } finally {
