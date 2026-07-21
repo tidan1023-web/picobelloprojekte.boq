@@ -585,6 +585,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Waitlist */}
+      <WaitlistSection />
+
       {/* PRICING */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-gray-50">
         <div className="max-w-4xl mx-auto">
@@ -718,9 +721,6 @@ export default function Landing() {
           <FaqList />
         </div>
       </section>
-
-      {/* Waitlist */}
-      <WaitlistSection />
 
       {/* CTA */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">
