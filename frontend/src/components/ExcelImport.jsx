@@ -29,6 +29,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   const [open, setOpen]                 = useState(false);
   const [files, setFiles]               = useState([]); // [{ id, name, headers, raw }]
   const [mapping, setMapping]           = useState({}); // { columnKey: header|null }
+  const [valueOverrides, setValueOverrides] = useState({}); // { columnKey: { rawValue: enumValue } }
   const [replaceExisting, setReplaceExisting] = useState(false);
   const fileRef                         = useRef();
   const replaceIdRef                    = useRef(null); // set when the picker is replacing a staged file
@@ -42,6 +43,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   useEffect(() => {
     if (files.length) setMapping(autoMatchColumns(columns, allHeaders));
     else setMapping({});
+    setValueOverrides({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
@@ -95,7 +97,10 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
         if (!header) return;
         if (col.type === 'number') row[col.key] = parseFloat(rawVal) || 0;
         else if (col.type === 'date') row[col.key] = rawVal instanceof Date ? rawVal.toISOString().split('T')[0] : String(rawVal || '');
-        else if (col.enumValues) row[col.key] = matchEnumValue(rawVal, col.enumValues);
+        else if (col.enumValues) {
+          const rawKey = String(rawVal ?? '');
+          row[col.key] = valueOverrides[col.key]?.[rawKey] ?? matchEnumValue(rawVal, col.enumValues);
+        }
         else row[col.key] = String(rawVal ?? '');
       });
       if (missingRequired) { skipped++; return; }
@@ -136,6 +141,25 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   const triggerReplace = (id) => { replaceIdRef.current = id; fileRef.current?.click(); };
   const removeFile = (id) => setFiles((prev) => prev.filter((f) => f.id !== id));
   const setColumnMapping = (key, header) => setMapping((m) => ({ ...m, [key]: header || null }));
+  const setValueOverride = (colKey, rawVal, enumVal) =>
+    setValueOverrides((v) => ({ ...v, [colKey]: { ...v[colKey], [rawVal]: enumVal } }));
+
+  // For every mapped column with a strict backend enum, the distinct raw
+  // values actually present in the file — auto-matching guesses one word at
+  // a time and can't cover every phrasing a real spreadsheet uses ("Tier 1 -
+  // Luxury" for "premium"), so this lets the user confirm or correct each one.
+  const enumColumnsWithValues = columns
+    .filter((col) => col.enumValues && mapping[col.key])
+    .map((col) => {
+      const header = mapping[col.key];
+      const values = new Set();
+      files.forEach((f) => f.raw.forEach((r) => {
+        const v = r[header];
+        if (v !== undefined && v !== null && String(v).trim() !== '') values.add(String(v));
+      }));
+      return { col, values: [...values] };
+    })
+    .filter((e) => e.values.length > 0);
 
   const built = files.map((f) => ({ ...buildRows(f.raw), name: f.name }));
   const allRows      = built.flatMap((f) => f.rows);
@@ -156,6 +180,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
     setOpen(false);
     setFiles([]);
     setMapping({});
+    setValueOverrides({});
     setReplaceExisting(false);
   };
 
@@ -262,6 +287,46 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                       <span>{unmappedRequired.map((c) => `"${c.label}"`).join(', ')} {unmappedRequired.length === 1 ? 'is' : 'are'} required — map {unmappedRequired.length === 1 ? 'it' : 'them'} or every row will be skipped.</span>
                     </div>
                   )}
+                </div>
+              )}
+
+              {enumColumnsWithValues.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Step 4 — Check these values</p>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Your file uses its own wording here — confirm each one maps to the right option.
+                  </p>
+                  <div className="space-y-3">
+                    {enumColumnsWithValues.map(({ col, values }) => (
+                      <div key={col.key} className="border border-gray-100 rounded-xl p-3">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">{col.label}</p>
+                        <div className="space-y-1.5">
+                          {values.map((val) => {
+                            const guessed = valueOverrides[col.key]?.[val] ?? matchEnumValue(val, col.enumValues);
+                            const isUnmatched = !col.enumValues.includes(guessed);
+                            return (
+                              <div key={val} className="flex items-center gap-2">
+                                <span className={`text-xs flex-1 min-w-0 truncate ${isUnmatched ? 'text-red-600 font-medium' : 'text-gray-600'}`} title={val}>
+                                  "{val}"{isUnmatched && ' — no match'}
+                                </span>
+                                <span className="text-gray-300 text-xs shrink-0">→</span>
+                                <select
+                                  value={isUnmatched ? '' : guessed}
+                                  onChange={(e) => setValueOverride(col.key, val, e.target.value)}
+                                  className={`text-xs border rounded-lg px-2 py-1 bg-white max-w-[50%] focus:outline-none focus:ring-2 focus:ring-primary-900/30 ${isUnmatched ? 'border-red-300' : 'border-gray-200'}`}
+                                >
+                                  <option value="">— Choose —</option>
+                                  {col.enumValues.map((ev) => (
+                                    <option key={ev} value={ev}>{col.enumLabels?.[ev] || ev}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

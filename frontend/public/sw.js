@@ -1,4 +1,4 @@
-const CACHE = 'pico-boq-v1';
+const CACHE = 'pico-boq-v2';
 const PRECACHE = ['/', '/login', '/register', '/app/dashboard'];
 
 // ── Install: pre-cache app shell ───────────────────────────────────────────────
@@ -33,7 +33,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else: stale-while-revalidate
+  // Page navigations (opening a link directly, refreshing, a background tab
+  // getting reloaded on resume) must always resolve to the app shell so
+  // react-router can take over client-side. Without this, requesting any
+  // path that isn't the literal handful of pre-cached routes below falls
+  // through to a raw network fetch of that exact path — and if the host
+  // doesn't rewrite unknown paths to index.html (or the request just fails
+  // on a flaky connection), the browser renders that 404/error response
+  // directly instead of the app.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => (response.ok ? response : caches.match('/')))
+        .catch(() => caches.match('/'))
+    );
+    return;
+  }
+
+  // Everything else (JS/CSS/images): stale-while-revalidate
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(request);

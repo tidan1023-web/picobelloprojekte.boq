@@ -86,9 +86,11 @@ const MODULES = [
       { key: 'endDate',       label: 'End Date' },
       { key: 'sizeM2',        label: 'Size (m²)', required: true },
       { key: 'condition',     label: 'Condition (Carcass/Advanced Carcass/Semi-Finished/Finished)', required: true,
-        enumValues: ['carcass', 'advanced_carcass', 'semi_finished', 'finished'] },
+        enumValues: ['carcass', 'advanced_carcass', 'semi_finished', 'finished'],
+        enumLabels: { carcass: 'Carcass', advanced_carcass: 'Advanced Carcass', semi_finished: 'Semi-Finished', finished: 'Finished (Facelift)' } },
       { key: 'tier',          label: 'Tier (Basic/Mid-Range/Premium)', required: true,
-        enumValues: ['basic', 'mid_range', 'premium'] },
+        enumValues: ['basic', 'mid_range', 'premium'],
+        enumLabels: { basic: 'Basic', mid_range: 'Mid-Range', premium: 'Premium' } },
       { key: 'totalCost',     label: 'Total Cost', required: true },
       { key: 'completedYear', label: 'Year Completed', required: true },
       { key: 'notes',         label: 'Notes' },
@@ -125,7 +127,9 @@ function requiredColumnsOf(columns) {
 
 // mapping: { [columnKey]: header|null } — the confirmed (or auto-guessed) match
 // between our expected columns and the file's actual headers for this sheet.
-function buildModuleRows(raw, columns, mapping) {
+// valueOverrides: { [columnKey]: { [rawValue]: enumValue } } — user corrections
+// for enum values auto-matching couldn't confidently guess.
+function buildModuleRows(raw, columns, mapping, valueOverrides = {}) {
   const requiredKeys = new Set(requiredColumnsOf(columns).map((c) => c.key));
   const rows = [];
   raw.forEach((r) => {
@@ -138,7 +142,10 @@ function buildModuleRows(raw, columns, mapping) {
       if (requiredKeys.has(c.key) && isBlank) missingRequired = true;
       if (!header) return;
       if (rawVal instanceof Date) row[c.key] = rawVal.toISOString().split('T')[0];
-      else if (c.enumValues) row[c.key] = matchEnumValue(rawVal, c.enumValues);
+      else if (c.enumValues) {
+        const rawKey = String(rawVal ?? '');
+        row[c.key] = valueOverrides[c.key]?.[rawKey] ?? matchEnumValue(rawVal, c.enumValues);
+      }
       else row[c.key] = rawVal;
     });
     if (!missingRequired) rows.push(row);
@@ -154,6 +161,7 @@ export default function MasterImport() {
   const [preview, setPreview] = useState(null); // [{ sheet, label, headers, found }]
   const [rawBySheet, setRawBySheet] = useState({}); // { [sheet]: rawRows[] } — combined across files
   const [mapping, setMapping] = useState({}); // { [sheet]: { columnKey: header|null } }
+  const [valueOverrides, setValueOverrides] = useState({}); // { [sheet]: { columnKey: { rawValue: enumValue } } }
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(null); // { label, current, total }
   const [results, setResults] = useState(null);
@@ -173,12 +181,19 @@ export default function MasterImport() {
     });
     setMapping(nextMapping);
     setRawBySheet(nextRaw);
+    setValueOverrides({});
     setPreview(summaries);
   };
 
+  const setValueOverride = (sheet, colKey, rawVal, enumVal) =>
+    setValueOverrides((v) => ({
+      ...v,
+      [sheet]: { ...v[sheet], [colKey]: { ...v[sheet]?.[colKey], [rawVal]: enumVal } },
+    }));
+
   // Row counts recompute live as the user edits the column mapping.
   const rowCounts = MODULES.reduce((acc, mod) => {
-    acc[mod.sheet] = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {}).length;
+    acc[mod.sheet] = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {}, valueOverrides[mod.sheet] || {}).length;
     return acc;
   }, {});
 
@@ -219,7 +234,7 @@ export default function MasterImport() {
   const triggerReplace = (id) => { replaceIdRef.current = id; fileRef.current?.click(); };
   const removeFile = (id) => setFiles((prev) => {
     const next = prev.filter((f) => f.id !== id);
-    if (next.length) rebuildPreview(next); else { setPreview(null); setMapping({}); setRawBySheet({}); }
+    if (next.length) rebuildPreview(next); else { setPreview(null); setMapping({}); setRawBySheet({}); setValueOverrides({}); }
     return next;
   });
 
@@ -234,7 +249,7 @@ export default function MasterImport() {
       for (const mod of MODULES) {
         let rows;
         try {
-          rows = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {});
+          rows = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {}, valueOverrides[mod.sheet] || {});
         } catch (err) {
           out.push({ label: mod.label, imported: 0, skipped: 0, errors: [{ row: 0, message: `Could not read sheet: ${err.message}` }] });
           continue;
@@ -263,6 +278,7 @@ export default function MasterImport() {
       setPreview(null);
       setMapping({});
       setRawBySheet({});
+      setValueOverrides({});
       setFiles([]);
     }
   };
@@ -356,6 +372,19 @@ export default function MasterImport() {
               const unmappedRequired = found && headers.length > 0
                 ? mod.columns.filter((c) => requiredKeys.has(c.key) && !map[c.key])
                 : [];
+              const sheetOverrides = valueOverrides[sheet] || {};
+              const enumColumnsWithValues = mod.columns
+                .filter((c) => c.enumValues && map[c.key])
+                .map((c) => {
+                  const header = map[c.key];
+                  const values = new Set();
+                  (rawBySheet[sheet] || []).forEach((r) => {
+                    const v = r[header];
+                    if (v !== undefined && v !== null && String(v).trim() !== '') values.add(String(v));
+                  });
+                  return { col: c, values: [...values] };
+                })
+                .filter((e) => e.values.length > 0);
               return (
                 <details key={label} className="group border-b border-gray-50 last:border-0">
                   <summary className="flex items-center justify-between py-2 cursor-pointer list-none">
@@ -389,6 +418,40 @@ export default function MasterImport() {
                         <div className="flex items-start gap-2 mt-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                           <AlertTriangle size={13} className="shrink-0 mt-0.5" />
                           <span>{unmappedRequired.map((c) => `"${c.label}"`).join(', ')} {unmappedRequired.length === 1 ? 'is' : 'are'} required.</span>
+                        </div>
+                      )}
+                      {enumColumnsWithValues.length > 0 && (
+                        <div className="pt-2 space-y-2">
+                          <p className="text-xs font-semibold text-gray-700">Check these values</p>
+                          {enumColumnsWithValues.map(({ col, values }) => (
+                            <div key={col.key} className="border border-gray-100 rounded-lg p-2.5">
+                              <p className="text-xs font-medium text-gray-600 mb-1.5">{col.label}</p>
+                              <div className="space-y-1">
+                                {values.map((val) => {
+                                  const guessed = sheetOverrides[col.key]?.[val] ?? matchEnumValue(val, col.enumValues);
+                                  const isUnmatched = !col.enumValues.includes(guessed);
+                                  return (
+                                    <div key={val} className="flex items-center gap-2">
+                                      <span className={`text-xs flex-1 min-w-0 truncate ${isUnmatched ? 'text-red-600 font-medium' : 'text-gray-600'}`} title={val}>
+                                        "{val}"{isUnmatched && ' — no match'}
+                                      </span>
+                                      <span className="text-gray-300 text-xs shrink-0">→</span>
+                                      <select
+                                        value={isUnmatched ? '' : guessed}
+                                        onChange={(e) => setValueOverride(sheet, col.key, val, e.target.value)}
+                                        className={`text-xs border rounded-lg px-2 py-1 bg-white max-w-[50%] focus:outline-none focus:ring-2 focus:ring-primary-900/30 ${isUnmatched ? 'border-red-300' : 'border-gray-200'}`}
+                                      >
+                                        <option value="">— Choose —</option>
+                                        {col.enumValues.map((ev) => (
+                                          <option key={ev} value={ev}>{col.enumLabels?.[ev] || ev}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
