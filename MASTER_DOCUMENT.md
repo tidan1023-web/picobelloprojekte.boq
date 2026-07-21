@@ -865,6 +865,13 @@ User reported BOQ and Historical Project imports failing with a bare "validation
 - **Nigerian bank dropdown** added to Company Settings' bank details (`frontend/src/utils/nigerianBanks.js`) — Payments.jsx already sourced banks live from Paystack, so only the free-text company bank-details field needed it.
 - **Scenario Simulator number overflow fixed** — the classic Tailwind flex/grid-child overflow bug (missing `min-w-0` on flex children, no truncation) let large ₦ figures spill out of their cards; added `min-w-0`, `truncate` + hover tooltips, `shrink-0` on sibling badges, and responsive text sizing.
 
+### Phase 12 — Launch Waitlist
+Added a public signup form on the landing page (name, role in construction industry via dropdown, email, phone) so prospects can be notified when new modular features launch:
+- `backend/src/models/WaitlistSignup.js` — not scoped to any company (unlike almost everything else in this app), since it's platform-level marketing data, not tenant data. `email` is uniquely indexed; a repeat signup gets a friendly "already on the list" response instead of an error
+- `POST /api/waitlist` is public (rate-limited via `authLimiter`, validated via a new `zodValidate` schema); on signup it also fires an owner-notification email (`sendWaitlistNotification` in `utils/email.js`), same pattern as the existing `sendOnboardingRequest`
+- `GET /api/waitlist` (list all signups) is gated the same way as `ownerDashboard` — platform owner only, not a company `admin` role, since this list spans all prospective customers, not one tenant. Exported `SUPER_EMAILS` from `authController.js` so `waitlistController.js` could reuse the exact same check, plus the `OWNER_EMAIL` env var address (defaults to the account that already receives these notification emails)
+- New `frontend/src/pages/Waitlist.jsx` (search, CSV export) under a "Launch Waitlist" sidebar link, visible to the same accounts that can see it — new route `/app/waitlist`
+
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |
 |-----|-------|-----|

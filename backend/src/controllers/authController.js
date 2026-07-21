@@ -414,4 +414,5 @@ module.exports = {
   acceptInvite, requestOnboarding,
   updateMemberPlan, adminResetPassword,
   ownerDashboard, ownerSetPlan,
+  SUPER_EMAILS,
 };

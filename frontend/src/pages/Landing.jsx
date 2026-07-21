@@ -295,6 +295,101 @@ function FaqList() {
   );
 }
 
+const WAITLIST_ROLES = [
+  { value: 'quantity_surveyor',         label: 'Quantity Surveyor' },
+  { value: 'project_manager',           label: 'Project Manager' },
+  { value: 'contractor',                label: 'Contractor / Builder' },
+  { value: 'architect',                 label: 'Architect' },
+  { value: 'civil_structural_engineer', label: 'Civil / Structural Engineer' },
+  { value: 'mep_engineer',              label: 'MEP Engineer' },
+  { value: 'site_supervisor',           label: 'Site Supervisor / Foreman' },
+  { value: 'developer_client',          label: 'Developer / Client' },
+  { value: 'consultant',                label: 'Consultant' },
+  { value: 'supplier_vendor',           label: 'Supplier / Vendor' },
+  { value: 'student',                   label: 'Student' },
+  { value: 'other',                     label: 'Other' },
+];
+
+function WaitlistSection() {
+  const [form, setForm]           = useState({ name: '', role: '', email: '', phone: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone]           = useState(false);
+  const [error, setError]         = useState('');
+
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      await axios.post('/api/waitlist', form);
+      setDone(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section className="py-14 sm:py-24 px-4 sm:px-8 bg-primary-900 text-white">
+      <div className="max-w-xl mx-auto text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3">Join the Launch Waitlist</h2>
+        <p className="text-blue-200 mb-8 text-sm sm:text-base leading-relaxed">
+          We're rolling out new modular features soon. Leave your details and we'll email you the moment they go live.
+        </p>
+
+        {done ? (
+          <div className="bg-white/10 border border-white/20 rounded-2xl p-8">
+            <CheckCircle size={32} className="text-green-400 mx-auto mb-3" />
+            <p className="font-semibold">You're on the list!</p>
+            <p className="text-blue-200 text-sm mt-1">We'll email you the moment new features launch.</p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="bg-white rounded-2xl p-6 sm:p-8 shadow-xl text-left space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-lg text-sm">{error}</div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Name *</label>
+                <input required value={form.name} onChange={set('name')}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-900"
+                  placeholder="Full name" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Role in construction *</label>
+                <select required value={form.role} onChange={set('role')}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-900">
+                  <option value="">Select role…</option>
+                  {WAITLIST_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email *</label>
+                <input required type="email" value={form.email} onChange={set('email')}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-900"
+                  placeholder="you@company.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
+                <input value={form.phone} onChange={set('phone')}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-900"
+                  placeholder="+234 800 000 0000" />
+              </div>
+            </div>
+            <button type="submit" disabled={submitting}
+              className="w-full bg-primary-900 text-white font-semibold py-3 rounded-xl hover:bg-primary-800 transition-colors disabled:opacity-60">
+              {submitting ? 'Joining…' : 'Join the Waitlist'}
+            </button>
+          </form>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function Landing() {
   const [bookPlan, setBookPlan] = useState(null);
 
@@ -623,6 +718,9 @@ export default function Landing() {
           <FaqList />
         </div>
       </section>
+
+      {/* Waitlist */}
+      <WaitlistSection />
 
       {/* CTA */}
       <section className="py-14 sm:py-24 px-4 sm:px-8 bg-white text-center">

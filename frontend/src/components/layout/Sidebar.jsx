@@ -191,6 +191,17 @@ export default function Sidebar({ onClose }) {
         </div>
       )}
 
+      {/* Launch Waitlist link — super users + dev account only */}
+      {(SUPER_EMAILS.includes(user?.email) || user?.email === DEV_EMAIL) && (
+        <div className="px-2 pb-1 shrink-0">
+          <NavLink to="/app/waitlist" onClick={onClose}
+            className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-blue-600 text-white' : 'text-blue-200 hover:bg-primary-800 hover:text-white'}`}>
+            <Users size={15} className="shrink-0" />
+            Launch Waitlist
+          </NavLink>
+        </div>
+      )}
+
       {/* Trial countdown */}
       {user?.email !== DEV_EMAIL && (PLAN_RANK[user?.plan || 'free'] === 0) && (() => {
         const daysLeft = user?.createdAt

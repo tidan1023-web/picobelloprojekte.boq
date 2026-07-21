@@ -37,6 +37,19 @@ const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
+const WAITLIST_ROLES = [
+  'quantity_surveyor', 'project_manager', 'contractor', 'architect',
+  'civil_structural_engineer', 'mep_engineer', 'site_supervisor',
+  'developer_client', 'consultant', 'supplier_vendor', 'student', 'other',
+];
+
+const waitlistSchema = z.object({
+  name:  z.string().min(2, 'Name must be at least 2 characters').max(100),
+  role:  z.enum(WAITLIST_ROLES, { message: 'Please select a role' }),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().max(30).optional().or(z.literal('')),
+});
+
 const resetPasswordSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
@@ -80,5 +93,6 @@ module.exports = {
     resetPassword: resetPasswordSchema,
     estimate: estimateSchema,
     invoice: invoiceSchema,
+    waitlist: waitlistSchema,
   },
 };

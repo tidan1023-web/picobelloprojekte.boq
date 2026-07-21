@@ -69,6 +69,7 @@ import CompanySettings    from './pages/CompanySettings';
 import TeamManagement     from './pages/TeamManagement';
 import Profile            from './pages/Profile';
 import OwnerDashboard     from './pages/OwnerDashboard';
+import Waitlist           from './pages/Waitlist';
 import Payments           from './pages/Payments';
 import PayInvoice         from './pages/PayInvoice';
 import MasterImport       from './pages/MasterImport';
@@ -148,6 +149,7 @@ export default function App() {
             <Route path="team"                   element={<TeamManagement />} />
             <Route path="profile"                element={<Profile />} />
             <Route path="owner"                  element={<OwnerDashboard />} />
+            <Route path="waitlist"               element={<Waitlist />} />
             <Route path="master-import"          element={<MasterImport />} />
           </Route>
 

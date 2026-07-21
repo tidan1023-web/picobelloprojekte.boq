@@ -179,4 +179,23 @@ const sendOnboardingRequest = ({ name, email, plan }) =>
     `,
   });
 
-module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite, sendOnboardingRequest };
+const sendWaitlistNotification = ({ name, email, phone, role }) =>
+  sendEmail({
+    to: process.env.OWNER_EMAIL || 'tidan1023@gmail.com',
+    subject: `New waitlist signup — ${name}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:auto">
+        <h2 style="color:#1e3a5f">New Waitlist Signup</h2>
+        <p>Someone joined the SquareMetre launch waitlist.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;color:#666;width:100px">Name</td><td style="padding:8px;font-weight:600">${name}</td></tr>
+          <tr><td style="padding:8px;color:#666">Role</td><td style="padding:8px;font-weight:600">${role}</td></tr>
+          <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px;font-weight:600">${email}</td></tr>
+          <tr><td style="padding:8px;color:#666">Phone</td><td style="padding:8px;font-weight:600">${phone || '—'}</td></tr>
+        </table>
+        <p style="margin-top:24px;color:#666;font-size:13px">SquareMetre BOQ System</p>
+      </div>
+    `,
+  });
+
+module.exports = { sendEmail, sendWelcome, sendPasswordReset, sendBookingConfirmation, sendTeamInvite, sendOnboardingRequest, sendWaitlistNotification };
