@@ -123,9 +123,10 @@ function ProjectDocs({ project, canEdit }) {
 }
 
 const PROJECT_IMPORT_COLUMNS = [
-  { key: 'name', label: 'Project Name', type: 'string' },
-  { key: 'client', label: 'Client', type: 'string' },
-  { key: 'status', label: 'Status', type: 'string' },
+  { key: 'name', label: 'Project Name', type: 'string', required: true },
+  { key: 'client', label: 'Client', type: 'string', required: true },
+  { key: 'status', label: 'Status (planning/active/on_hold/completed/cancelled)', type: 'string',
+    enumValues: ['planning', 'active', 'on_hold', 'completed', 'cancelled'] },
   { key: 'currency', label: 'Currency', type: 'string' },
   { key: 'budget', label: 'Budget', type: 'number' },
   { key: 'location', label: 'Location', type: 'string' },

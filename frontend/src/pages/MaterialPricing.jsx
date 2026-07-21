@@ -6,11 +6,11 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const MATERIAL_IMPORT_COLUMNS = [
-  { key: 'material', label: 'Material Name', type: 'string' },
+  { key: 'material', label: 'Material Name', type: 'string', required: true },
   { key: 'category', label: 'Category', type: 'string' },
-  { key: 'unit', label: 'Unit', type: 'string' },
-  { key: 'price', label: 'Price (₦)', type: 'number' },
-  { key: 'supplier', label: 'Supplier', type: 'string' },
+  { key: 'unit', label: 'Unit', type: 'string', required: true },
+  { key: 'price', label: 'Price (₦)', type: 'number', required: true },
+  { key: 'supplier', label: 'Supplier', type: 'string', required: true },
   { key: 'source', label: 'Source', type: 'string' },
 ];
 

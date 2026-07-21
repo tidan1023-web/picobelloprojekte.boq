@@ -108,10 +108,10 @@ function SliderRow({ label, value, min, max, step, format, onChange, hint }) {
 
 function EstCard({ label, est, color, selected }) {
   return (
-    <div className={`rounded-xl p-4 border-2 transition-all ${selected ? `border-primary-900 ${color} shadow-md` : 'border-gray-100 bg-white'}`}>
-      <p className="text-xs font-semibold text-gray-500 mb-1">{label}</p>
-      <p className="text-xl font-black text-gray-900">₦{fmt(est?.total)}</p>
-      <p className="text-xs text-gray-500 mt-0.5">₦{fmt(est?.rate)} / m²</p>
+    <div className={`min-w-0 rounded-xl p-4 border-2 transition-all ${selected ? `border-primary-900 ${color} shadow-md` : 'border-gray-100 bg-white'}`}>
+      <p className="text-xs font-semibold text-gray-500 mb-1 truncate">{label}</p>
+      <p className="text-lg sm:text-xl font-black text-gray-900 truncate" title={`₦${fmt(est?.total)}`}>₦{fmt(est?.total)}</p>
+      <p className="text-xs text-gray-500 mt-0.5 truncate" title={`₦${fmt(est?.rate)} / m²`}>₦{fmt(est?.rate)} / m²</p>
     </div>
   );
 }
@@ -347,15 +347,15 @@ export default function Simulator() {
               {/* Selected tier highlight */}
               <div className={`rounded-2xl p-6 ${TIER_BG[tier]} border-2 border-primary-900`}>
                 <div className="flex items-start justify-between flex-wrap gap-2">
-                  <div>
-                    <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-1">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-1 truncate">
                       {TIERS.find(t => t.id === tier)?.label} · {CONDITIONS.find(c => c.id === condition)?.label} · {sizeM2}m²
                     </p>
-                    <p className="text-4xl font-black text-gray-900">₦{fmt(selectedEst?.total)}</p>
-                    <p className="text-sm text-gray-600 mt-1">₦{fmt(selectedEst?.rate)} per m²</p>
+                    <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 truncate" title={`₦${fmt(selectedEst?.total)}`}>₦{fmt(selectedEst?.total)}</p>
+                    <p className="text-sm text-gray-600 mt-1 truncate">₦{fmt(selectedEst?.rate)} per m²</p>
                   </div>
                   {yearsAhead > 0 && (
-                    <div className="bg-white/70 rounded-xl px-3 py-2 text-right">
+                    <div className="bg-white/70 rounded-xl px-3 py-2 text-right shrink-0">
                       <p className="text-xs text-gray-500">Projected {yearsAhead}yr forward</p>
                       <p className="text-sm font-bold text-primary-900">×{result.forwardFactor.toFixed(3)} inflation</p>
                     </div>
@@ -369,7 +369,7 @@ export default function Simulator() {
               </div>
 
               {/* All 3 tiers */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <EstCard label="Basic"     est={result.basicEstimate}    color="bg-gray-50"   selected={tier === 'basic'} />
                 <EstCard label="Mid-Range" est={result.midRangeEstimate} color="bg-blue-50"   selected={tier === 'mid_range'} />
                 <EstCard label="Premium"   est={result.premiumEstimate}  color="bg-purple-50" selected={tier === 'premium'} />
@@ -423,12 +423,12 @@ export default function Simulator() {
                     const isActive = condition === c.id;
                     return (
                       <button key={c.id} onClick={() => setCondition(c.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${
+                        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl transition-all text-left ${
                           isActive ? 'bg-primary-50 border-2 border-primary-900' : 'bg-gray-50 border-2 border-transparent hover:border-gray-200'
                         }`}>
-                        <span className={`text-sm font-medium ${isActive ? 'text-primary-900' : 'text-gray-700'}`}>{c.label}</span>
-                        <div className="text-right">
-                          <p className={`text-sm font-bold ${isActive ? 'text-primary-900' : 'text-gray-800'}`}>₦{fmt(total)}</p>
+                        <span className={`text-sm font-medium truncate ${isActive ? 'text-primary-900' : 'text-gray-700'}`}>{c.label}</span>
+                        <div className="text-right shrink-0">
+                          <p className={`text-sm font-bold ${isActive ? 'text-primary-900' : 'text-gray-800'}`} title={`₦${fmt(total)}`}>₦{fmt(total)}</p>
                           <p className="text-xs text-gray-400">₦{fmt(rate)} /m²</p>
                         </div>
                       </button>

@@ -6,11 +6,11 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const BOQ_ITEM_IMPORT_COLUMNS = [
-  { key: 'item', label: 'Item', type: 'string' },
+  { key: 'item', label: 'Item', type: 'string', required: true },
   { key: 'description', label: 'Description', type: 'string' },
-  { key: 'unit', label: 'Unit', type: 'string' },
-  { key: 'quantity', label: 'Quantity', type: 'number' },
-  { key: 'baseCost', label: 'Base Cost', type: 'number' },
+  { key: 'unit', label: 'Unit', type: 'string', required: true },
+  { key: 'quantity', label: 'Quantity', type: 'number', required: true },
+  { key: 'baseCost', label: 'Base Cost', type: 'number', required: true },
   { key: 'overheadPercent', label: 'Overhead %', type: 'number' },
   { key: 'profitPercent', label: 'Profit %', type: 'number' },
 ];

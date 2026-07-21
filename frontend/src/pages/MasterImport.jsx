@@ -5,6 +5,7 @@ import api from '../services/api';
 import { runImport } from '../utils/runImport';
 import { matchExistingRecords } from '../utils/importMatch';
 import { autoMatchColumns } from '../utils/columnMatch';
+import { matchEnumValue } from '../utils/enumMatch';
 
 const MODULES = [
   {
@@ -14,12 +15,12 @@ const MODULES = [
     listKey: 'prices',
     matchKey: ['item'],
     columns: [
-      { key: 'category',    label: 'Category' },
+      { key: 'category',    label: 'Category', required: true },
       { key: 'subCategory', label: 'Sub Category' },
-      { key: 'item',        label: 'Item' },
-      { key: 'unit',        label: 'Unit' },
+      { key: 'item',        label: 'Item', required: true },
+      { key: 'unit',        label: 'Unit', required: true },
       { key: 'source',      label: 'Source' },
-      { key: 'price',       label: 'Price' },
+      { key: 'price',       label: 'Price', required: true },
       { key: 'userAverage', label: 'My Average' },
     ],
   },
@@ -30,10 +31,11 @@ const MODULES = [
     listKey: 'prices',
     matchKey: ['service'],
     columns: [
-      { key: 'service',  label: 'Service' },
+      { key: 'service',  label: 'Service', required: true },
       { key: 'category', label: 'Trade' },
-      { key: 'rate',     label: 'Rate (₦)' },
-      { key: 'rateUnit', label: 'Rate Unit (per day/per hour/per job/per m²/per unit)' },
+      { key: 'rate',     label: 'Rate (₦)', required: true },
+      { key: 'rateUnit', label: 'Rate Unit (per day/per hour/per job/per m²/per unit)',
+        enumValues: ['per day', 'per hour', 'per job', 'per m²', 'per unit'] },
       { key: 'location', label: 'Location' },
     ],
   },
@@ -44,11 +46,11 @@ const MODULES = [
     listKey: 'prices',
     matchKey: ['material'],
     columns: [
-      { key: 'material', label: 'Material Name' },
+      { key: 'material', label: 'Material Name', required: true },
       { key: 'category', label: 'Category' },
-      { key: 'unit',     label: 'Unit' },
-      { key: 'price',    label: 'Price (₦)' },
-      { key: 'supplier', label: 'Supplier' },
+      { key: 'unit',     label: 'Unit', required: true },
+      { key: 'price',    label: 'Price (₦)', required: true },
+      { key: 'supplier', label: 'Supplier', required: true },
     ],
   },
   {
@@ -58,8 +60,9 @@ const MODULES = [
     listKey: 'contacts',
     matchKey: ['email', 'name'],
     columns: [
-      { key: 'name',     label: 'Name' },
-      { key: 'category', label: 'Category' },
+      { key: 'name',     label: 'Name', required: true },
+      { key: 'category', label: 'Category (client/contractor/subcontractor/supplier/consultant/architect/engineer/other)',
+        enumValues: ['client', 'contractor', 'subcontractor', 'supplier', 'consultant', 'architect', 'engineer', 'other'] },
       { key: 'company',  label: 'Company' },
       { key: 'email',    label: 'Email' },
       { key: 'phone',    label: 'Phone' },
@@ -74,18 +77,20 @@ const MODULES = [
     listKey: 'projects',
     matchKey: ['name'],
     columns: [
-      { key: 'name',          label: 'Project Name' },
+      { key: 'name',          label: 'Project Name', required: true },
       { key: 'projectType',   label: 'Type' },
       { key: 'location',      label: 'Location' },
       { key: 'client',        label: 'Client' },
       { key: 'contractValue', label: 'Contract Value' },
       { key: 'startDate',     label: 'Start Date' },
       { key: 'endDate',       label: 'End Date' },
-      { key: 'sizeM2',        label: 'Size (m²)' },
-      { key: 'condition',     label: 'Condition' },
-      { key: 'tier',          label: 'Tier' },
-      { key: 'totalCost',     label: 'Total Cost' },
-      { key: 'completedYear', label: 'Year Completed' },
+      { key: 'sizeM2',        label: 'Size (m²)', required: true },
+      { key: 'condition',     label: 'Condition (Carcass/Advanced Carcass/Semi-Finished/Finished)', required: true,
+        enumValues: ['carcass', 'advanced_carcass', 'semi_finished', 'finished'] },
+      { key: 'tier',          label: 'Tier (Basic/Mid-Range/Premium)', required: true,
+        enumValues: ['basic', 'mid_range', 'premium'] },
+      { key: 'totalCost',     label: 'Total Cost', required: true },
+      { key: 'completedYear', label: 'Year Completed', required: true },
       { key: 'notes',         label: 'Notes' },
     ],
   },
@@ -112,22 +117,33 @@ function parseSheetRaw(wb, sheetName) {
   return { headers, raw };
 }
 
+// Columns explicitly marked required:true; falls back to just the first
+// column for any module list that hasn't been annotated yet.
+function requiredColumnsOf(columns) {
+  return columns.some((c) => c.required) ? columns.filter((c) => c.required) : columns.slice(0, 1);
+}
+
 // mapping: { [columnKey]: header|null } — the confirmed (or auto-guessed) match
 // between our expected columns and the file's actual headers for this sheet.
 function buildModuleRows(raw, columns, mapping) {
-  const firstKey = columns[0]?.key;
-  return raw
-    .map((r) => {
-      const row = {};
-      columns.forEach((c) => {
-        const header = mapping[c.key];
-        if (!header) return;
-        const val = r[header];
-        row[c.key] = val instanceof Date ? val.toISOString().split('T')[0] : val;
-      });
-      return row;
-    })
-    .filter((r) => firstKey && r[firstKey] !== '' && r[firstKey] != null);
+  const requiredKeys = new Set(requiredColumnsOf(columns).map((c) => c.key));
+  const rows = [];
+  raw.forEach((r) => {
+    const row = {};
+    let missingRequired = false;
+    columns.forEach((c) => {
+      const header = mapping[c.key];
+      const rawVal = header ? r[header] : undefined;
+      const isBlank = rawVal === undefined || rawVal === null || String(rawVal).trim() === '';
+      if (requiredKeys.has(c.key) && isBlank) missingRequired = true;
+      if (!header) return;
+      if (rawVal instanceof Date) row[c.key] = rawVal.toISOString().split('T')[0];
+      else if (c.enumValues) row[c.key] = matchEnumValue(rawVal, c.enumValues);
+      else row[c.key] = rawVal;
+    });
+    if (!missingRequired) rows.push(row);
+  });
+  return rows;
 }
 
 let nextFileId = 1;
@@ -336,15 +352,17 @@ export default function MasterImport() {
               const mod = MODULES.find((m) => m.sheet === sheet);
               const rows = rowCounts[sheet] || 0;
               const map = mapping[sheet] || {};
-              const requiredCol = mod.columns[0];
-              const requiredUnmapped = found && headers.length > 0 && !map[requiredCol.key];
+              const requiredKeys = new Set(requiredColumnsOf(mod.columns).map((c) => c.key));
+              const unmappedRequired = found && headers.length > 0
+                ? mod.columns.filter((c) => requiredKeys.has(c.key) && !map[c.key])
+                : [];
               return (
                 <details key={label} className="group border-b border-gray-50 last:border-0">
                   <summary className="flex items-center justify-between py-2 cursor-pointer list-none">
                     <div className="flex items-center gap-2">
                       {found ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-gray-300" />}
                       <span className="text-sm text-gray-700">{label}</span>
-                      {requiredUnmapped && <AlertTriangle size={13} className="text-amber-500" />}
+                      {unmappedRequired.length > 0 && <AlertTriangle size={13} className="text-amber-500" />}
                     </div>
                     <span className={`text-sm font-medium ${rows > 0 ? 'text-gray-800' : 'text-gray-400'}`}>
                       {found ? (rows > 0 ? `${rows} row${rows !== 1 ? 's' : ''}` : 'Sheet empty') : 'Sheet not found'}
@@ -352,10 +370,10 @@ export default function MasterImport() {
                   </summary>
                   {found && headers.length > 0 && (
                     <div className="pb-3 pl-6 space-y-1.5">
-                      {mod.columns.map((col, i) => (
+                      {mod.columns.map((col) => (
                         <div key={col.key} className="flex items-center gap-3">
                           <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
-                            {col.label}{i === 0 && <span className="text-red-500"> *</span>}
+                            {col.label}{requiredKeys.has(col.key) && <span className="text-red-500"> *</span>}
                           </span>
                           <select
                             value={map[col.key] || ''}
@@ -367,6 +385,12 @@ export default function MasterImport() {
                           </select>
                         </div>
                       ))}
+                      {unmappedRequired.length > 0 && (
+                        <div className="flex items-start gap-2 mt-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+                          <span>{unmappedRequired.map((c) => `"${c.label}"`).join(', ')} {unmappedRequired.length === 1 ? 'is' : 'are'} required.</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </details>

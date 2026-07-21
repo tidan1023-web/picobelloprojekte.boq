@@ -7,8 +7,9 @@ import { useToast } from '../context/ToastContext';
 import { runImport, summarize } from '../utils/runImport';
 
 const CONTACT_IMPORT_COLUMNS = [
-  { key: 'name', label: 'Name', type: 'string' },
-  { key: 'category', label: 'Category', type: 'string' },
+  { key: 'name', label: 'Name', type: 'string', required: true },
+  { key: 'category', label: 'Category (client/contractor/subcontractor/supplier/consultant/architect/engineer/other)', type: 'string',
+    enumValues: ['client', 'contractor', 'subcontractor', 'supplier', 'consultant', 'architect', 'engineer', 'other'] },
   { key: 'company', label: 'Company', type: 'string' },
   { key: 'email', label: 'Email', type: 'string' },
   { key: 'phone', label: 'Phone', type: 'string' },

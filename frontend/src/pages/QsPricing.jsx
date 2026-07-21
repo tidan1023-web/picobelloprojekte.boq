@@ -6,12 +6,12 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const QS_IMPORT_COLUMNS = [
-  { key: 'category',    label: 'Category',     type: 'string' },
+  { key: 'category',    label: 'Category',     type: 'string', required: true },
   { key: 'subCategory', label: 'Sub Category', type: 'string' },
-  { key: 'item',        label: 'Item',         type: 'string' },
-  { key: 'unit',        label: 'Unit',         type: 'string' },
+  { key: 'item',        label: 'Item',         type: 'string', required: true },
+  { key: 'unit',        label: 'Unit',         type: 'string', required: true },
   { key: 'source',      label: 'Source',       type: 'string' },
-  { key: 'price',       label: 'Price',        type: 'number' },
+  { key: 'price',       label: 'Price',        type: 'number', required: true },
   { key: 'userAverage', label: 'My Average',   type: 'number' },
 ];
 

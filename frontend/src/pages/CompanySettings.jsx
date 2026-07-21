@@ -12,6 +12,7 @@ import {
 import api from '../services/api';
 import { useModules, ALL_MODULES } from '../context/ModulesContext';
 import { useAuth } from '../context/AuthContext';
+import { NIGERIAN_BANKS } from '../utils/nigerianBanks';
 
 const EMPTY_BANK = { bankName: '', accountName: '', accountNumber: '', sortCode: '' };
 
@@ -344,13 +345,29 @@ export default function CompanySettings() {
                     ].map(({ label, key, placeholder }) => (
                       <div key={key}>
                         <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
-                        <input
-                          type="text"
-                          value={bank[key]}
-                          onChange={(e) => updateBank(i, key, e.target.value)}
-                          className={inputCls}
-                          placeholder={placeholder}
-                        />
+                        {key === 'bankName' ? (
+                          <select
+                            value={bank[key]}
+                            onChange={(e) => updateBank(i, key, e.target.value)}
+                            className={inputCls}
+                          >
+                            <option value="">Select bank…</option>
+                            {bank[key] && !NIGERIAN_BANKS.includes(bank[key]) && (
+                              <option value={bank[key]}>{bank[key]}</option>
+                            )}
+                            {NIGERIAN_BANKS.map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={bank[key]}
+                            onChange={(e) => updateBank(i, key, e.target.value)}
+                            className={inputCls}
+                            placeholder={placeholder}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>

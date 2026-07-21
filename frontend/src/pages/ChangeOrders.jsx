@@ -7,12 +7,13 @@ import { useToast } from '../context/ToastContext';
 import { runImport, summarize } from '../utils/runImport';
 
 const CO_IMPORT_COLUMNS = [
-  { key: 'title', label: 'Title', type: 'string' },
-  { key: 'project', label: 'Project (must match an existing project name)', type: 'string' },
-  { key: 'originalCost', label: 'Original Cost', type: 'number' },
-  { key: 'newCost', label: 'New Cost', type: 'number' },
+  { key: 'title', label: 'Title', type: 'string', required: true },
+  { key: 'project', label: 'Project (must match an existing project name)', type: 'string', required: true },
+  { key: 'originalCost', label: 'Original Cost', type: 'number', required: true },
+  { key: 'newCost', label: 'New Cost', type: 'number', required: true },
   { key: 'description', label: 'Description', type: 'string' },
-  { key: 'status', label: 'Status', type: 'string' },
+  { key: 'status', label: 'Status (pending/approved/rejected/cancelled)', type: 'string',
+    enumValues: ['pending', 'approved', 'rejected', 'cancelled'] },
   { key: 'reason', label: 'Reason', type: 'string' },
 ];
 

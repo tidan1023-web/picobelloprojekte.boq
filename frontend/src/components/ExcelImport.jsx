@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { Upload, Download, FileSpreadsheet, RefreshCw, Trash2, Plus, AlertTriangle } from 'lucide-react';
 import { matchExistingRecords } from '../utils/importMatch';
 import { autoMatchColumns } from '../utils/columnMatch';
+import { matchEnumValue } from '../utils/enumMatch';
 
 let nextFileId = 1;
 
@@ -74,22 +75,30 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
     });
   }
 
+  // Columns explicitly marked required:true; falls back to just the first
+  // column for any *_IMPORT_COLUMNS list that hasn't been annotated yet.
+  const requiredCols = columns.some((c) => c.required) ? columns.filter((c) => c.required) : columns.slice(0, 1);
+  const requiredKeys = new Set(requiredCols.map((c) => c.key));
+
   /* ---- Turn raw rows + current mapping into typed rows ready for onImport ---- */
   function buildRows(raw) {
     const rows = [];
     let skipped = 0;
     raw.forEach((rawRow) => {
       const row = {};
+      let missingRequired = false;
       columns.forEach((col) => {
         const header = mapping[col.key];
+        const rawVal = header ? rawRow[header] : undefined;
+        const isBlank = rawVal === undefined || rawVal === null || String(rawVal).trim() === '';
+        if (requiredKeys.has(col.key) && isBlank) missingRequired = true;
         if (!header) return;
-        const val = rawRow[header];
-        if (col.type === 'number') row[col.key] = parseFloat(val) || 0;
-        else if (col.type === 'date') row[col.key] = val instanceof Date ? val.toISOString().split('T')[0] : String(val || '');
-        else row[col.key] = String(val ?? '');
+        if (col.type === 'number') row[col.key] = parseFloat(rawVal) || 0;
+        else if (col.type === 'date') row[col.key] = rawVal instanceof Date ? rawVal.toISOString().split('T')[0] : String(rawVal || '');
+        else if (col.enumValues) row[col.key] = matchEnumValue(rawVal, col.enumValues);
+        else row[col.key] = String(rawVal ?? '');
       });
-      const firstKey = columns[0]?.key;
-      if (!firstKey || !row[firstKey]) { skipped++; return; }
+      if (missingRequired) { skipped++; return; }
       rows.push(row);
     });
     return { rows, skipped };
@@ -132,8 +141,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   const allRows      = built.flatMap((f) => f.rows);
   const totalSkipped = built.reduce((s, f) => s + f.skipped, 0);
   const previewRows  = allRows.slice(0, 5);
-  const requiredCol  = columns[0];
-  const requiredUnmapped = files.length > 0 && requiredCol && !mapping[requiredCol.key];
+  const unmappedRequired = files.length > 0 ? requiredCols.filter((c) => !mapping[c.key]) : [];
 
   const handleImport = () => {
     if (!allRows.length) return;
@@ -232,10 +240,10 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                     We matched these automatically. If your file uses different wording, pick the right column for each field below.
                   </p>
                   <div className="border border-gray-100 rounded-xl divide-y divide-gray-50 overflow-hidden">
-                    {columns.map((col, i) => (
+                    {columns.map((col) => (
                       <div key={col.key} className="flex items-center gap-3 px-3 py-2">
                         <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
-                          {col.label}{i === 0 && <span className="text-red-500"> *</span>}
+                          {col.label}{requiredKeys.has(col.key) && <span className="text-red-500"> *</span>}
                         </span>
                         <select
                           value={mapping[col.key] || ''}
@@ -248,10 +256,10 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                       </div>
                     ))}
                   </div>
-                  {requiredUnmapped && (
-                    <div className="flex items-center gap-2 mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      <AlertTriangle size={13} className="shrink-0" />
-                      "{requiredCol.label}" is required — map it to a column or every row will be skipped.
+                  {unmappedRequired.length > 0 && (
+                    <div className="flex items-start gap-2 mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+                      <span>{unmappedRequired.map((c) => `"${c.label}"`).join(', ')} {unmappedRequired.length === 1 ? 'is' : 'are'} required — map {unmappedRequired.length === 1 ? 'it' : 'them'} or every row will be skipped.</span>
                     </div>
                   )}
                 </div>

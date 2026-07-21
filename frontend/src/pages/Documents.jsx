@@ -11,6 +11,14 @@ const DEFAULT_FOLDERS = [
   'Permits & Approvals', 'Insurance', 'Reports', 'Other',
 ];
 
+// Auto-aggregated entries (files attached elsewhere in the app) are read-only here.
+const SOURCE_LABELS = {
+  'historical-project': 'Historical Projects',
+  'expense': 'Expense Tracker',
+  'progress-update': 'Progress Tracker',
+  'site-report': 'Site Reports',
+};
+
 const inputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 focus:border-transparent';
 
 function AddDocModal({ onClose, onSaved, projects, presetProjectId }) {
@@ -139,14 +147,16 @@ function DocList({ docs, canEdit, onDelete }) {
                       </div>
                       {doc.description && <p className="text-xs text-gray-400 truncate">{doc.description}</p>}
                       <p className="text-xs text-gray-400 mt-0.5">
-                        Added by {doc.uploadedBy?.name || 'Admin'} · {new Date(doc.createdAt).toLocaleDateString()}
+                        {doc.readOnly
+                          ? `Auto-added from ${SOURCE_LABELS[doc.source] || 'another page'}`
+                          : `Added by ${doc.uploadedBy?.name || 'Admin'}`} · {new Date(doc.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <a href={doc.url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs text-primary-900 font-medium hover:underline shrink-0">
                       <ExternalLink size={13} /> Open
                     </a>
-                    {canEdit && (
+                    {canEdit && !doc.readOnly && (
                       <button onClick={() => onDelete(doc._id)}
                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0">
                         <Trash2 size={14} />

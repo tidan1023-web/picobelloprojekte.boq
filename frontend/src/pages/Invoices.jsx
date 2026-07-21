@@ -11,13 +11,14 @@ import { runImport, summarize } from '../utils/runImport';
 
 const INV_IMPORT_COLUMNS = [
   { key: 'invoiceNumber', label: 'Invoice #',    type: 'string' },
-  { key: 'projectName',   label: 'Project Name', type: 'string' },
+  { key: 'projectName',   label: 'Project Name', type: 'string', required: true },
   { key: 'clientName',    label: 'Client Name',  type: 'string' },
   { key: 'issueDate',     label: 'Issue Date',   type: 'date'   },
   { key: 'dueDate',       label: 'Due Date',     type: 'date'   },
   { key: 'amount',        label: 'Amount',       type: 'number' },
   { key: 'currency',      label: 'Currency',     type: 'string' },
-  { key: 'status',        label: 'Status',       type: 'string' },
+  { key: 'status',        label: 'Status (draft/sent/paid/partially_paid/overdue)', type: 'string',
+    enumValues: ['draft', 'sent', 'paid', 'partially_paid', 'overdue'] },
   { key: 'notes',         label: 'Notes',        type: 'string' },
 ];
 

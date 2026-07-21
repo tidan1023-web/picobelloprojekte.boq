@@ -5,18 +5,20 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const HP_IMPORT_COLUMNS = [
-  { key: 'name',          label: 'Project Name',   type: 'string' },
+  { key: 'name',          label: 'Project Name',   type: 'string', required: true },
   { key: 'projectType',   label: 'Type',            type: 'string' },
   { key: 'location',      label: 'Location',        type: 'string' },
   { key: 'client',        label: 'Client',          type: 'string' },
   { key: 'contractValue', label: 'Contract Value',  type: 'number' },
   { key: 'startDate',     label: 'Start Date',      type: 'date'   },
   { key: 'endDate',       label: 'End Date',        type: 'date'   },
-  { key: 'sizeM2',        label: 'Size (m²)',  type: 'number' },
-  { key: 'condition',     label: 'Condition',       type: 'string' },
-  { key: 'tier',          label: 'Tier',            type: 'string' },
-  { key: 'totalCost',     label: 'Total Cost',      type: 'number' },
-  { key: 'completedYear', label: 'Year Completed',  type: 'number' },
+  { key: 'sizeM2',        label: 'Size (m²)',  type: 'number', required: true },
+  { key: 'condition',     label: 'Condition (Carcass/Advanced Carcass/Semi-Finished/Finished)', type: 'string', required: true,
+    enumValues: ['carcass', 'advanced_carcass', 'semi_finished', 'finished'] },
+  { key: 'tier',          label: 'Tier (Basic/Mid-Range/Premium)', type: 'string', required: true,
+    enumValues: ['basic', 'mid_range', 'premium'] },
+  { key: 'totalCost',     label: 'Total Cost',      type: 'number', required: true },
+  { key: 'completedYear', label: 'Year Completed',  type: 'number', required: true },
   { key: 'notes',         label: 'Notes',           type: 'string' },
 ];
 

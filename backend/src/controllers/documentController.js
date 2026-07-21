@@ -1,13 +1,24 @@
 const Document = require('../models/Document');
+const { aggregateDocuments } = require('../utils/documentAggregator');
 
 const getAll = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
-  const docs = await Document.find(filter)
-    .populate('uploadedBy', 'name')
-    .populate('projectId', 'name')
-    .sort({ folder: 1, createdAt: -1 });
-  res.json({ documents: docs });
+
+  const [docs, aggregated] = await Promise.all([
+    Document.find(filter)
+      .populate('uploadedBy', 'name')
+      .populate('projectId', 'name')
+      .lean(),
+    aggregateDocuments(req.user.companyId, req.query.projectId || null),
+  ]);
+
+  const manual = docs.map((d) => ({ ...d, source: 'manual', readOnly: false }));
+  const combined = [...manual, ...aggregated].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  res.json({ documents: combined });
 };
 
 const create = async (req, res) => {

@@ -6,10 +6,11 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const ARTISAN_IMPORT_COLUMNS = [
-  { key: 'service', label: 'Service', type: 'string' },
+  { key: 'service', label: 'Service', type: 'string', required: true },
   { key: 'category', label: 'Trade', type: 'string' },
-  { key: 'rate', label: 'Rate (₦)', type: 'number' },
-  { key: 'rateUnit', label: 'Rate Unit (per day/per hour/per job/per m²/per unit)', type: 'string' },
+  { key: 'rate', label: 'Rate (₦)', type: 'number', required: true },
+  { key: 'rateUnit', label: 'Rate Unit (per day/per hour/per job/per m²/per unit)', type: 'string',
+    enumValues: ['per day', 'per hour', 'per job', 'per m²', 'per unit'] },
   { key: 'location', label: 'Location', type: 'string' },
 ];
 

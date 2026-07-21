@@ -9,8 +9,9 @@ import ExcelImport from '../components/ExcelImport';
 import { runImport, summarize } from '../utils/runImport';
 
 const PROGRESS_IMPORT_COLUMNS = [
-  { key: 'title', label: 'Title', type: 'string' },
-  { key: 'phase', label: 'Phase (foundation/structure/mep/finishing/external/other)', type: 'string' },
+  { key: 'title', label: 'Title', type: 'string', required: true },
+  { key: 'phase', label: 'Phase (foundation/structure/mep/finishing/external/other)', type: 'string', required: true,
+    enumValues: ['foundation', 'structure', 'mep', 'finishing', 'external', 'other'] },
   { key: 'completionPercent', label: 'Completion %', type: 'number' },
   { key: 'date', label: 'Date', type: 'date' },
   { key: 'notes', label: 'Notes', type: 'string' },

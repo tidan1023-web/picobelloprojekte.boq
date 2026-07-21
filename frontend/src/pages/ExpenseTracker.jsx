@@ -7,9 +7,9 @@ import { useToast } from '../context/ToastContext';
 import { runImport, summarize } from '../utils/runImport';
 
 const EXPENSE_IMPORT_COLUMNS = [
-  { key: 'description', label: 'Description', type: 'string' },
+  { key: 'description', label: 'Description', type: 'string', required: true },
   { key: 'category', label: 'Category', type: 'string' },
-  { key: 'amount', label: 'Amount', type: 'number' },
+  { key: 'amount', label: 'Amount', type: 'number', required: true },
   { key: 'date', label: 'Date', type: 'date' },
   { key: 'vendor', label: 'Vendor', type: 'string' },
   { key: 'notes', label: 'Notes', type: 'string' },
