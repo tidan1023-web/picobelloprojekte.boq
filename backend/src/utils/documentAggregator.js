@@ -14,6 +14,13 @@ async function aggregateDocuments(companyId, projectId, scope = {}) {
   const { allowedIds = null, isClient = false } = scope;
   const results = [];
 
+  // Self-contained guard: even if a caller forgets to pre-validate a
+  // requested projectId against allowedIds, this function won't return data
+  // for a project the caller isn't scoped to.
+  if (projectId && allowedIds !== null && !allowedIds.includes(String(projectId))) {
+    return results;
+  }
+
   // Historical Project attachments aren't linked to a live Project record, so
   // they can't be scoped per-project -- only shown to internal staff (who
   // already have unrestricted Historical Projects access), never to a client,
