@@ -1,8 +1,20 @@
 const BoqVersion = require('../models/BoqVersion');
 const BoqItem = require('../models/BoqItem');
 const QsPrice = require('../models/QsPrice');
+const Project = require('../models/Project');
+const User = require('../models/User');
 const { checkRate } = require('../utils/rateAlerter');
 const { reviewBoq } = require('../utils/boqReviewer');
+
+// Clients only ever see BOQs for their own project(s) once a company has 2+
+// client accounts -- with 0 or 1, everything behaves as before (see
+// projectController/invoiceController for the same pattern).
+async function clientProjectIds(req) {
+  const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
+  if (clientCount <= 1) return null;
+  const projects = await Project.find({ companyId: req.user.companyId, assignedClientId: req.user._id }).select('_id');
+  return projects.map((p) => String(p._id));
+}
 
 async function recalculateVersionTotal(versionId) {
   const items = await BoqItem.find({ versionId });
@@ -19,6 +31,17 @@ const getVersions = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
 
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req);
+    if (allowedIds) {
+      if (filter.projectId) {
+        if (!allowedIds.includes(String(filter.projectId))) return res.json({ versions: [] });
+      } else {
+        filter.projectId = { $in: allowedIds };
+      }
+    }
+  }
+
   const versions = await BoqVersion.find(filter)
     .populate('projectId', 'name client')
     .populate('createdBy', 'name')
@@ -31,6 +54,13 @@ const getVersion = async (req, res) => {
     .populate('projectId', 'name client location')
     .populate('createdBy', 'name');
   if (!version) return res.status(404).json({ message: 'BOQ version not found' });
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req);
+    if (allowedIds && !allowedIds.includes(String(version.projectId?._id))) {
+      return res.status(404).json({ message: 'BOQ version not found' });
+    }
+  }
 
   const items = await BoqItem.find({ versionId: req.params.id }).sort({ createdAt: 1 }).lean();
   const qsPrices = await QsPrice.find({ companyId: req.user.companyId }).select('item price').lean();
