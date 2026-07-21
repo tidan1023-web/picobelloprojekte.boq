@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Download, FileSpreadsheet, RefreshCw, Trash2, Plus } from 'lucide-react';
+import { Upload, Download, FileSpreadsheet, RefreshCw, Trash2, Plus, AlertTriangle } from 'lucide-react';
 import { matchExistingRecords } from '../utils/importMatch';
+import { autoMatchColumns } from '../utils/columnMatch';
 
 let nextFileId = 1;
 
@@ -17,16 +18,31 @@ let nextFileId = 1;
  *                            "Replace existing entries" option can update instead of
  *                            duplicate. String or array of strings, tried in order.
  *   existingRecords (opt.)  — already-loaded records to match against (needs matchKey)
+ *
+ * Column headers in the uploaded file don't need to match our template exactly —
+ * they're auto-matched by similarity, and the user can review/correct the mapping
+ * before anything is parsed into rows. This is what makes a QS's own spreadsheet
+ * (different wording, different column order) still import correctly.
  */
 export default function ExcelImport({ onImport, columns = [], templateName = 'template', matchKey, existingRecords }) {
   const [open, setOpen]                 = useState(false);
-  const [files, setFiles]               = useState([]); // [{ id, name, rows, skipped }]
+  const [files, setFiles]               = useState([]); // [{ id, name, headers, raw }]
+  const [mapping, setMapping]           = useState({}); // { columnKey: header|null }
   const [replaceExisting, setReplaceExisting] = useState(false);
   const fileRef                         = useRef();
   const replaceIdRef                    = useRef(null); // set when the picker is replacing a staged file
 
   const keyFields = matchKey ? (Array.isArray(matchKey) ? matchKey : [matchKey]) : null;
   const canReplace = !!(keyFields && existingRecords);
+
+  const allHeaders = [...new Set(files.flatMap((f) => f.headers))];
+
+  // Re-guess the mapping whenever the staged file set changes.
+  useEffect(() => {
+    if (files.length) setMapping(autoMatchColumns(columns, allHeaders));
+    else setMapping({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files]);
 
   /* ---- Template download ---- */
   const downloadTemplate = () => {
@@ -36,7 +52,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
     XLSX.writeFile(wb, `${templateName}.xlsx`);
   };
 
-  /* ---- Parse one File into { rows, skipped } ---- */
+  /* ---- Parse one File into { headers, raw } — no column mapping applied yet ---- */
   function parseFile(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -46,34 +62,9 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
           const wb   = XLSX.read(data, { type: 'array', cellDates: true });
           const ws   = wb.Sheets[wb.SheetNames[0]];
           const raw  = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-          const labelToKey = {};
-          columns.forEach((col) => { labelToKey[col.label.toLowerCase()] = col; });
-
-          const rows = [];
-          let skipped = 0;
-
-          raw.forEach((rawRow) => {
-            const row = {};
-            Object.keys(rawRow).forEach((header) => {
-              const colDef = labelToKey[header.toLowerCase().trim()];
-              if (!colDef) return;
-              const val = rawRow[header];
-              if (colDef.type === 'number') {
-                row[colDef.key] = parseFloat(val) || 0;
-              } else if (colDef.type === 'date') {
-                row[colDef.key] = val instanceof Date ? val.toISOString().split('T')[0] : String(val || '');
-              } else {
-                row[colDef.key] = String(val ?? '');
-              }
-            });
-
-            const firstKey = columns[0]?.key;
-            if (!firstKey || !row[firstKey]) { skipped++; return; }
-            rows.push(row);
-          });
-
-          resolve({ rows, skipped });
+          const headerRow = XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || [];
+          const headers = raw.length ? Object.keys(raw[0]) : headerRow.map(String);
+          resolve({ headers, raw });
         } catch (err) {
           reject(err);
         }
@@ -81,6 +72,27 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
       reader.onerror = () => reject(reader.error || new Error('Could not read file'));
       reader.readAsArrayBuffer(file);
     });
+  }
+
+  /* ---- Turn raw rows + current mapping into typed rows ready for onImport ---- */
+  function buildRows(raw) {
+    const rows = [];
+    let skipped = 0;
+    raw.forEach((rawRow) => {
+      const row = {};
+      columns.forEach((col) => {
+        const header = mapping[col.key];
+        if (!header) return;
+        const val = rawRow[header];
+        if (col.type === 'number') row[col.key] = parseFloat(val) || 0;
+        else if (col.type === 'date') row[col.key] = val instanceof Date ? val.toISOString().split('T')[0] : String(val || '');
+        else row[col.key] = String(val ?? '');
+      });
+      const firstKey = columns[0]?.key;
+      if (!firstKey || !row[firstKey]) { skipped++; return; }
+      rows.push(row);
+    });
+    return { rows, skipped };
   }
 
   /* ---- File picker handler — appends, or replaces one staged slot ---- */
@@ -91,10 +103,10 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
 
     const parsed = await Promise.all(picked.map(async (file) => {
       try {
-        const { rows, skipped } = await parseFile(file);
-        return { id: nextFileId++, name: file.name, rows, skipped };
+        const { headers, raw } = await parseFile(file);
+        return { id: nextFileId++, name: file.name, headers, raw };
       } catch (err) {
-        return { id: nextFileId++, name: file.name, rows: [], skipped: 0, error: err.message };
+        return { id: nextFileId++, name: file.name, headers: [], raw: [], error: err.message };
       }
     }));
 
@@ -114,10 +126,14 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   const triggerAdd = () => { replaceIdRef.current = null; fileRef.current?.click(); };
   const triggerReplace = (id) => { replaceIdRef.current = id; fileRef.current?.click(); };
   const removeFile = (id) => setFiles((prev) => prev.filter((f) => f.id !== id));
+  const setColumnMapping = (key, header) => setMapping((m) => ({ ...m, [key]: header || null }));
 
-  const allRows    = files.flatMap((f) => f.rows);
-  const totalSkipped = files.reduce((s, f) => s + f.skipped, 0);
-  const previewRows = allRows.slice(0, 5);
+  const built = files.map((f) => ({ ...buildRows(f.raw), name: f.name }));
+  const allRows      = built.flatMap((f) => f.rows);
+  const totalSkipped = built.reduce((s, f) => s + f.skipped, 0);
+  const previewRows  = allRows.slice(0, 5);
+  const requiredCol  = columns[0];
+  const requiredUnmapped = files.length > 0 && requiredCol && !mapping[requiredCol.key];
 
   const handleImport = () => {
     if (!allRows.length) return;
@@ -131,6 +147,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
   const handleClose = () => {
     setOpen(false);
     setFiles([]);
+    setMapping({});
     setReplaceExisting(false);
   };
 
@@ -157,8 +174,8 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
             <div className="p-5 space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-blue-800">Step 1 — Download the template</p>
-                  <p className="text-xs text-blue-600 mt-0.5">Fill in your data then upload it below. Do not rename the column headers.</p>
+                  <p className="text-sm font-semibold text-blue-800">Step 1 — Download the template (optional)</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Or upload your own file — you'll get to match its columns to ours next.</p>
                 </div>
                 <button onClick={downloadTemplate}
                   className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shrink-0">
@@ -176,7 +193,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                   >
                     <Upload size={24} className="mx-auto mb-2 text-gray-300" />
                     <p className="text-sm text-gray-500">Click to select one or more files</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Accepts .xlsx, .xls, .csv</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Accepts .xlsx, .xls, .csv — column headers don't need to match exactly</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -186,7 +203,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-700 truncate">{f.name}</p>
                           <p className="text-xs text-gray-400">
-                            {f.error ? <span className="text-red-500">{f.error}</span> : `${f.rows.length} row${f.rows.length !== 1 ? 's' : ''} ready${f.skipped ? ` · ${f.skipped} skipped` : ''}`}
+                            {f.error ? <span className="text-red-500">{f.error}</span> : `${f.raw.length} row${f.raw.length !== 1 ? 's' : ''} · ${f.headers.length} column${f.headers.length !== 1 ? 's' : ''} detected`}
                           </p>
                         </div>
                         <button type="button" onClick={() => triggerReplace(f.id)} title="Replace this file"
@@ -207,6 +224,38 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                 )}
                 <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" multiple className="hidden" onChange={handleFiles} />
               </div>
+
+              {files.length > 0 && allHeaders.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Step 3 — Match your columns</p>
+                  <p className="text-xs text-gray-500 mb-2">
+                    We matched these automatically. If your file uses different wording, pick the right column for each field below.
+                  </p>
+                  <div className="border border-gray-100 rounded-xl divide-y divide-gray-50 overflow-hidden">
+                    {columns.map((col, i) => (
+                      <div key={col.key} className="flex items-center gap-3 px-3 py-2">
+                        <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
+                          {col.label}{i === 0 && <span className="text-red-500"> *</span>}
+                        </span>
+                        <select
+                          value={mapping[col.key] || ''}
+                          onChange={(e) => setColumnMapping(col.key, e.target.value)}
+                          className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white max-w-[55%] focus:outline-none focus:ring-2 focus:ring-primary-900/30"
+                        >
+                          <option value="">— Not mapped —</option>
+                          {allHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                  {requiredUnmapped && (
+                    <div className="flex items-center gap-2 mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      <AlertTriangle size={13} className="shrink-0" />
+                      "{requiredCol.label}" is required — map it to a column or every row will be skipped.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {canReplace && files.length > 0 && (
                 <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -248,7 +297,7 @@ export default function ExcelImport({ onImport, columns = [], templateName = 'te
                     </div>
                   ) : (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-                      No valid rows found. Make sure the column headers match the template exactly.
+                      No valid rows found. Check the column mapping above — the required field may not be mapped.
                     </div>
                   )}
                 </div>

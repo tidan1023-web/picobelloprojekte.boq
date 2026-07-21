@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Download, CheckCircle, XCircle, Loader2, FileSpreadsheet } from 'lucide-react';
+import { Upload, Download, CheckCircle, XCircle, Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 import { runImport } from '../utils/runImport';
 import { matchExistingRecords } from '../utils/importMatch';
+import { autoMatchColumns } from '../utils/columnMatch';
 
 const MODULES = [
   {
@@ -99,20 +100,34 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'squaremetre-master-template.xlsx');
 }
 
-function parseSheet(wb, sheetName, columns) {
+// Reads a sheet's raw rows (keyed by the file's own headers) without mapping
+// them to our column keys yet — that happens in buildModuleRows, once we know
+// how the file's headers correspond to our expected columns.
+function parseSheetRaw(wb, sheetName) {
   const ws = wb.Sheets[sheetName];
-  if (!ws) return [];
+  if (!ws) return { headers: [], raw: [] };
   const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
-  const headerMap = {};
-  columns.forEach((c) => { headerMap[c.label.toLowerCase()] = c.key; });
-  return raw.map((r) => {
-    const row = {};
-    Object.entries(r).forEach(([h, val]) => {
-      const key = headerMap[h.toLowerCase().trim()];
-      if (key) row[key] = val instanceof Date ? val.toISOString().split('T')[0] : val;
-    });
-    return row;
-  }).filter((r) => Object.values(r).some((v) => v !== '' && v != null));
+  const headerRow = XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || [];
+  const headers = raw.length ? Object.keys(raw[0]) : headerRow.map(String);
+  return { headers, raw };
+}
+
+// mapping: { [columnKey]: header|null } — the confirmed (or auto-guessed) match
+// between our expected columns and the file's actual headers for this sheet.
+function buildModuleRows(raw, columns, mapping) {
+  const firstKey = columns[0]?.key;
+  return raw
+    .map((r) => {
+      const row = {};
+      columns.forEach((c) => {
+        const header = mapping[c.key];
+        if (!header) return;
+        const val = r[header];
+        row[c.key] = val instanceof Date ? val.toISOString().split('T')[0] : val;
+      });
+      return row;
+    })
+    .filter((r) => firstKey && r[firstKey] !== '' && r[firstKey] != null);
 }
 
 let nextFileId = 1;
@@ -120,7 +135,9 @@ let nextFileId = 1;
 export default function MasterImport() {
   const fileRef = useRef(null);
   const [files, setFiles] = useState([]); // [{ id, name, workbook }]
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(null); // [{ sheet, label, headers, found }]
+  const [rawBySheet, setRawBySheet] = useState({}); // { [sheet]: rawRows[] } — combined across files
+  const [mapping, setMapping] = useState({}); // { [sheet]: { columnKey: header|null } }
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(null); // { label, current, total }
   const [results, setResults] = useState(null);
@@ -128,13 +145,26 @@ export default function MasterImport() {
   const replaceIdRef = useRef(null);
 
   const rebuildPreview = (fileList) => {
+    const nextMapping = {};
+    const nextRaw = {};
     const summaries = MODULES.map(({ sheet, label, columns }) => {
-      const rows = fileList.flatMap((f) => parseSheet(f.workbook, sheet, columns));
+      const parsedPerFile = fileList.map((f) => parseSheetRaw(f.workbook, sheet));
+      const headers = [...new Set(parsedPerFile.flatMap((p) => p.headers))];
       const found = fileList.some((f) => f.workbook.SheetNames.includes(sheet));
-      return { sheet, label, rows: rows.length, found };
+      nextMapping[sheet] = headers.length ? autoMatchColumns(columns, headers) : {};
+      nextRaw[sheet] = parsedPerFile.flatMap((p) => p.raw);
+      return { sheet, label, headers, found };
     });
+    setMapping(nextMapping);
+    setRawBySheet(nextRaw);
     setPreview(summaries);
   };
+
+  // Row counts recompute live as the user edits the column mapping.
+  const rowCounts = MODULES.reduce((acc, mod) => {
+    acc[mod.sheet] = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {}).length;
+    return acc;
+  }, {});
 
   const handleFile = (e) => {
     const picked = Array.from(e.target.files || []);
@@ -173,9 +203,12 @@ export default function MasterImport() {
   const triggerReplace = (id) => { replaceIdRef.current = id; fileRef.current?.click(); };
   const removeFile = (id) => setFiles((prev) => {
     const next = prev.filter((f) => f.id !== id);
-    if (next.length) rebuildPreview(next); else setPreview(null);
+    if (next.length) rebuildPreview(next); else { setPreview(null); setMapping({}); setRawBySheet({}); }
     return next;
   });
+
+  const setColumnMapping = (sheet, key, header) =>
+    setMapping((m) => ({ ...m, [sheet]: { ...m[sheet], [key]: header || null } }));
 
   const handleImport = async () => {
     if (!files.length) return;
@@ -185,7 +218,7 @@ export default function MasterImport() {
       for (const mod of MODULES) {
         let rows;
         try {
-          rows = files.flatMap((f) => parseSheet(f.workbook, mod.sheet, mod.columns));
+          rows = buildModuleRows(rawBySheet[mod.sheet] || [], mod.columns, mapping[mod.sheet] || {});
         } catch (err) {
           out.push({ label: mod.label, imported: 0, skipped: 0, errors: [{ row: 0, message: `Could not read sheet: ${err.message}` }] });
           continue;
@@ -212,6 +245,8 @@ export default function MasterImport() {
       setImporting(false);
       setProgress(null);
       setPreview(null);
+      setMapping({});
+      setRawBySheet({});
       setFiles([]);
     }
   };
@@ -293,18 +328,50 @@ export default function MasterImport() {
       {preview && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
           <p className="font-semibold text-gray-800 text-sm">Ready to Import</p>
-          <div className="space-y-2">
-            {preview.map(({ label, rows, found }) => (
-              <div key={label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                <div className="flex items-center gap-2">
-                  {found ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-gray-300" />}
-                  <span className="text-sm text-gray-700">{label}</span>
-                </div>
-                <span className={`text-sm font-medium ${rows > 0 ? 'text-gray-800' : 'text-gray-400'}`}>
-                  {found ? (rows > 0 ? `${rows} row${rows !== 1 ? 's' : ''}` : 'Sheet empty') : 'Sheet not found'}
-                </span>
-              </div>
-            ))}
+          <p className="text-xs text-gray-500 -mt-2">
+            Column headers don't need to match our template exactly — expand a module below to check or correct the match.
+          </p>
+          <div className="space-y-1">
+            {preview.map(({ sheet, label, headers, found }) => {
+              const mod = MODULES.find((m) => m.sheet === sheet);
+              const rows = rowCounts[sheet] || 0;
+              const map = mapping[sheet] || {};
+              const requiredCol = mod.columns[0];
+              const requiredUnmapped = found && headers.length > 0 && !map[requiredCol.key];
+              return (
+                <details key={label} className="group border-b border-gray-50 last:border-0">
+                  <summary className="flex items-center justify-between py-2 cursor-pointer list-none">
+                    <div className="flex items-center gap-2">
+                      {found ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-gray-300" />}
+                      <span className="text-sm text-gray-700">{label}</span>
+                      {requiredUnmapped && <AlertTriangle size={13} className="text-amber-500" />}
+                    </div>
+                    <span className={`text-sm font-medium ${rows > 0 ? 'text-gray-800' : 'text-gray-400'}`}>
+                      {found ? (rows > 0 ? `${rows} row${rows !== 1 ? 's' : ''}` : 'Sheet empty') : 'Sheet not found'}
+                    </span>
+                  </summary>
+                  {found && headers.length > 0 && (
+                    <div className="pb-3 pl-6 space-y-1.5">
+                      {mod.columns.map((col, i) => (
+                        <div key={col.key} className="flex items-center gap-3">
+                          <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
+                            {col.label}{i === 0 && <span className="text-red-500"> *</span>}
+                          </span>
+                          <select
+                            value={map[col.key] || ''}
+                            onChange={(e) => setColumnMapping(sheet, col.key, e.target.value)}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white max-w-[55%] focus:outline-none focus:ring-2 focus:ring-primary-900/30"
+                          >
+                            <option value="">— Not mapped —</option>
+                            {headers.map((h) => <option key={h} value={h}>{h}</option>)}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </details>
+              );
+            })}
           </div>
 
           <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -319,7 +386,7 @@ export default function MasterImport() {
                 {progress.label} — {progress.current} of {progress.total}
               </p>
             )}
-            <button onClick={handleImport} disabled={importing || preview.every(p => p.rows === 0)}
+            <button onClick={handleImport} disabled={importing || Object.values(rowCounts).every((n) => n === 0)}
               className="flex items-center gap-2 bg-primary-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-800 disabled:opacity-50 transition-colors ml-auto">
               {importing ? <><Loader2 size={15} className="animate-spin" /> Importing…</> : 'Import All'}
             </button>
