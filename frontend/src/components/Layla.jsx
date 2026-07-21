@@ -124,13 +124,13 @@ export default function Layla() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Suggested questions — always visible */}
-          <div className="px-3 pt-2 pb-1 bg-white border-t border-gray-100 shrink-0">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Suggested</p>
-            <div className="flex flex-wrap gap-1.5">
+          {/* Suggested questions — always visible, kept to one compact row so it doesn't crowd out Layla's replies */}
+          <div className="px-3 pt-1 pb-1 bg-white border-t border-gray-100 shrink-0">
+            <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Suggested</p>
+            <div className="flex gap-1.5 overflow-x-auto">
               {SUGGESTED.map((q) => (
                 <button key={q} onClick={() => send(q)}
-                  className="text-xs bg-primary-50 text-primary-900 border border-primary-200 rounded-full px-2.5 py-1 hover:bg-primary-100 transition-colors text-left leading-tight">
+                  className="text-[10.5px] bg-primary-50 text-primary-900 border border-primary-200 rounded-full px-2 py-0.5 hover:bg-primary-100 transition-colors whitespace-nowrap shrink-0">
                   {q}
                 </button>
               ))}
