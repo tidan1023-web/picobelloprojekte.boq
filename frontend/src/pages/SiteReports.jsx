@@ -7,6 +7,29 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import MentionTextarea from '../components/MentionTextarea';
+import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
+
+const SITE_REPORT_IMPORT_COLUMNS = [
+  { key: 'title', label: 'Title', type: 'string', required: true },
+  { key: 'template', label: 'Template (daily/weekly/incident/snag/delivery/inspection)', type: 'string', required: true,
+    enumValues: ['daily', 'weekly', 'incident', 'snag', 'delivery', 'inspection'] },
+  { key: 'reportDate', label: 'Report Date', type: 'date', required: true },
+  { key: 'status', label: 'Status (draft/submitted/reviewed/approved)', type: 'string',
+    enumValues: ['draft', 'submitted', 'reviewed', 'approved'] },
+  { key: 'siteManagerName', label: 'Site Manager', type: 'string' },
+  { key: 'siteLocation', label: 'Site / Building', type: 'string' },
+  { key: 'zone', label: 'Zone / Wing', type: 'string' },
+  { key: 'level', label: 'Level / Floor', type: 'string' },
+  { key: 'room', label: 'Room / Area', type: 'string' },
+  { key: 'weatherCondition', label: 'Weather', type: 'string' },
+  { key: 'temperature', label: 'Temperature', type: 'string' },
+  { key: 'workersOnSite', label: 'Workers on Site', type: 'number' },
+  { key: 'visitorsOnSite', label: 'Visitors', type: 'number' },
+  { key: 'description', label: 'Description', type: 'string' },
+  { key: 'workCarriedOut', label: 'Work Carried Out', type: 'string' },
+  { key: 'materialsUsed', label: 'Materials Used', type: 'string' },
+];
 
 const TEMPLATES = {
   daily:      { label: 'Daily Site Report',       color: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -875,10 +898,21 @@ export default function SiteReports() {
           {projects.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
         </select>
         {canEdit && (
-          <button onClick={() => { setEditing(null); setModal(true); }}
-            className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
-            <Plus size={16} /> New Report
-          </button>
+          <>
+            <ExcelImport
+              onImport={async (rows) => {
+                const result = await runImport(rows, (row) => api.post('/site-reports', { ...row, projectId: row.projectId || projectFilter || '' }));
+                alert(summarize(result, 'report'));
+                load();
+              }}
+              columns={SITE_REPORT_IMPORT_COLUMNS}
+              templateName="site-reports"
+            />
+            <button onClick={() => { setEditing(null); setModal(true); }}
+              className="flex items-center gap-2 bg-primary-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-800 shrink-0">
+              <Plus size={16} /> New Report
+            </button>
+          </>
         )}
       </div>
 
