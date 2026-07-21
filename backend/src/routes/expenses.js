@@ -8,7 +8,9 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 
 router.use(authenticate);
 
-router.get('/', list);
+// Expenses is hidden from the client sidebar -- the read side needs the same
+// restriction, not just the writes.
+router.get('/', authorize('admin', 'qs', 'project_manager'), list);
 router.post('/', authorize('admin', 'qs', 'project_manager'), upload.array('receipts', 10), create);
 router.put('/:id', authorize('admin', 'qs', 'project_manager'), upload.array('receipts', 10), update);
 router.delete('/:id', authorize('admin', 'qs', 'project_manager'), remove);

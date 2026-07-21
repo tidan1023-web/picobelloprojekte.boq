@@ -18,6 +18,7 @@ const progressUpdateSchema = new mongoose.Schema({
   workEndDate: { type: Date },
   isPaused: { type: Boolean, default: false },
   pauseReason: { type: String, trim: true },
+  sharedWithClient: { type: Boolean, default: false },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });

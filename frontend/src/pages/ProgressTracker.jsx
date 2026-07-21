@@ -69,6 +69,7 @@ function UpdateModal({ projects, editData, onClose, onSaved }) {
       projectId: '', phase: 'foundation', title: '', notes: '',
       date: today, completionPercent: 0, actualCost: 0, invoiceAmount: 0,
       workStartDate: '', workEndDate: '', isPaused: false, pauseReason: '',
+      sharedWithClient: false,
     }
   );
   const [files, setFiles] = useState([]);
@@ -157,6 +158,12 @@ function UpdateModal({ projects, editData, onClose, onSaved }) {
               <label className="block text-xs font-medium text-gray-600 mb-1">Work End Date</label>
               <input type="date" value={form.workEndDate} onChange={(e) => setForm((f) => ({ ...f, workEndDate: e.target.value }))} className={inputCls} />
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.sharedWithClient} onChange={(e) => setForm((f) => ({ ...f, sharedWithClient: e.target.checked }))} className="rounded" />
+              <span className="text-sm text-gray-700 font-medium">Share with client</span>
+            </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer">

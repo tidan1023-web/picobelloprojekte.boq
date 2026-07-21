@@ -1,4 +1,5 @@
 const Programme = require('../models/Programme');
+const { clientProjectIds } = require('../utils/clientScope');
 
 const DEFAULT_PHASES = [
   {
@@ -79,6 +80,16 @@ const DEFAULT_PHASES = [
 exports.list = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req.user);
+    if (filter.projectId) {
+      if (!allowedIds.includes(String(filter.projectId))) return res.json({ programmes: [] });
+    } else {
+      filter.projectId = { $in: allowedIds };
+    }
+  }
+
   const programmes = await Programme.find(filter)
     .populate('projectId', 'name')
     .select('-phases.activities -weeklyReports')
@@ -90,6 +101,14 @@ exports.get = async (req, res) => {
   const prog = await Programme.findOne({ _id: req.params.id, companyId: req.user.companyId })
     .populate('projectId', 'name');
   if (!prog) return res.status(404).json({ message: 'Programme not found' });
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req.user);
+    if (!allowedIds.includes(String(prog.projectId?._id))) {
+      return res.status(404).json({ message: 'Programme not found' });
+    }
+  }
+
   res.json({ programme: prog });
 };
 

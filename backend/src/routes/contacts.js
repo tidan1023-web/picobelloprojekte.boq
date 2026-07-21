@@ -1,9 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
+const { authorize } = require('../middleware/rbac');
 const Contact = require('../models/Contact');
 
 router.use(authenticate);
+
+// Contacts isn't part of the client portal — nothing here concerns a client
+// account.
+router.use(authorize('admin', 'qs', 'project_manager'));
 
 router.get('/', async (req, res) => {
   const filter = { companyId: req.user.companyId };

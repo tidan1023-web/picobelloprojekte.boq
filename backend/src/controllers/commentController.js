@@ -1,9 +1,18 @@
 const Comment = require('../models/Comment');
 const Project = require('../models/Project');
+const { clientProjectIds } = require('../utils/clientScope');
 
 exports.getComments = async (req, res) => {
   const { projectId } = req.query;
   if (!projectId) return res.status(400).json({ message: 'projectId is required' });
+
+  const project = await Project.findOne({ _id: projectId, companyId: req.user.companyId });
+  if (!project) return res.status(404).json({ message: 'Project not found' });
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req.user);
+    if (!allowedIds.includes(String(projectId))) return res.status(404).json({ message: 'Project not found' });
+  }
 
   const comments = await Comment.find({ projectId })
     .populate('userId', 'name role')
@@ -27,8 +36,13 @@ exports.getComments = async (req, res) => {
 exports.addComment = async (req, res) => {
   const { projectId, message, parentId } = req.body;
 
-  const project = await Project.findById(projectId);
+  const project = await Project.findOne({ _id: projectId, companyId: req.user.companyId });
   if (!project) return res.status(404).json({ message: 'Project not found' });
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req.user);
+    if (!allowedIds.includes(String(projectId))) return res.status(404).json({ message: 'Project not found' });
+  }
 
   const comment = await Comment.create({
     projectId,
@@ -44,6 +58,9 @@ exports.addComment = async (req, res) => {
 exports.deleteComment = async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+  const project = await Project.findOne({ _id: comment.projectId, companyId: req.user.companyId });
+  if (!project) return res.status(404).json({ message: 'Comment not found' });
 
   const isOwner = comment.userId.toString() === req.user._id.toString();
   if (!isOwner && req.user.role !== 'admin') {

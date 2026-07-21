@@ -2,6 +2,7 @@ const ProgressUpdate = require('../models/ProgressUpdate');
 const ChangeOrder = require('../models/ChangeOrder');
 const BoqVersion = require('../models/BoqVersion');
 const Project = require('../models/Project');
+const { clientProjectIds } = require('../utils/clientScope');
 
 // ── Progress Updates ─────────────────────────────────────────────────────────────
 
@@ -9,6 +10,16 @@ exports.getUpdates = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
   if (req.query.phase) filter.phase = req.query.phase;
+
+  if (req.user.role === 'client') {
+    filter.sharedWithClient = true;
+    const allowedIds = await clientProjectIds(req.user);
+    if (filter.projectId) {
+      if (!allowedIds.includes(String(filter.projectId))) return res.json({ updates: [] });
+    } else {
+      filter.projectId = { $in: allowedIds };
+    }
+  }
 
   const updates = await ProgressUpdate.find(filter)
     .populate('createdBy', 'name')
@@ -18,7 +29,7 @@ exports.getUpdates = async (req, res) => {
 };
 
 exports.createUpdate = async (req, res) => {
-  const { projectId, phase, title, notes, date, completionPercent, actualCost } = req.body;
+  const { projectId, phase, title, notes, date, completionPercent, actualCost, sharedWithClient } = req.body;
   const images = (req.files || []).map((f) => f.path);
 
   const update = await ProgressUpdate.create({
@@ -26,6 +37,7 @@ exports.createUpdate = async (req, res) => {
     date: date || new Date(),
     completionPercent: Number(completionPercent) || 0,
     actualCost: Number(actualCost) || 0,
+    sharedWithClient: sharedWithClient === true || sharedWithClient === 'true',
     companyId: req.user.companyId,
     createdBy: req.user._id,
   });
@@ -35,7 +47,7 @@ exports.createUpdate = async (req, res) => {
 };
 
 exports.updateUpdate = async (req, res) => {
-  const { phase, title, notes, date, completionPercent, actualCost } = req.body;
+  const { phase, title, notes, date, completionPercent, actualCost, sharedWithClient } = req.body;
   const update = await ProgressUpdate.findOne({ _id: req.params.id, companyId: req.user.companyId });
   if (!update) return res.status(404).json({ message: 'Progress update not found' });
 
@@ -44,6 +56,7 @@ exports.updateUpdate = async (req, res) => {
   if (notes !== undefined) update.notes = notes;
   if (date !== undefined) update.date = date;
   if (completionPercent !== undefined) update.completionPercent = Number(completionPercent);
+  if (sharedWithClient !== undefined) update.sharedWithClient = sharedWithClient === true || sharedWithClient === 'true';
   if (actualCost !== undefined) update.actualCost = Number(actualCost);
   if (req.files && req.files.length > 0) update.images.push(...req.files.map((f) => f.path));
 

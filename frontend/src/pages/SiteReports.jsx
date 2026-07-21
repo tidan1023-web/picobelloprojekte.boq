@@ -69,6 +69,7 @@ const EMPTY_REPORT = {
   supplierName: '', deliveryNoteNumber: '', deliveryItems: [],
   inspectionChecklist: [],
   problems: [], actionsRequired: [], images: [], status: 'draft', projectId: '',
+  sharedWithClient: false,
 };
 
 function Section({ title, icon: Icon, children, defaultOpen = true }) {
@@ -698,6 +699,15 @@ function ReportModal({ open, onClose, onSaved, editing, projects, teamMembers })
                   <input value={form.assignedTo} onChange={set('assignedTo')} className={inputCls} placeholder="Name or email" />
                 )}
               </div>
+              <div className="sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input type="checkbox" checked={form.sharedWithClient}
+                    onChange={(e) => setForm((f) => ({ ...f, sharedWithClient: e.target.checked }))}
+                    className="rounded border-gray-300 text-primary-900 focus:ring-primary-900" />
+                  Share with client
+                  <span className="text-xs text-gray-400 font-normal">(visible in their portal — only if this report has a project set)</span>
+                </label>
+              </div>
             </div>
           </Section>
 
@@ -945,6 +955,7 @@ export default function SiteReports() {
                       )}
                       {openProblems > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-medium">{openProblems} open problem{openProblems > 1 ? 's' : ''}</span>}
                       {openActions > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-medium">{openActions} action{openActions > 1 ? 's' : ''}</span>}
+                      {r.sharedWithClient && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">Shared with client</span>}
                     </div>
                     <p className="font-semibold text-gray-800">{r.title}</p>
                     {r.siteManagerName && (

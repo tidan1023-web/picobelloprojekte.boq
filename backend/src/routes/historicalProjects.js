@@ -4,10 +4,11 @@ const ctrl = require('../controllers/historicalProjectController');
 
 router.use(authenticate);
 
-// Clients can browse past projects but not modify them
+// Historical Projects isn't part of the client portal — nothing here
+// concerns a client account.
 const canWrite = authorize('admin', 'qs', 'project_manager');
 
-router.get('/',              ctrl.list);
+router.get('/',              canWrite, ctrl.list);
 router.post('/',             canWrite, ctrl.create);
 router.put('/:id',           canWrite, ctrl.update);
 router.delete('/:id',        canWrite, ctrl.remove);

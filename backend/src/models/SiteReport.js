@@ -22,6 +22,7 @@ const problemSchema = new mongoose.Schema({
 const siteReportSchema = new mongoose.Schema({
   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
+  sharedWithClient: { type: Boolean, default: false },
   template: {
     type: String,
     enum: ['daily', 'weekly', 'incident', 'snag', 'delivery', 'inspection'],

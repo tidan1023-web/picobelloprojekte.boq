@@ -2,10 +2,12 @@ const express = require('express');
 const router  = express.Router();
 const { authenticate, authorize } = require('../middleware/auth');
 const SiteReport = require('../models/SiteReport');
+const { clientProjectIds } = require('../utils/clientScope');
 
 router.use(authenticate);
 
-// Clients can read reports but not create/edit/delete
+// A client only sees reports a PM/QS/Admin has explicitly shared, and only
+// for a project they're assigned to.
 const canWrite = authorize('admin', 'qs', 'project_manager');
 
 router.get('/', async (req, res) => {
@@ -13,6 +15,17 @@ router.get('/', async (req, res) => {
   if (req.query.projectId) filter.projectId = req.query.projectId;
   if (req.query.template)   filter.template  = req.query.template;
   if (req.query.status)     filter.status    = req.query.status;
+
+  if (req.user.role === 'client') {
+    filter.sharedWithClient = true;
+    const allowedIds = await clientProjectIds(req.user);
+    if (filter.projectId) {
+      if (!allowedIds.includes(String(filter.projectId))) return res.json({ reports: [] });
+    } else {
+      filter.projectId = { $in: allowedIds };
+    }
+  }
+
   const reports = await SiteReport.find(filter)
     .populate('projectId', 'name')
     .populate('preparedBy', 'name')
@@ -26,6 +39,14 @@ router.get('/:id', async (req, res) => {
     .populate('preparedBy', 'name')
     .populate('reviewedBy', 'name');
   if (!report) return res.status(404).json({ message: 'Report not found' });
+
+  if (req.user.role === 'client') {
+    const allowedIds = await clientProjectIds(req.user);
+    if (!report.sharedWithClient || !allowedIds.includes(String(report.projectId?._id))) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+  }
+
   res.json({ report });
 });
 

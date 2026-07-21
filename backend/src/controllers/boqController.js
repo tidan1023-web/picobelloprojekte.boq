@@ -1,20 +1,9 @@
 const BoqVersion = require('../models/BoqVersion');
 const BoqItem = require('../models/BoqItem');
 const QsPrice = require('../models/QsPrice');
-const Project = require('../models/Project');
-const User = require('../models/User');
+const { clientProjectIds } = require('../utils/clientScope');
 const { checkRate } = require('../utils/rateAlerter');
 const { reviewBoq } = require('../utils/boqReviewer');
-
-// Clients only ever see BOQs for their own project(s) once a company has 2+
-// client accounts -- with 0 or 1, everything behaves as before (see
-// projectController/invoiceController for the same pattern).
-async function clientProjectIds(req) {
-  const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
-  if (clientCount <= 1) return null;
-  const projects = await Project.find({ companyId: req.user.companyId, assignedClientId: req.user._id }).select('_id');
-  return projects.map((p) => String(p._id));
-}
 
 async function recalculateVersionTotal(versionId) {
   const items = await BoqItem.find({ versionId });
@@ -32,13 +21,11 @@ const getVersions = async (req, res) => {
   if (req.query.projectId) filter.projectId = req.query.projectId;
 
   if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req);
-    if (allowedIds) {
-      if (filter.projectId) {
-        if (!allowedIds.includes(String(filter.projectId))) return res.json({ versions: [] });
-      } else {
-        filter.projectId = { $in: allowedIds };
-      }
+    const allowedIds = await clientProjectIds(req.user);
+    if (filter.projectId) {
+      if (!allowedIds.includes(String(filter.projectId))) return res.json({ versions: [] });
+    } else {
+      filter.projectId = { $in: allowedIds };
     }
   }
 
@@ -56,8 +43,8 @@ const getVersion = async (req, res) => {
   if (!version) return res.status(404).json({ message: 'BOQ version not found' });
 
   if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req);
-    if (allowedIds && !allowedIds.includes(String(version.projectId?._id))) {
+    const allowedIds = await clientProjectIds(req.user);
+    if (!allowedIds.includes(String(version.projectId?._id))) {
       return res.status(404).json({ message: 'BOQ version not found' });
     }
   }

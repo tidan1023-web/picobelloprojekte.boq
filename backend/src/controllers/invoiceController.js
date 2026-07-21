@@ -3,7 +3,6 @@ const Invoice  = require('../models/Invoice');
 const Company  = require('../models/Company');
 const Estimate = require('../models/Estimate');
 const Project  = require('../models/Project');
-const User     = require('../models/User');
 const PDFDocument = require('pdfkit');
 
 // ── helpers ────────────────────────────────────────────────────────────────────────
@@ -32,12 +31,7 @@ exports.getInvoices = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status)    filter.status    = req.query.status;
   if (req.query.projectId) filter.projectId = req.query.projectId;
-  if (req.user.role === 'client') {
-    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
-    filter.clientId = clientCount > 1
-      ? req.user._id
-      : { $in: [req.user._id, null] };
-  }
+  if (req.user.role === 'client') filter.clientId = req.user._id;
   const invoices = await Invoice.find(filter)
     .populate('projectId', 'name')
     .populate('clientId',  'name email phone')
@@ -47,12 +41,7 @@ exports.getInvoices = async (req, res) => {
 
 exports.getInvoice = async (req, res) => {
   const filter = { _id: req.params.id, companyId: req.user.companyId };
-  if (req.user.role === 'client') {
-    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
-    filter.clientId = clientCount > 1
-      ? req.user._id
-      : { $in: [req.user._id, null] };
-  }
+  if (req.user.role === 'client') filter.clientId = req.user._id;
   const invoice = await Invoice
     .findOne(filter)
     .populate('projectId', 'name')

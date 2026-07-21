@@ -21,9 +21,9 @@ const PLAN_RANK = { free: 0, basic: 1, premium: 2 };
 const NAV_GROUPS = [
   {
     items: [
-      { to: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/app/projects',  icon: FolderOpen,      label: 'Projects',  module: 'projects' },
-      { to: '/app/contacts',  icon: Users,           label: 'Contacts',  module: 'contacts' },
+      { to: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard', clientHidden: true },
+      { to: '/app/projects',  icon: FolderOpen,      label: 'Projects',  module: 'projects', clientHidden: true },
+      { to: '/app/contacts',  icon: Users,           label: 'Contacts',  module: 'contacts', clientHidden: true },
     ],
   },
   {
@@ -82,7 +82,7 @@ const NAV_GROUPS = [
       { to: '/app/team',          icon: UserCog,    label: 'Team Management', adminOnly: true },
       { to: '/app/payments',      icon: CreditCard, label: 'Payments',         adminOnly: true },
       { to: '/app/master-import', icon: Upload,     label: 'Master Import',    adminOnly: true },
-      { to: '/app/settings',      icon: Settings,   label: 'Company Settings' },
+      { to: '/app/settings',      icon: Settings,   label: 'Company Settings', clientHidden: true },
     ],
   },
 ];
