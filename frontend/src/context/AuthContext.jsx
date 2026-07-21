@@ -1,11 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setUser(null);
+      delete api.defaults.headers.common['Authorization'];
+      navigate('/login', { replace: true });
+    };
+    window.addEventListener('auth:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', onUnauthorized);
+  }, [navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');

@@ -11,7 +11,11 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401 && window.location.pathname !== '/login') {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Client-side navigation, not a hard redirect — a full page load to /login
+      // depends on the host correctly serving index.html for every path, which
+      // isn't guaranteed on every static-hosting setup. AuthContext listens for
+      // this and calls the router's navigate() instead.
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
     return Promise.reject(err);
   }

@@ -845,6 +845,14 @@ Prompted by the import bug, audited every mutating button (delete/save/submit/ap
 - `TeamManagement.jsx` `handleRemove` had a genuinely empty `catch {}`; `BookCallGate.jsx` `handleBook` caught the error only to silently reset the spinner. Both now show a message
 - Where a page already had a toast/error convention it was reused; where none existed, added one consistent with that page (toast, local error banner, or `alert()` matching sibling handlers in the same file)
 
+### Phase 9 — Mid-Session "Not Found" Investigation
+User reported the app randomly showing a blank/Not Found page mid-use, and `squaremetre-boq.onrender.com/login` 404ing directly. Root cause is two compounding issues:
+1. **`JWT_EXPIRES_IN` was set to `15m`** on the live backend (`render.yaml`) with no refresh-token flow ever implemented (the `JWT_REFRESH_SECRET`/`JWT_REFRESH_EXPIRES_IN` env vars exist but nothing uses them) — so every user gets hard-logged-out every 15 minutes of token age. Changed to `24h`.
+2. **The 401 handler in `api.js` did a hard `window.location.href = '/login'`** — a real browser navigation, not a client-side route change. On a single-page app (react-router `BrowserRouter`) that only works if the host serves `index.html` for every path; `frontend/public/_redirects` and `render.yaml`'s `routes` rewrite already do this correctly in the repo, but the *live* Render service returning a raw 404 for `/login` means that config isn't actually active there — likely because the live static site wasn't created via Blueprint sync from this `render.yaml`, or hasn't redeployed since `_redirects` was added. That's a hosting-dashboard check, not a code fix.
+   - Fixed the code-level contributing factor regardless: the 401 handler now dispatches an `auth:unauthorized` window event; `AuthContext.jsx` listens for it and calls `useNavigate('/login')` — a client-side route change that never hits the server, so this specific trigger can no longer 404 even if the host's SPA fallback is misconfigured.
+   - Still recommended: confirm in the Render dashboard that the static site (whatever its current name/URL) has auto-deploy on `main` enabled and has redeployed recently, or that its Redirects/Rewrites section has `/*` → `/index.html` (rewrite, 200) configured directly.
+- Also noted (not changed): `netlify.toml` and `vercel.json` at the repo root reference a `.next` build (`@vercel/next`, `@netlify/plugin-nextjs`) from a pre-rebrand Next.js version of the frontend that no longer exists — the current frontend is a Vite/React SPA. These two files are stale and would fail if anyone tried to deploy via Netlify/Vercel today.
+
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |
 |-----|-------|-----|
