@@ -24,6 +24,8 @@ const invoiceSchema = new mongoose.Schema({
   companyId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
   invoiceNumber: { type: String, unique: true },
   estimateId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Estimate' },
+  projectId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
+  clientId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   projectName:   { type: String, required: true, trim: true },
   clientName:    { type: String, trim: true },
   clientEmail:   { type: String, trim: true },

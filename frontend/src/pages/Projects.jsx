@@ -149,6 +149,7 @@ const STATUS_COLORS = {
 const EMPTY = {
   name: '',
   client: '',
+  assignedClientId: '',
   location: '',
   budget: '',
   currency: 'NGN',
@@ -162,13 +163,18 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [clientUsers, setClientUsers] = useState([]);
 
   useEffect(() => {
     if (!open) return;
+    api.get('/auth/team').then(({ data }) => {
+      setClientUsers((data.members || []).filter((m) => m.role === 'client'));
+    }).catch(() => {});
     if (editing) {
       setForm({
         name: editing.name ?? '',
         client: editing.client ?? '',
+        assignedClientId: editing.assignedClientId ?? '',
         location: editing.location ?? '',
         budget: editing.budget ?? '',
         currency: editing.currency ?? 'NGN',
@@ -190,10 +196,11 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
     setSaving(true);
     setError('');
     try {
+      const payload = { ...form, assignedClientId: form.assignedClientId || null };
       if (editing) {
-        await api.put(`/projects/${editing._id}`, form);
+        await api.put(`/projects/${editing._id}`, payload);
       } else {
-        await api.post('/projects', form);
+        await api.post('/projects', payload);
       }
       onSaved();
     } catch (err) {
@@ -239,6 +246,21 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
               Client <span className="text-red-500">*</span>
             </label>
             <input type="text" required value={form.client} onChange={set('client')} className={inputCls} placeholder="Client name or company" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Client Login <span className="text-gray-400 font-normal">(optional — links this project to a client's portal account)</span>
+            </label>
+            <select value={form.assignedClientId} onChange={set('assignedClientId')} className={inputCls + ' bg-white'}>
+              <option value="">— Not linked to a client login —</option>
+              {clientUsers.map((c) => (
+                <option key={c._id} value={c._id}>{c.name} ({c.email})</option>
+              ))}
+            </select>
+            {clientUsers.length === 0 && (
+              <p className="text-xs text-gray-400 mt-1">No client accounts yet — invite one from Team Management first.</p>
+            )}
           </div>
 
           <div>

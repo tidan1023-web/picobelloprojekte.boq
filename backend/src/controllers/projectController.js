@@ -1,8 +1,16 @@
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 const getProjects = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status) filter.status = req.query.status;
+
+  if (req.user.role === 'client') {
+    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
+    filter.assignedClientId = clientCount > 1
+      ? req.user._id
+      : { $in: [req.user._id, null] };
+  }
 
   const projects = await Project.find(filter)
     .populate('createdBy', 'name email')
@@ -12,7 +20,14 @@ const getProjects = async (req, res) => {
 };
 
 const getProject = async (req, res) => {
-  const project = await Project.findOne({ _id: req.params.id, companyId: req.user.companyId })
+  const filter = { _id: req.params.id, companyId: req.user.companyId };
+  if (req.user.role === 'client') {
+    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
+    filter.assignedClientId = clientCount > 1
+      ? req.user._id
+      : { $in: [req.user._id, null] };
+  }
+  const project = await Project.findOne(filter)
     .populate('createdBy', 'name email');
   if (!project) return res.status(404).json({ message: 'Project not found' });
   res.json({ project });

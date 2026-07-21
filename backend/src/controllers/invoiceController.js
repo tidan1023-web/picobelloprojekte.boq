@@ -2,6 +2,8 @@ const crypto   = require('crypto');
 const Invoice  = require('../models/Invoice');
 const Company  = require('../models/Company');
 const Estimate = require('../models/Estimate');
+const Project  = require('../models/Project');
+const User     = require('../models/User');
 const PDFDocument = require('pdfkit');
 
 // ── helpers ────────────────────────────────────────────────────────────────────────
@@ -30,6 +32,12 @@ exports.getInvoices = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status)    filter.status    = req.query.status;
   if (req.query.projectId) filter.projectId = req.query.projectId;
+  if (req.user.role === 'client') {
+    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
+    filter.clientId = clientCount > 1
+      ? req.user._id
+      : { $in: [req.user._id, null] };
+  }
   const invoices = await Invoice.find(filter)
     .populate('projectId', 'name')
     .populate('clientId',  'name email phone')
@@ -38,8 +46,15 @@ exports.getInvoices = async (req, res) => {
 };
 
 exports.getInvoice = async (req, res) => {
+  const filter = { _id: req.params.id, companyId: req.user.companyId };
+  if (req.user.role === 'client') {
+    const clientCount = await User.countDocuments({ companyId: req.user.companyId, role: 'client' });
+    filter.clientId = clientCount > 1
+      ? req.user._id
+      : { $in: [req.user._id, null] };
+  }
   const invoice = await Invoice
-    .findOne({ _id: req.params.id, companyId: req.user.companyId })
+    .findOne(filter)
     .populate('projectId', 'name')
     .populate('clientId',  'name email phone');
   if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
@@ -61,6 +76,14 @@ exports.createInvoice = async (req, res) => {
       if (!currency  && est.currency)  currency  = est.currency;
       if (!notes     && est.notes)     notes     = est.notes;
     }
+  }
+
+  // A client isn't picked directly when creating an invoice — it's inherited
+  // from whichever project the invoice is linked to, so the client portal's
+  // scoping (Project.assignedClientId) stays the single source of truth.
+  if (projectId && !clientId) {
+    const project = await Project.findOne({ _id: projectId, companyId: req.user.companyId });
+    if (project?.assignedClientId) clientId = project.assignedClientId;
   }
 
   const subtotal  = items.reduce((s, i) => s + (Number(i.qty || 0) * Number(i.unitPrice || 0)), 0);

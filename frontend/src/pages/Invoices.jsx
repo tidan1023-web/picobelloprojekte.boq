@@ -45,15 +45,28 @@ function fmt(n) {
 
 function CreateModal({ onClose, onSaved }) {
   const [estimates, setEstimates] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [form, setForm] = useState({
-    estimateId: '', projectName: '', clientName: '', dueDate: '', currency: 'NGN',
+    estimateId: '', projectId: '', projectName: '', clientName: '', dueDate: '', currency: 'NGN',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     api.get('/estimates').then(({ data }) => setEstimates(data.estimates || []));
+    api.get('/projects').then(({ data }) => setProjects(data.projects || []));
   }, []);
+
+  const handleProjectChange = (e) => {
+    const id = e.target.value;
+    const proj = projects.find((p) => p._id === id);
+    setForm((f) => ({
+      ...f,
+      projectId: id,
+      projectName: proj?.name || f.projectName,
+      clientName: proj?.client || f.clientName,
+    }));
+  };
 
   const handleEstimateChange = (e) => {
     const id = e.target.value;
@@ -71,7 +84,7 @@ function CreateModal({ onClose, onSaved }) {
     setSaving(true);
     setError('');
     try {
-      const { data } = await api.post('/invoices', form);
+      const { data } = await api.post('/invoices', { ...form, projectId: form.projectId || undefined });
       onSaved(data.invoice._id);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create invoice');
@@ -100,6 +113,13 @@ function CreateModal({ onClose, onSaved }) {
             {form.estimateId && (
               <p className="text-xs text-blue-600 mt-1">Client info and a line item will be pre-filled from this estimate.</p>
             )}
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Link to Project <span className="text-gray-400 font-normal">(optional — controls who can see this invoice in the client portal)</span></label>
+            <select value={form.projectId} onChange={handleProjectChange} className={inputCls}>
+              <option value="">— No project —</option>
+              {projects.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Project Name *</label>
