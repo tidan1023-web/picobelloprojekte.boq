@@ -3,6 +3,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, AlertCircle, BarChart2, Clock, Package,
 } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function fmt(n) {
   return Number(n || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -346,6 +347,7 @@ const TABS = [
 ];
 
 export default function Analytics() {
+  const { user } = useAuth();
   const [tab, setTab] = useState('profit');
   const [sending, setSending] = useState(false);
   const [reminderResult, setReminderResult] = useState(null);
@@ -363,6 +365,9 @@ export default function Analytics() {
 
   return (
     <div className="space-y-5">
+      {user?.role !== 'admin' && (
+        <p className="text-xs text-gray-400">Showing only the projects assigned to you</p>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="overflow-x-auto w-full sm:w-auto">

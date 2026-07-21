@@ -4,13 +4,23 @@ const Project = require('../models/Project');
 const ProgressUpdate = require('../models/ProgressUpdate');
 const ChangeOrder = require('../models/ChangeOrder');
 const MaterialPrice = require('../models/MaterialPrice');
+const { getAllowedProjectIds } = require('../utils/clientScope');
 
 function fmt2(n) { return parseFloat(Number(n || 0).toFixed(2)); }
+
+// Admin sees company-wide reports; QS/PM only see the projects they're
+// assigned to -- whoever a project is assigned to is responsible for (and
+// only sees) that project's numbers.
+async function scopedProjectFilter(req) {
+  const cId = req.user.companyId;
+  const allowedIds = await getAllowedProjectIds(req.user);
+  return allowedIds !== null ? { companyId: cId, _id: { $in: allowedIds } } : { companyId: cId };
+}
 
 // ── 1. Profit Report ──────────────────────────────────────────────────────────────────────
 exports.getProfitReport = async (req, res) => {
   const cId = req.user.companyId;
-  const projects = await Project.find({ companyId: cId }).sort({ createdAt: -1 });
+  const projects = await Project.find(await scopedProjectFilter(req)).sort({ createdAt: -1 });
 
   const rows = await Promise.all(
     projects.map(async (p) => {
@@ -68,8 +78,7 @@ exports.getProfitReport = async (req, res) => {
 
 // ── 2. Cost Variance ───────────────────────────────────────────────────────────────────
 const getCostVariance = async (req, res) => {
-  const cId = req.user.companyId;
-  const projects = await Project.find({ companyId: cId, status: { $in: ['active', 'on_hold', 'completed'] } });
+  const projects = await Project.find({ ...(await scopedProjectFilter(req)), status: { $in: ['active', 'on_hold', 'completed'] } });
 
   const rows = await Promise.all(
     projects.map(async (p) => {
@@ -112,7 +121,11 @@ exports.getCostVariance = getCostVariance;
 
 // ── 3. Outstanding Invoices ───────────────────────────────────────────────────────────────────
 const getOutstandingInvoices = async (req, res) => {
-  const invoices = await Invoice.find({ companyId: req.user.companyId, balance: { $gt: 0 }, status: { $nin: ['draft', 'paid'] } })
+  const filter = { companyId: req.user.companyId, balance: { $gt: 0 }, status: { $nin: ['draft', 'paid'] } };
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null) filter.projectId = { $in: allowedIds };
+
+  const invoices = await Invoice.find(filter)
     .populate('projectId', 'name client')
     .sort({ dueDate: 1 });
 

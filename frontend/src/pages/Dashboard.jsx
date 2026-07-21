@@ -108,6 +108,9 @@ export default function Dashboard() {
               {invoices.total ?? 0} invoice{invoices.total !== 1 ? 's' : ''}
               {projects.active > 0 && ` · ${projects.active} active`}
             </p>
+            {user?.role !== 'admin' && (
+              <p className="text-blue-300/70 text-xs mt-1.5">Showing only the projects assigned to you</p>
+            )}
           </div>
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold shrink-0 ${ROLE_COLOR[user?.role] ?? 'bg-white/10 text-white border-white/20'}`}>
             <ShieldCheck size={13} />
