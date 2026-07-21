@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
     const onUnauthorized = () => {
       setUser(null);
       delete api.defaults.headers.common['Authorization'];
-      navigate('/login', { replace: true });
+      navigate('/login', { replace: true, state: { sessionExpired: true } });
     };
     window.addEventListener('auth:unauthorized', onUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', onUnauthorized);
