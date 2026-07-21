@@ -3,6 +3,7 @@ const Invoice  = require('../models/Invoice');
 const Company  = require('../models/Company');
 const Estimate = require('../models/Estimate');
 const Project  = require('../models/Project');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
 const PDFDocument = require('pdfkit');
 
 // ── helpers ────────────────────────────────────────────────────────────────────────
@@ -31,7 +32,12 @@ exports.getInvoices = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status)    filter.status    = req.query.status;
   if (req.query.projectId) filter.projectId = req.query.projectId;
-  if (req.user.role === 'client') filter.clientId = req.user._id;
+  if (req.user.role === 'client') {
+    filter.clientId = req.user._id;
+  } else {
+    const allowedIds = await getAllowedProjectIds(req.user);
+    if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ invoices: [] });
+  }
   const invoices = await Invoice.find(filter)
     .populate('projectId', 'name')
     .populate('clientId',  'name email phone')
@@ -41,12 +47,22 @@ exports.getInvoices = async (req, res) => {
 
 exports.getInvoice = async (req, res) => {
   const filter = { _id: req.params.id, companyId: req.user.companyId };
-  if (req.user.role === 'client') filter.clientId = req.user._id;
+  if (req.user.role === 'client') {
+    filter.clientId = req.user._id;
+  }
   const invoice = await Invoice
     .findOne(filter)
     .populate('projectId', 'name')
     .populate('clientId',  'name email phone');
   if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+  if (req.user.role !== 'client') {
+    const allowedIds = await getAllowedProjectIds(req.user);
+    if (allowedIds !== null && !allowedIds.includes(String(invoice.projectId?._id))) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+  }
+
   res.json({ invoice });
 };
 

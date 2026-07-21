@@ -15,6 +15,7 @@ const projectSchema = new mongoose.Schema({
   },
   description: { type: String },
   assignedClientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  assignedTeamIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now },

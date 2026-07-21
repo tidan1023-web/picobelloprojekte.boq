@@ -10,12 +10,15 @@ const Expense = require('../models/Expense');
 const ProgressUpdate = require('../models/ProgressUpdate');
 const SiteReport = require('../models/SiteReport');
 
-async function aggregateDocuments(companyId, projectId) {
+async function aggregateDocuments(companyId, projectId, scope = {}) {
+  const { allowedIds = null, isClient = false } = scope;
   const results = [];
 
-  // Historical Project attachments aren't linked to a live Project record,
-  // so they only show up in the unfiltered ("all documents") view.
-  if (!projectId) {
+  // Historical Project attachments aren't linked to a live Project record, so
+  // they can't be scoped per-project -- only shown to internal staff (who
+  // already have unrestricted Historical Projects access), never to a client,
+  // and only in the unfiltered ("all documents") view.
+  if (!projectId && !isClient) {
     const projects = await HistoricalProject.find({ companyId, documentUrl: { $exists: true, $ne: '' } })
       .select('name documentUrl documentName createdAt')
       .lean();
@@ -37,7 +40,8 @@ async function aggregateDocuments(companyId, projectId) {
 
   const expenseFilter = { companyId, receipts: { $exists: true, $not: { $size: 0 } } };
   if (projectId) expenseFilter.projectId = projectId;
-  const expenses = await Expense.find(expenseFilter)
+  else if (allowedIds !== null) expenseFilter.projectId = { $in: allowedIds };
+  const expenses = isClient ? [] : await Expense.find(expenseFilter)
     .populate('projectId', 'name')
     .select('description receipts projectId createdAt')
     .lean();
@@ -60,6 +64,8 @@ async function aggregateDocuments(companyId, projectId) {
 
   const progressFilter = { companyId, images: { $exists: true, $not: { $size: 0 } } };
   if (projectId) progressFilter.projectId = projectId;
+  else if (allowedIds !== null) progressFilter.projectId = { $in: allowedIds };
+  if (isClient) progressFilter.sharedWithClient = true;
   const updates = await ProgressUpdate.find(progressFilter)
     .populate('projectId', 'name')
     .select('title images projectId createdAt')
@@ -83,6 +89,8 @@ async function aggregateDocuments(companyId, projectId) {
 
   const reportFilter = { companyId, images: { $exists: true, $not: { $size: 0 } } };
   if (projectId) reportFilter.projectId = projectId;
+  else if (allowedIds !== null) reportFilter.projectId = { $in: allowedIds };
+  if (isClient) reportFilter.sharedWithClient = true;
   const reports = await SiteReport.find(reportFilter)
     .populate('projectId', 'name')
     .select('title images projectId createdAt')

@@ -1,13 +1,12 @@
 const Project = require('../models/Project');
-const { clientProjectIds } = require('../utils/clientScope');
+const { getAllowedProjectIds } = require('../utils/clientScope');
 
 const getProjects = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.status) filter.status = req.query.status;
 
-  if (req.user.role === 'client') {
-    filter._id = { $in: await clientProjectIds(req.user) };
-  }
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null) filter._id = { $in: allowedIds };
 
   const projects = await Project.find(filter)
     .populate('createdBy', 'name email')
@@ -18,9 +17,9 @@ const getProjects = async (req, res) => {
 
 const getProject = async (req, res) => {
   const filter = { _id: req.params.id, companyId: req.user.companyId };
-  if (req.user.role === 'client') {
-    const allowed = await clientProjectIds(req.user);
-    if (!allowed.includes(req.params.id)) return res.status(404).json({ message: 'Project not found' });
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !allowedIds.includes(req.params.id)) {
+    return res.status(404).json({ message: 'Project not found' });
   }
   const project = await Project.findOne(filter)
     .populate('createdBy', 'name email');

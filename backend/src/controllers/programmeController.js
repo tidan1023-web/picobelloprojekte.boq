@@ -1,5 +1,5 @@
 const Programme = require('../models/Programme');
-const { clientProjectIds } = require('../utils/clientScope');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
 
 const DEFAULT_PHASES = [
   {
@@ -81,14 +81,8 @@ exports.list = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
-    if (filter.projectId) {
-      if (!allowedIds.includes(String(filter.projectId))) return res.json({ programmes: [] });
-    } else {
-      filter.projectId = { $in: allowedIds };
-    }
-  }
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ programmes: [] });
 
   const programmes = await Programme.find(filter)
     .populate('projectId', 'name')
@@ -102,8 +96,8 @@ exports.get = async (req, res) => {
     .populate('projectId', 'name');
   if (!prog) return res.status(404).json({ message: 'Programme not found' });
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null) {
     if (!allowedIds.includes(String(prog.projectId?._id))) {
       return res.status(404).json({ message: 'Programme not found' });
     }

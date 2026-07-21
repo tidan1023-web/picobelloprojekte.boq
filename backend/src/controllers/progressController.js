@@ -2,7 +2,15 @@ const ProgressUpdate = require('../models/ProgressUpdate');
 const ChangeOrder = require('../models/ChangeOrder');
 const BoqVersion = require('../models/BoqVersion');
 const Project = require('../models/Project');
-const { clientProjectIds } = require('../utils/clientScope');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
+const { createNotification } = require('./notificationController');
+
+async function notifyClientOfShare(projectId, { title, message, link }) {
+  if (!projectId) return;
+  const project = await Project.findById(projectId).select('assignedClientId');
+  if (!project?.assignedClientId) return;
+  await createNotification({ userId: project.assignedClientId, title, message, type: 'info', link });
+}
 
 // ── Progress Updates ─────────────────────────────────────────────────────────────
 
@@ -10,16 +18,10 @@ exports.getUpdates = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
   if (req.query.phase) filter.phase = req.query.phase;
+  if (req.user.role === 'client') filter.sharedWithClient = true;
 
-  if (req.user.role === 'client') {
-    filter.sharedWithClient = true;
-    const allowedIds = await clientProjectIds(req.user);
-    if (filter.projectId) {
-      if (!allowedIds.includes(String(filter.projectId))) return res.json({ updates: [] });
-    } else {
-      filter.projectId = { $in: allowedIds };
-    }
-  }
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ updates: [] });
 
   const updates = await ProgressUpdate.find(filter)
     .populate('createdBy', 'name')
@@ -32,15 +34,24 @@ exports.createUpdate = async (req, res) => {
   const { projectId, phase, title, notes, date, completionPercent, actualCost, sharedWithClient } = req.body;
   const images = (req.files || []).map((f) => f.path);
 
+  const shared = sharedWithClient === true || sharedWithClient === 'true';
   const update = await ProgressUpdate.create({
     projectId, phase, title, notes, images,
     date: date || new Date(),
     completionPercent: Number(completionPercent) || 0,
     actualCost: Number(actualCost) || 0,
-    sharedWithClient: sharedWithClient === true || sharedWithClient === 'true',
+    sharedWithClient: shared,
     companyId: req.user.companyId,
     createdBy: req.user._id,
   });
+
+  if (shared) {
+    await notifyClientOfShare(projectId, {
+      title: 'New progress update shared',
+      message: `"${title}" is now available in your portal.`,
+      link: '/app/client-portal',
+    });
+  }
 
   await update.populate('createdBy', 'name');
   res.status(201).json({ update });
@@ -50,6 +61,8 @@ exports.updateUpdate = async (req, res) => {
   const { phase, title, notes, date, completionPercent, actualCost, sharedWithClient } = req.body;
   const update = await ProgressUpdate.findOne({ _id: req.params.id, companyId: req.user.companyId });
   if (!update) return res.status(404).json({ message: 'Progress update not found' });
+
+  const wasShared = update.sharedWithClient;
 
   if (phase !== undefined) update.phase = phase;
   if (title !== undefined) update.title = title;
@@ -61,6 +74,15 @@ exports.updateUpdate = async (req, res) => {
   if (req.files && req.files.length > 0) update.images.push(...req.files.map((f) => f.path));
 
   await update.save();
+
+  if (!wasShared && update.sharedWithClient) {
+    await notifyClientOfShare(update.projectId, {
+      title: 'New progress update shared',
+      message: `"${update.title}" is now available in your portal.`,
+      link: '/app/client-portal',
+    });
+  }
+
   res.json({ update });
 };
 

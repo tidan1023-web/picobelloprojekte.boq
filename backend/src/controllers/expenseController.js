@@ -1,11 +1,16 @@
 const Expense = require('../models/Expense');
 const cloudinary = require('../config/cloudinary');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
 
 exports.list = async (req, res, next) => {
   try {
     const filter = { companyId: req.user.companyId };
     if (req.query.projectId) filter.projectId = req.query.projectId;
     if (req.query.category) filter.category = req.query.category;
+
+    const allowedIds = await getAllowedProjectIds(req.user);
+    if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ expenses: [] });
+
     const expenses = await Expense.find(filter)
       .sort({ date: -1 })
       .populate('projectId', 'name')

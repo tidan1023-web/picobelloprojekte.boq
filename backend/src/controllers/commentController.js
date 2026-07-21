@@ -1,6 +1,6 @@
 const Comment = require('../models/Comment');
 const Project = require('../models/Project');
-const { clientProjectIds } = require('../utils/clientScope');
+const { getAllowedProjectIds } = require('../utils/clientScope');
 
 exports.getComments = async (req, res) => {
   const { projectId } = req.query;
@@ -9,9 +9,9 @@ exports.getComments = async (req, res) => {
   const project = await Project.findOne({ _id: projectId, companyId: req.user.companyId });
   if (!project) return res.status(404).json({ message: 'Project not found' });
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
-    if (!allowedIds.includes(String(projectId))) return res.status(404).json({ message: 'Project not found' });
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !allowedIds.includes(String(projectId))) {
+    return res.status(404).json({ message: 'Project not found' });
   }
 
   const comments = await Comment.find({ projectId })
@@ -39,9 +39,9 @@ exports.addComment = async (req, res) => {
   const project = await Project.findOne({ _id: projectId, companyId: req.user.companyId });
   if (!project) return res.status(404).json({ message: 'Project not found' });
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
-    if (!allowedIds.includes(String(projectId))) return res.status(404).json({ message: 'Project not found' });
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !allowedIds.includes(String(projectId))) {
+    return res.status(404).json({ message: 'Project not found' });
   }
 
   const comment = await Comment.create({

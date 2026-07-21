@@ -1,16 +1,31 @@
 const Document = require('../models/Document');
 const { aggregateDocuments } = require('../utils/documentAggregator');
+const { getAllowedProjectIds } = require('../utils/clientScope');
 
 const getAll = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
+
+  // General documents (no project attached) stay visible to everyone --
+  // only project-linked documents are restricted to an assigned project.
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null) {
+    if (filter.projectId) {
+      if (!allowedIds.includes(String(filter.projectId))) return res.json({ documents: [] });
+    } else {
+      filter.projectId = { $in: [...allowedIds, null] };
+    }
+  }
 
   const [docs, aggregated] = await Promise.all([
     Document.find(filter)
       .populate('uploadedBy', 'name')
       .populate('projectId', 'name')
       .lean(),
-    aggregateDocuments(req.user.companyId, req.query.projectId || null),
+    aggregateDocuments(req.user.companyId, req.query.projectId || null, {
+      allowedIds,
+      isClient: req.user.role === 'client',
+    }),
   ]);
 
   const manual = docs.map((d) => ({ ...d, source: 'manual', readOnly: false }));

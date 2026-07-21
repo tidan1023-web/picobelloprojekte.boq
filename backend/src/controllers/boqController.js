@@ -1,7 +1,7 @@
 const BoqVersion = require('../models/BoqVersion');
 const BoqItem = require('../models/BoqItem');
 const QsPrice = require('../models/QsPrice');
-const { clientProjectIds } = require('../utils/clientScope');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
 const { checkRate } = require('../utils/rateAlerter');
 const { reviewBoq } = require('../utils/boqReviewer');
 
@@ -20,14 +20,8 @@ const getVersions = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
-    if (filter.projectId) {
-      if (!allowedIds.includes(String(filter.projectId))) return res.json({ versions: [] });
-    } else {
-      filter.projectId = { $in: allowedIds };
-    }
-  }
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ versions: [] });
 
   const versions = await BoqVersion.find(filter)
     .populate('projectId', 'name client')
@@ -42,11 +36,9 @@ const getVersion = async (req, res) => {
     .populate('createdBy', 'name');
   if (!version) return res.status(404).json({ message: 'BOQ version not found' });
 
-  if (req.user.role === 'client') {
-    const allowedIds = await clientProjectIds(req.user);
-    if (!allowedIds.includes(String(version.projectId?._id))) {
-      return res.status(404).json({ message: 'BOQ version not found' });
-    }
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !allowedIds.includes(String(version.projectId?._id))) {
+    return res.status(404).json({ message: 'BOQ version not found' });
   }
 
   const items = await BoqItem.find({ versionId: req.params.id }).sort({ createdAt: 1 }).lean();

@@ -1,10 +1,14 @@
 const ChangeOrder = require('../models/ChangeOrder');
 const Notification = require('../models/Notification');
+const { getAllowedProjectIds, scopeToProjects } = require('../utils/clientScope');
 
 exports.getChangeOrders = async (req, res) => {
   const filter = { companyId: req.user.companyId };
   if (req.query.projectId) filter.projectId = req.query.projectId;
   if (req.query.status) filter.status = req.query.status;
+
+  const allowedIds = await getAllowedProjectIds(req.user);
+  if (allowedIds !== null && !scopeToProjects(filter, allowedIds)) return res.json({ orders: [] });
 
   const orders = await ChangeOrder.find(filter)
     .populate('projectId', 'name client')

@@ -150,6 +150,7 @@ const EMPTY = {
   name: '',
   client: '',
   assignedClientId: '',
+  assignedTeamIds: [],
   location: '',
   budget: '',
   currency: 'NGN',
@@ -164,17 +165,21 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [clientUsers, setClientUsers] = useState([]);
+  const [staffUsers, setStaffUsers] = useState([]);
 
   useEffect(() => {
     if (!open) return;
     api.get('/auth/team').then(({ data }) => {
-      setClientUsers((data.members || []).filter((m) => m.role === 'client'));
+      const members = data.members || [];
+      setClientUsers(members.filter((m) => m.role === 'client'));
+      setStaffUsers(members.filter((m) => m.role === 'qs' || m.role === 'project_manager'));
     }).catch(() => {});
     if (editing) {
       setForm({
         name: editing.name ?? '',
         client: editing.client ?? '',
         assignedClientId: editing.assignedClientId ?? '',
+        assignedTeamIds: (editing.assignedTeamIds || []).map((id) => id?._id || id),
         location: editing.location ?? '',
         budget: editing.budget ?? '',
         currency: editing.currency ?? 'NGN',
@@ -190,6 +195,31 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
   }, [open, editing]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const toggleTeamMember = (id) => {
+    setForm((f) => ({
+      ...f,
+      assignedTeamIds: f.assignedTeamIds.includes(id)
+        ? f.assignedTeamIds.filter((x) => x !== id)
+        : [...f.assignedTeamIds, id],
+    }));
+  };
+
+  const revokeClientAccess = async () => {
+    if (!editing) return;
+    if (!confirm('Revoke this client\'s access to the project? Make sure they\'ve downloaded any documents they need first — they won\'t be able to reach this project\'s portal, BOQ, invoices, or shared updates after this.')) return;
+    setSaving(true);
+    setError('');
+    try {
+      await api.put(`/projects/${editing._id}`, { assignedClientId: null });
+      setForm((f) => ({ ...f, assignedClientId: '' }));
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Failed to revoke access');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -252,14 +282,42 @@ function ProjectModal({ open, onClose, onSaved, editing }) {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Client Login <span className="text-gray-400 font-normal">(optional — links this project to a client's portal account)</span>
             </label>
-            <select value={form.assignedClientId} onChange={set('assignedClientId')} className={inputCls + ' bg-white'}>
-              <option value="">— Not linked to a client login —</option>
-              {clientUsers.map((c) => (
-                <option key={c._id} value={c._id}>{c.name} ({c.email})</option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select value={form.assignedClientId} onChange={set('assignedClientId')} className={inputCls + ' bg-white'}>
+                <option value="">— Not linked to a client login —</option>
+                {clientUsers.map((c) => (
+                  <option key={c._id} value={c._id}>{c.name} ({c.email})</option>
+                ))}
+              </select>
+              {editing && editing.assignedClientId && (
+                <button type="button" onClick={revokeClientAccess} disabled={saving}
+                  className="px-3 py-2.5 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 shrink-0 disabled:opacity-60">
+                  Revoke
+                </button>
+              )}
+            </div>
             {clientUsers.length === 0 && (
               <p className="text-xs text-gray-400 mt-1">No client accounts yet — invite one from Team Management first.</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Assigned Team <span className="text-gray-400 font-normal">(QS / Project Managers who can see this project — required for them to access it)</span>
+            </label>
+            {staffUsers.length > 0 ? (
+              <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-40 overflow-y-auto">
+                {staffUsers.map((m) => (
+                  <label key={m._id} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" checked={form.assignedTeamIds.includes(m._id)}
+                      onChange={() => toggleTeamMember(m._id)}
+                      className="rounded border-gray-300 text-primary-900 focus:ring-primary-900" />
+                    {m.name} <span className="text-xs text-gray-400">({m.role === 'qs' ? 'QS' : 'Project Manager'})</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">No QS or Project Manager accounts yet — invite one from Team Management first.</p>
             )}
           </div>
 
