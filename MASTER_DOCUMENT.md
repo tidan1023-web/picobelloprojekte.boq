@@ -828,6 +828,15 @@ This section records every major build decision and change made during developme
 - `GET /boq/:id` (`boqController.getVersion`) now returns each item with a computed `rateAlert` and a top-level `missingItems` list — both computed live, nothing persisted, so results stay current as the QS library or item list changes
 - BOQ Builder UI: a warning icon + tooltip on any line item priced below the library rate, and a collapsible "BOQ Reviewer" panel above the item table listing missing items grouped by trade
 
+### Phase 7 — Import System Overhaul
+Investigated a report that Excel/CSV imports "keep showing importing but never complete." Found two distinct bugs:
+- **Root cause of hangs**: `frontend/src/services/api.js` had no request timeout, so a single stuck request anywhere in a sequential import loop froze the whole "Importing…" spinner forever with no recovery. Added a 60s timeout.
+- **Root cause of silent failures**: several import templates had column keys that didn't match the real Mongoose schema field names, or omitted required fields entirely, so every row failed server-side validation and was invisibly swallowed by a bare `catch {}`. The import "finished" but saved nothing. Fixed 6 modules: Materials (`name`→`material`), Artisan Rates (`name`/`trade`/`unit`→`service`/`category`/`rateUnit`), Projects (added missing required `client`), BOQ Items (added missing required `item`), Progress Updates (added missing required `title`, `percentage`→`completionPercent`), Change Orders (`amount`→`originalCost`/`newCost`, added a Project column resolved to `projectId` — previously not sent at all)
+- `frontend/src/utils/runImport.js` — shared helper used by all 11 import pages + Master Import; replaces the old silent `catch {}` pattern with real error capture, so a broken template now shows the actual validation message instead of a bare "0 imported"
+- `frontend/src/utils/importMatch.js` — matches parsed rows against already-loaded records by a configurable key (e.g. item name, email) so an import can update an existing record (PUT) instead of always creating a duplicate (POST)
+- `ExcelImport.jsx` (shared component) now supports staging multiple files at once, replacing or removing a staged file before import, and — where a `matchKey`/`existingRecords` prop is supplied — a "Replace existing entries" checkbox. Wired into the 7 modules where record identity is safe to match on: QS Prices, Artisan Prices, Material Prices, Contacts, Historical Projects, Projects, BOQ Items. Left untouched: Expenses, Progress Updates, Change Orders, Invoices — these are log/transactional records where silently overwriting on a text match isn't safe
+- `MasterImport.jsx` got the same multi-file + replace-existing treatment, plus a live progress readout ("QS Prices — 34 of 120") and a `try/finally` around the import loop so an unexpected error can no longer leave the spinner stuck
+
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |
 |-----|-------|-----|

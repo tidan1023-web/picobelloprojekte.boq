@@ -3,14 +3,14 @@ import { Plus, X, Pencil, Trash2, Search, HardHat } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const ARTISAN_IMPORT_COLUMNS = [
-  { key: 'name', label: 'Name', type: 'string' },
-  { key: 'trade', label: 'Trade', type: 'string' },
-  { key: 'unit', label: 'Unit', type: 'string' },
+  { key: 'service', label: 'Service', type: 'string' },
+  { key: 'category', label: 'Trade', type: 'string' },
   { key: 'rate', label: 'Rate (₦)', type: 'number' },
+  { key: 'rateUnit', label: 'Rate Unit (per day/per hour/per job/per m²/per unit)', type: 'string' },
   { key: 'location', label: 'Location', type: 'string' },
-  { key: 'source', label: 'Source', type: 'string' },
 ];
 
 const CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP'];
@@ -179,13 +179,12 @@ export default function ArtisanPricing() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/artisan-prices', row); count++; } catch {}
-                }
-                alert(`Imported ${count} items`);
+                const result = await runImport(rows, (row) => row._id ? api.put(`/artisan-prices/${row._id}`, row) : api.post('/artisan-prices', row));
+                alert(summarize(result, 'rate'));
                 fetchPrices();
               }}
+              matchKey="service"
+              existingRecords={prices}
               columns={ARTISAN_IMPORT_COLUMNS}
               templateName="artisan-prices"
             />

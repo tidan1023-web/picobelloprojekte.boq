@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
 import { useToast } from '../context/ToastContext';
+import { runImport, summarize } from '../utils/runImport';
 
 const CONTACT_IMPORT_COLUMNS = [
   { key: 'name', label: 'Name', type: 'string' },
@@ -200,13 +201,12 @@ export default function Contacts() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/contacts', row); count++; } catch {}
-                }
-                alert(`Imported ${count} contacts`);
+                const result = await runImport(rows, (row) => row._id ? api.put(`/contacts/${row._id}`, row) : api.post('/contacts', row));
+                alert(summarize(result, 'contact'));
                 load();
               }}
+              matchKey={['email', 'name']}
+              existingRecords={contacts}
               columns={CONTACT_IMPORT_COLUMNS}
               templateName="contacts"
             />

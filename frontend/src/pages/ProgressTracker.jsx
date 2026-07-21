@@ -6,11 +6,12 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const PROGRESS_IMPORT_COLUMNS = [
-  { key: 'phase', label: 'Phase', type: 'string' },
-  { key: 'description', label: 'Description', type: 'string' },
-  { key: 'percentage', label: 'Percentage', type: 'number' },
+  { key: 'title', label: 'Title', type: 'string' },
+  { key: 'phase', label: 'Phase (foundation/structure/mep/finishing/external/other)', type: 'string' },
+  { key: 'completionPercent', label: 'Completion %', type: 'number' },
   { key: 'date', label: 'Date', type: 'date' },
   { key: 'notes', label: 'Notes', type: 'string' },
 ];
@@ -258,11 +259,8 @@ export default function ProgressTracker() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/progress', { ...row, projectId: selProjectId }); count++; } catch {}
-                }
-                alert(`Imported ${count} updates`);
+                const result = await runImport(rows, (row) => api.post('/progress', { ...row, projectId: selProjectId }));
+                alert(summarize(result, 'update'));
                 loadUpdates();
               }}
               columns={PROGRESS_IMPORT_COLUMNS}

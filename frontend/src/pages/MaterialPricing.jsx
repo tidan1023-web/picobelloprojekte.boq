@@ -3,9 +3,10 @@ import { Plus, X, Pencil, Trash2, Search, Package } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const MATERIAL_IMPORT_COLUMNS = [
-  { key: 'name', label: 'Material Name', type: 'string' },
+  { key: 'material', label: 'Material Name', type: 'string' },
   { key: 'category', label: 'Category', type: 'string' },
   { key: 'unit', label: 'Unit', type: 'string' },
   { key: 'price', label: 'Price (₦)', type: 'number' },
@@ -179,13 +180,12 @@ export default function MaterialPricing() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/material-prices', row); count++; } catch {}
-                }
-                alert(`Imported ${count} items`);
+                const result = await runImport(rows, (row) => row._id ? api.put(`/material-prices/${row._id}`, row) : api.post('/material-prices', row));
+                alert(summarize(result, 'material'));
                 fetchPrices();
               }}
+              matchKey="material"
+              existingRecords={prices}
               columns={MATERIAL_IMPORT_COLUMNS}
               templateName="material-prices"
             />

@@ -4,11 +4,14 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
 import { useToast } from '../context/ToastContext';
+import { runImport, summarize } from '../utils/runImport';
 
 const CO_IMPORT_COLUMNS = [
   { key: 'title', label: 'Title', type: 'string' },
+  { key: 'project', label: 'Project (must match an existing project name)', type: 'string' },
+  { key: 'originalCost', label: 'Original Cost', type: 'number' },
+  { key: 'newCost', label: 'New Cost', type: 'number' },
   { key: 'description', label: 'Description', type: 'string' },
-  { key: 'amount', label: 'Amount', type: 'number' },
   { key: 'status', label: 'Status', type: 'string' },
   { key: 'reason', label: 'Reason', type: 'string' },
 ];
@@ -351,11 +354,18 @@ export default function ChangeOrders() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/change-orders', row); count++; } catch {}
-                }
-                alert(`Imported ${count} change orders`);
+                const resolveProjectId = (row) => {
+                  const name = (row.project || '').trim().toLowerCase();
+                  const match = name && projects.find((p) => p.name.trim().toLowerCase() === name);
+                  return match?._id || projectFilter || null;
+                };
+                const result = await runImport(rows, (row) => {
+                  const projectId = resolveProjectId(row);
+                  if (!projectId) return Promise.reject(new Error('No matching project — set the Project column or filter by a project first'));
+                  const { project, ...rest } = row;
+                  return api.post('/change-orders', { ...rest, projectId });
+                });
+                alert(summarize(result, 'change order'));
                 load();
               }}
               columns={CO_IMPORT_COLUMNS}

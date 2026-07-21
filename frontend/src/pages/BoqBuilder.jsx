@@ -3,15 +3,16 @@ import { Plus, X, Pencil, Trash2, ChevronLeft, FileSpreadsheet, CheckCircle, Ale
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const BOQ_ITEM_IMPORT_COLUMNS = [
+  { key: 'item', label: 'Item', type: 'string' },
   { key: 'description', label: 'Description', type: 'string' },
   { key: 'unit', label: 'Unit', type: 'string' },
   { key: 'quantity', label: 'Quantity', type: 'number' },
   { key: 'baseCost', label: 'Base Cost', type: 'number' },
   { key: 'overheadPercent', label: 'Overhead %', type: 'number' },
   { key: 'profitPercent', label: 'Profit %', type: 'number' },
-  { key: 'section', label: 'Section', type: 'string' },
 ];
 
 const STATUS_COLORS = { draft: 'bg-yellow-100 text-yellow-700', final: 'bg-blue-100 text-blue-700', approved: 'bg-green-100 text-green-700' };
@@ -352,13 +353,14 @@ export default function BoqBuilder() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post(`/boq/${activeVersion._id}/items`, row); count++; } catch {}
-                }
-                alert(`Imported ${count} items`);
+                const result = await runImport(rows, (row) => row._id
+                  ? api.put(`/boq/${activeVersion._id}/items/${row._id}`, row)
+                  : api.post(`/boq/${activeVersion._id}/items`, row));
+                alert(summarize(result, 'item'));
                 refreshVersion();
               }}
+              matchKey="item"
+              existingRecords={items}
               columns={BOQ_ITEM_IMPORT_COLUMNS}
               templateName="boq-items"
             />

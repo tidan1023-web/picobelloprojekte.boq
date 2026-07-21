@@ -3,6 +3,7 @@ import { Plus, X, Pencil, Trash2, Search, BookOpen, ChevronDown } from 'lucide-r
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const QS_IMPORT_COLUMNS = [
   { key: 'category',    label: 'Category',     type: 'string' },
@@ -209,17 +210,10 @@ export default function QsPricing() {
   };
 
   const handleImport = async (rows) => {
-    let imported = 0;
-    let skipped  = 0;
-    for (const row of rows) {
-      try {
-        await api.post('/qs-prices', row);
-        imported++;
-      } catch { skipped++; }
-    }
-    setImportMsg(`Imported ${imported} item${imported !== 1 ? 's' : ''}${skipped ? ` · Skipped ${skipped}` : ''}`);
+    const result = await runImport(rows, (row) => row._id ? api.put(`/qs-prices/${row._id}`, row) : api.post('/qs-prices', row));
+    setImportMsg(summarize(result, 'item'));
     fetchPrices();
-    setTimeout(() => setImportMsg(''), 5000);
+    setTimeout(() => setImportMsg(''), 8000);
   };
 
   return (
@@ -251,6 +245,8 @@ export default function QsPricing() {
             <ExcelImport
               onImport={handleImport}
               columns={QS_IMPORT_COLUMNS}
+              matchKey="item"
+              existingRecords={prices}
               templateName="qs-prices-template"
             />
             <button onClick={() => { setEditing(null); setModal(true); }}

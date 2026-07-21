@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Pencil, Trash2, Database, Paperclip, ExternalLink, Loader2 } from 'lucide-react';
 import api from '../services/api';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 
 const HP_IMPORT_COLUMNS = [
   { key: 'name',          label: 'Project Name',   type: 'string' },
@@ -246,17 +247,10 @@ export default function HistoricalProjects() {
   const openEdit = (p) => { setEditing(p);    setModal(true); };
 
   const handleImport = async (rows) => {
-    let imported = 0;
-    let skipped  = 0;
-    for (const row of rows) {
-      try {
-        await api.post('/historical-projects', row);
-        imported++;
-      } catch { skipped++; }
-    }
-    setImportMsg(`Imported ${imported} project${imported !== 1 ? 's' : ''}${skipped ? ` · Skipped ${skipped}` : ''}`);
+    const result = await runImport(rows, (row) => row._id ? api.put(`/historical-projects/${row._id}`, row) : api.post('/historical-projects', row));
+    setImportMsg(summarize(result, 'project'));
     load();
-    setTimeout(() => setImportMsg(''), 5000);
+    setTimeout(() => setImportMsg(''), 8000);
   };
 
   const avgRate = projects.length
@@ -303,6 +297,8 @@ export default function HistoricalProjects() {
           <ExcelImport
             onImport={handleImport}
             columns={HP_IMPORT_COLUMNS}
+            matchKey="name"
+            existingRecords={projects}
             templateName="historical-projects-template"
           />
           <button onClick={openAdd}

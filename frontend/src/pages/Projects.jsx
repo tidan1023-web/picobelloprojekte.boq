@@ -3,6 +3,7 @@ import { Plus, X, Pencil, Trash2, FolderOpen, Search, FileText, ExternalLink, Ch
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
+import { runImport, summarize } from '../utils/runImport';
 import { useToast } from '../context/ToastContext';
 
 const DEFAULT_FOLDERS = [
@@ -116,6 +117,7 @@ function ProjectDocs({ project, canEdit }) {
 
 const PROJECT_IMPORT_COLUMNS = [
   { key: 'name', label: 'Project Name', type: 'string' },
+  { key: 'client', label: 'Client', type: 'string' },
   { key: 'status', label: 'Status', type: 'string' },
   { key: 'currency', label: 'Currency', type: 'string' },
   { key: 'budget', label: 'Budget', type: 'number' },
@@ -399,13 +401,12 @@ export default function Projects() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/projects', row); count++; } catch {}
-                }
-                alert(`Imported ${count} projects`);
+                const result = await runImport(rows, (row) => row._id ? api.put(`/projects/${row._id}`, row) : api.post('/projects', row));
+                alert(summarize(result, 'project'));
                 fetchProjects();
               }}
+              matchKey="name"
+              existingRecords={projects}
               columns={PROJECT_IMPORT_COLUMNS}
               templateName="projects"
             />
