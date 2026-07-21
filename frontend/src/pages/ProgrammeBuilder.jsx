@@ -585,10 +585,14 @@ export default function ProgrammeBuilder() {
 
   const handleDelete = async () => {
     if (!selected || !window.confirm('Delete this programme?')) return;
-    await api.delete(`/programmes/${selected._id}`);
-    setSelected(null);
-    loadList();
-    showToast('Deleted');
+    try {
+      await api.delete(`/programmes/${selected._id}`);
+      setSelected(null);
+      loadList();
+      showToast('Deleted');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete programme');
+    }
   };
 
   return (

@@ -832,8 +832,12 @@ export default function SiteReports() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this report?')) return;
-    await api.delete(`/site-reports/${id}`);
-    load();
+    try {
+      await api.delete(`/site-reports/${id}`);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete report');
+    }
   };
 
   const handlePrint = (report) => {

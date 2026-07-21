@@ -191,8 +191,12 @@ export default function Documents() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this document?')) return;
-    await api.delete(`/documents/${id}`);
-    fetchDocs();
+    try {
+      await api.delete(`/documents/${id}`);
+      fetchDocs();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete document');
+    }
   };
 
   const filtered = docs.filter((d) => {

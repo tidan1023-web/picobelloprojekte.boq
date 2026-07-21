@@ -63,6 +63,7 @@ export default function BookCallGate({ onSkip }) {
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState('');
   const [booked, setBooked]   = useState(user?.callBooked || false);
   const [bookedSlot, setBookedSlot] = useState(user?.callBookedSlot || '');
 
@@ -74,12 +75,14 @@ export default function BookCallGate({ onSkip }) {
     if (!selectedDay || !selectedTime) return;
     const slot = `${fmt(selectedDay)} at ${selectedTime}`;
     setSaving(true);
+    setError('');
     try {
       const { data } = await api.patch('/auth/me/book-call', { slot });
       setUser(data.user);
       setBookedSlot(slot);
       setBooked(true);
-    } catch {
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to book your call — please try again');
       setSaving(false);
     }
   };
@@ -277,6 +280,10 @@ export default function BookCallGate({ onSkip }) {
                 </p>
                 <p className="text-xs text-primary-700 mt-0.5">30-minute onboarding call · Video or phone</p>
               </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-lg text-sm mb-3">{error}</div>
             )}
 
             <button

@@ -42,8 +42,12 @@ export default function EstimateHistory() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this estimate?')) return;
-    await api.delete(`/estimates/${id}`);
-    load();
+    try {
+      await api.delete(`/estimates/${id}`);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete estimate');
+    }
   };
 
   const handlePdf = async (e) => {
@@ -57,11 +61,14 @@ export default function EstimateHistory() {
       const res  = await fetch(`${base}/api/estimates/${id}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) throw new Error('PDF generation failed');
       const blob = await res.blob();
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href     = url; a.download = `estimate-${num}.pdf`; a.click();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message || 'Failed to generate PDF');
     } finally { setPdfId(null); }
   };
 

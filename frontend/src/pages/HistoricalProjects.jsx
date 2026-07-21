@@ -239,8 +239,12 @@ export default function HistoricalProjects() {
 
   const handleDelete = async (id) => {
     if (!confirm('Remove this project from the database?')) return;
-    await api.delete(`/historical-projects/${id}`);
-    load();
+    try {
+      await api.delete(`/historical-projects/${id}`);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete project');
+    }
   };
 
   const openAdd  = ()  => { setEditing(null); setModal(true); };

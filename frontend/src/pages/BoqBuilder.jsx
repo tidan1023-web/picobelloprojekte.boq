@@ -266,15 +266,23 @@ export default function BoqBuilder() {
 
   const handleDeleteVersion = async (id) => {
     if (!confirm('Delete this BOQ and all its items?')) return;
-    await api.delete(`/boq/${id}`);
-    if (activeVersion?._id === id) setActiveVersion(null);
-    fetchVersions();
+    try {
+      await api.delete(`/boq/${id}`);
+      if (activeVersion?._id === id) setActiveVersion(null);
+      fetchVersions();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete BOQ');
+    }
   };
 
   const handleDeleteItem = async (itemId) => {
     if (!confirm('Remove this item?')) return;
-    await api.delete(`/boq/${activeVersion._id}/items/${itemId}`);
-    refreshVersion();
+    try {
+      await api.delete(`/boq/${activeVersion._id}/items/${itemId}`);
+      refreshVersion();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete item');
+    }
   };
 
   if (!activeVersion) {

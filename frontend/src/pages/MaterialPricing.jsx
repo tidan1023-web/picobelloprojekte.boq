@@ -158,8 +158,12 @@ export default function MaterialPricing() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this material price?')) return;
-    await api.delete(`/material-prices/${id}`);
-    fetchPrices();
+    try {
+      await api.delete(`/material-prices/${id}`);
+      fetchPrices();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete material price');
+    }
   };
 
   return (

@@ -305,8 +305,12 @@ export default function ChangeOrders() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this change order?')) return;
-    await api.delete(`/change-orders/${id}`);
-    load();
+    try {
+      await api.delete(`/change-orders/${id}`);
+      load();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete change order', 'error');
+    }
   };
 
   const totalApprovedDiff = orders

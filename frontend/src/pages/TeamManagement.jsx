@@ -370,7 +370,9 @@ export default function TeamManagement() {
     try {
       await api.delete(`/auth/team/${id}`);
       load();
-    } catch { }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to remove team member');
+    }
   };
 
   return (

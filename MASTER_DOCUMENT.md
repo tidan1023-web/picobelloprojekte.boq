@@ -836,6 +836,14 @@ Investigated a report that Excel/CSV imports "keep showing importing but never c
 - `frontend/src/utils/importMatch.js` — matches parsed rows against already-loaded records by a configurable key (e.g. item name, email) so an import can update an existing record (PUT) instead of always creating a duplicate (POST)
 - `ExcelImport.jsx` (shared component) now supports staging multiple files at once, replacing or removing a staged file before import, and — where a `matchKey`/`existingRecords` prop is supplied — a "Replace existing entries" checkbox. Wired into the 7 modules where record identity is safe to match on: QS Prices, Artisan Prices, Material Prices, Contacts, Historical Projects, Projects, BOQ Items. Left untouched: Expenses, Progress Updates, Change Orders, Invoices — these are log/transactional records where silently overwriting on a text match isn't safe
 - `MasterImport.jsx` got the same multi-file + replace-existing treatment, plus a live progress readout ("QS Prices — 34 of 120") and a `try/finally` around the import loop so an unexpected error can no longer leave the spinner stuck
+- `frontend/src/utils/columnMatch.js` — a QS's own spreadsheet is very unlikely to use our exact header wording. Fuzzy-matches the headers actually present in an uploaded file against the expected columns (exact match → substring containment → word-overlap, with a synonym table for common abbreviations like rate/price, uom/unit, qty/quantity). Both `ExcelImport.jsx` and `MasterImport.jsx` now show this auto-guessed mapping before parsing any rows, so the user can review and correct it instead of a mismatched column silently dropping every row
+
+### Phase 8 — App-Wide Silent-Failure Audit
+Prompted by the import bug, audited every mutating button (delete/save/submit/approve) across the app for the same failure class: an API call that fails with no visible error, or a loading state that can get stuck. Found the dominant pattern was `handleDelete` functions with **no try/catch at all** — the delete request's rejection went unhandled, so a failed delete looked exactly like a broken button, across ~20 files. Fixed all of them, plus:
+- `ExpenseTracker.jsx` and `Invoices.jsx` had the same `catch {}`-swallowing import bug reintroduced after it was fixed elsewhere — migrated both to `runImport`/`summarize`
+- `ClientBOQ.jsx` (BOQ item/version approve-reject) and `ClientComments.jsx` (post/reply/delete) — client-portal facing, had no error feedback at all; now use the app's toast system
+- `TeamManagement.jsx` `handleRemove` had a genuinely empty `catch {}`; `BookCallGate.jsx` `handleBook` caught the error only to silently reset the spinner. Both now show a message
+- Where a page already had a toast/error convention it was reused; where none existed, added one consistent with that page (toast, local error banner, or `alert()` matching sibling handlers in the same file)
 
 ### Notable Bugs Fixed
 | Bug | Cause | Fix |

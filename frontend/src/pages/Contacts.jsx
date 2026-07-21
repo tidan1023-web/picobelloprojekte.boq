@@ -179,8 +179,12 @@ export default function Contacts() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this contact?')) return;
-    await api.delete(`/contacts/${id}`);
-    load();
+    try {
+      await api.delete(`/contacts/${id}`);
+      load();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete contact', 'error');
+    }
   };
 
   return (

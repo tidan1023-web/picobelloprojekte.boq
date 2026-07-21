@@ -152,8 +152,12 @@ export default function ArtisanPricing() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this rate?')) return;
-    await api.delete(`/artisan-prices/${id}`);
-    fetchPrices();
+    try {
+      await api.delete(`/artisan-prices/${id}`);
+      fetchPrices();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete rate');
+    }
   };
 
   return (

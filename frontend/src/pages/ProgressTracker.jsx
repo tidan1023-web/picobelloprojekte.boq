@@ -226,8 +226,12 @@ export default function ProgressTracker() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this update?')) return;
-    await api.delete(`/progress/${id}`);
-    loadUpdates();
+    try {
+      await api.delete(`/progress/${id}`);
+      loadUpdates();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete update');
+    }
   };
 
   const totalActual    = updates.reduce((s, u) => s + (u.actualCost || 0), 0);

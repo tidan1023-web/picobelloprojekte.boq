@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ExcelImport from '../components/ExcelImport';
 import { useToast } from '../context/ToastContext';
+import { runImport, summarize } from '../utils/runImport';
 
 const EXPENSE_IMPORT_COLUMNS = [
   { key: 'description', label: 'Description', type: 'string' },
@@ -175,8 +176,12 @@ export default function ExpenseTracker() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this expense?')) return;
-    await api.delete(`/expenses/${id}`);
-    load();
+    try {
+      await api.delete(`/expenses/${id}`);
+      load();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete expense', 'error');
+    }
   };
 
   const filtered = expenses.filter((e) => {
@@ -246,11 +251,8 @@ export default function ExpenseTracker() {
           <>
             <ExcelImport
               onImport={async (rows) => {
-                let count = 0;
-                for (const row of rows) {
-                  try { await api.post('/expenses', row); count++; } catch {}
-                }
-                alert(`Imported ${count} expenses`);
+                const result = await runImport(rows, (row) => api.post('/expenses', row));
+                alert(summarize(result, 'expense'));
                 load();
               }}
               columns={EXPENSE_IMPORT_COLUMNS}

@@ -205,8 +205,12 @@ export default function QsPricing() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this entry?')) return;
-    await api.delete(`/qs-prices/${id}`);
-    fetchPrices();
+    try {
+      await api.delete(`/qs-prices/${id}`);
+      fetchPrices();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete entry');
+    }
   };
 
   const handleImport = async (rows) => {

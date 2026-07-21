@@ -13,6 +13,7 @@ const DEFAULT_FOLDERS = [
 const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900';
 
 function ProjectDocs({ project, canEdit }) {
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [docs, setDocs] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
@@ -40,14 +41,20 @@ function ProjectDocs({ project, canEdit }) {
       setForm({ name: '', url: '', folder: 'Contracts', description: '' });
       setShowAdd(false);
       load();
-    } catch {}
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to add document', 'error');
+    }
     finally { setSaving(false); }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this document?')) return;
-    await api.delete(`/documents/${id}`);
-    load();
+    try {
+      await api.delete(`/documents/${id}`);
+      load();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete document', 'error');
+    }
   };
 
   return (
@@ -346,8 +353,12 @@ export default function Projects() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this project? This cannot be undone.')) return;
-    await api.delete(`/projects/${id}`);
-    fetchProjects();
+    try {
+      await api.delete(`/projects/${id}`);
+      fetchProjects();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete project', 'error');
+    }
   };
 
   const handleSaved = () => {

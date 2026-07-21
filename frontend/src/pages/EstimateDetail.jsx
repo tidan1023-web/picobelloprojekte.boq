@@ -98,8 +98,12 @@ export default function EstimateDetail() {
 
   const handleDelete = async () => {
     if (!confirm('Delete this estimate permanently?')) return;
-    await api.delete(`/estimates/${id}`);
-    navigate('/app/estimates');
+    try {
+      await api.delete(`/estimates/${id}`);
+      navigate('/app/estimates');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete estimate');
+    }
   };
 
   const handleCreateInvoice = async () => {

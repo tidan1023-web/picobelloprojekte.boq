@@ -216,8 +216,12 @@ export default function InvoiceDetail() {
 
   const handleDelete = async () => {
     if (!confirm('Delete this invoice permanently?')) return;
-    await api.delete(`/invoices/${id}`);
-    navigate('/app/invoices');
+    try {
+      await api.delete(`/invoices/${id}`);
+      navigate('/app/invoices');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete invoice');
+    }
   };
 
   const handlePdf = async () => {
@@ -236,8 +240,12 @@ export default function InvoiceDetail() {
 
   const deletePayment = async (pid) => {
     if (!confirm('Remove this payment record?')) return;
-    const { data } = await api.delete(`/invoices/${id}/payments/${pid}`);
-    setInvoice(data.invoice);
+    try {
+      const { data } = await api.delete(`/invoices/${id}/payments/${pid}`);
+      setInvoice(data.invoice);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to remove payment');
+    }
   };
 
   if (loading) return (

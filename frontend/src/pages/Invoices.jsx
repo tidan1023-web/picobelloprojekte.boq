@@ -7,6 +7,7 @@ import {
 import api from '../services/api';
 import ExcelImport from '../components/ExcelImport';
 import { useToast } from '../context/ToastContext';
+import { runImport, summarize } from '../utils/runImport';
 
 const INV_IMPORT_COLUMNS = [
   { key: 'invoiceNumber', label: 'Invoice #',    type: 'string' },
@@ -158,9 +159,13 @@ export default function Invoices() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this invoice? This cannot be undone.')) return;
-    await api.delete(`/invoices/${id}`);
-    toast('Invoice deleted', 'info');
-    load();
+    try {
+      await api.delete(`/invoices/${id}`);
+      toast('Invoice deleted', 'info');
+      load();
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete invoice', 'error');
+    }
   };
 
   const handleMarkPaid = async (inv, e) => {
@@ -190,21 +195,16 @@ export default function Invoices() {
       const a    = document.createElement('a');
       a.href = url; a.download = `invoice-${inv.invoiceNumber}.pdf`; a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      toast('Failed to generate PDF', 'error');
     } finally { setPdfId(null); }
   };
 
   const handleImport = async (rows) => {
-    let imported = 0;
-    let skipped  = 0;
-    for (const row of rows) {
-      try {
-        await api.post('/invoices', row);
-        imported++;
-      } catch { skipped++; }
-    }
-    setImportMsg(`Imported ${imported} invoice${imported !== 1 ? 's' : ''}${skipped ? ` · Skipped ${skipped}` : ''}`);
+    const result = await runImport(rows, (row) => api.post('/invoices', row));
+    setImportMsg(summarize(result, 'invoice'));
     load();
-    setTimeout(() => setImportMsg(''), 5000);
+    setTimeout(() => setImportMsg(''), 8000);
   };
 
   const TABS = ['', 'draft', 'sent', 'paid', 'partially_paid', 'overdue'];

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const TIER_COLORS = {
   basic: 'bg-gray-100 text-gray-700 border-gray-200',
@@ -17,6 +18,7 @@ function fmt(n) {
 }
 
 function ItemRow({ item, approval, onDecide }) {
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState(approval?.selectedTier || null);
   const [note, setNote] = useState('');
@@ -29,6 +31,8 @@ function ItemRow({ item, approval, onDecide }) {
     try {
       await onDecide({ boqItemId: item._id, status, selectedTier, note });
       setOpen(false);
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to save your decision — please try again', 'error');
     } finally {
       setSaving(false);
     }
@@ -130,6 +134,7 @@ export default function ClientBOQ() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const projectId = searchParams.get('projectId') || '';
 
   const [projects, setProjects] = useState([]);
@@ -188,6 +193,8 @@ export default function ClientBOQ() {
     try {
       await api.post(`/approvals/version/${selVersionId}`, { projectId: selProjectId, status });
       await loadVersion(selVersionId);
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to save your decision — please try again', 'error');
     } finally {
       setSubmittingVersion(false);
     }

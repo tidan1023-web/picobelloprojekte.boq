@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Send, Trash2, CornerDownRight } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const ROLE_BADGE = {
   admin: 'bg-red-100 text-red-700',
@@ -13,6 +14,7 @@ const ROLE_BADGE = {
 
 function Comment({ comment, projectId, onReply, onDelete, depth = 0 }) {
   const { user } = useAuth();
+  const toast = useToast();
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [saving, setSaving] = useState(false);
@@ -25,6 +27,8 @@ function Comment({ comment, projectId, onReply, onDelete, depth = 0 }) {
       await onReply(replyText.trim(), comment._id);
       setReplyText('');
       setReplyOpen(false);
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to post reply', 'error');
     } finally {
       setSaving(false);
     }
@@ -88,6 +92,7 @@ function Comment({ comment, projectId, onReply, onDelete, depth = 0 }) {
 }
 
 export default function ClientComments() {
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId') || '';
   const [projects, setProjects] = useState([]);
@@ -124,6 +129,8 @@ export default function ClientComments() {
       setMessage('');
       await loadComments(selProjectId);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to post comment', 'error');
     } finally {
       setPosting(false);
     }
@@ -136,8 +143,12 @@ export default function ClientComments() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this comment?')) return;
-    await api.delete(`/comments/${id}`);
-    await loadComments(selProjectId);
+    try {
+      await api.delete(`/comments/${id}`);
+      await loadComments(selProjectId);
+    } catch (err) {
+      toast(err.response?.data?.message || 'Failed to delete comment', 'error');
+    }
   };
 
   return (
