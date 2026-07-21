@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Plus, X, Trash2, FolderOpen, FileText, ExternalLink,
-  Search, ChevronDown, ChevronRight, FolderKanban, Building2,
+  Search, ChevronDown, ChevronRight, FolderKanban, Building2, UploadCloud, Link2,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -22,10 +22,13 @@ const SOURCE_LABELS = {
 const inputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-900 focus:border-transparent';
 
 function AddDocModal({ onClose, onSaved, projects, presetProjectId }) {
+  const [mode, setMode] = useState('upload'); // 'upload' | 'link'
   const [form, setForm] = useState({
     name: '', url: '', folder: 'Contracts', description: '',
     projectId: presetProjectId || '',
   });
+  const [file, setFile] = useState(null);
+  const fileRef = useRef();
   const [customFolder, setCustomFolder] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -33,12 +36,31 @@ function AddDocModal({ onClose, onSaved, projects, presetProjectId }) {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const effectiveFolder = form.folder === '__custom__' ? customFolder.trim() : form.folder;
 
+  const handleFileChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    if (!form.name) setForm((s) => ({ ...s, name: f.name.replace(/\.[^.]+$/, '') }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!effectiveFolder) return setError('Please enter a folder name');
+    if (mode === 'upload' && !file) return setError('Please choose a file');
+    if (mode === 'link' && !form.url) return setError('Please paste a link');
     setSaving(true); setError('');
     try {
-      await api.post('/documents', { ...form, folder: effectiveFolder });
+      if (mode === 'upload') {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('name', form.name);
+        fd.append('folder', effectiveFolder);
+        fd.append('description', form.description);
+        if (form.projectId) fd.append('projectId', form.projectId);
+        await api.post('/documents/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await api.post('/documents', { ...form, folder: effectiveFolder });
+      }
       onSaved();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save');
@@ -55,15 +77,39 @@ function AddDocModal({ onClose, onSaved, projects, presetProjectId }) {
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
           {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Document Name *</label>
-            <input required value={form.name} onChange={set('name')} className={inputCls} placeholder="e.g. Foundation Contract — Dangote Cement" />
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+            <button type="button" onClick={() => setMode('upload')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${mode === 'upload' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
+              <UploadCloud size={14} /> Upload a file
+            </button>
+            <button type="button" onClick={() => setMode('link')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${mode === 'link' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
+              <Link2 size={14} /> Paste a link
+            </button>
           </div>
 
+          {mode === 'upload' ? (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">File *</label>
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className="w-full flex items-center gap-2 border border-dashed border-gray-300 text-gray-500 px-4 py-3 rounded-xl hover:border-primary-900 hover:text-primary-900 text-sm justify-center transition-colors">
+                <UploadCloud size={16} /> {file ? file.name : 'Choose a file (PDF, image, Word, Excel, CSV, zip)'}
+              </button>
+              <input ref={fileRef} type="file" className="hidden" onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,image/*" />
+              <p className="text-xs text-gray-400 mt-1">Up to 20 MB.</p>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">Link / URL *</label>
+              <input required={mode === 'link'} type="url" value={form.url} onChange={set('url')} className={inputCls} placeholder="https://drive.google.com/..." />
+              <p className="text-xs text-gray-400 mt-1">Paste a Google Drive, Dropbox, or any direct link.</p>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Link / URL *</label>
-            <input required type="url" value={form.url} onChange={set('url')} className={inputCls} placeholder="https://drive.google.com/..." />
-            <p className="text-xs text-gray-400 mt-1">Paste a Google Drive, Dropbox, or any direct link.</p>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Document Name {mode === 'link' && '*'}</label>
+            <input required={mode === 'link'} value={form.name} onChange={set('name')} className={inputCls} placeholder="e.g. Foundation Contract — Dangote Cement" />
           </div>
 
           <div>

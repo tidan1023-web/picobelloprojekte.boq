@@ -52,10 +52,29 @@ const create = async (req, res) => {
   res.status(201).json({ document: doc });
 };
 
+const uploadFile = async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  const { name, folder, description, projectId } = req.body;
+  if (!folder) return res.status(400).json({ message: 'folder is required' });
+
+  const doc = await Document.create({
+    name: name || req.file.originalname,
+    url: req.file.path || req.file.secure_url,
+    folder,
+    description: description || '',
+    projectId: projectId || null,
+    companyId: req.user.companyId,
+    uploadedBy: req.user._id,
+  });
+  await doc.populate('uploadedBy', 'name');
+  await doc.populate('projectId', 'name');
+  res.status(201).json({ document: doc });
+};
+
 const remove = async (req, res) => {
   const doc = await Document.findOneAndDelete({ _id: req.params.id, companyId: req.user.companyId });
   if (!doc) return res.status(404).json({ message: 'Document not found' });
   res.json({ message: 'Deleted' });
 };
 
-module.exports = { getAll, create, remove };
+module.exports = { getAll, create, uploadFile, remove };

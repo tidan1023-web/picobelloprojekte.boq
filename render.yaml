@@ -33,6 +33,12 @@ services:
         sync: false
       - key: S3_PRESIGNED_URL_EXPIRES
         value: "3600"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
       - key: EBAY_APP_ID
         sync: false
       - key: EBAY_CERT_ID
